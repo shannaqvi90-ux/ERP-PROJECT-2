@@ -1,0 +1,42 @@
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+switch-company           ours  verified  steps 1  keys 0  machine 0.124s  human 2.65s  human+wait 2.703s  -> ../../evidence-staging/p18-visual-design/r3/compare/results/switch-company-20261124T114715-18de.json
+switch-company           odoo  verified  steps 2  keys 0  machine 0.633s  human 5.3s  human+wait 5.712s  -> ../../evidence-staging/p18-visual-design/r3/compare/results/switch-company-20261124T114725-1bf1.json
+switch-company           verdict win (ours judged on its whole path 'pointer')
+switch-company           left out: keystrokes (both products exactly 0 on a count metric; neither a tie nor a win, owner decision 2026-10-08, needs-human #11)
+edit-and-save            ours  verified  steps 2  keys 9  machine 0.446s  human 5.57s  human+wait 5.648s  -> ../../evidence-staging/p18-visual-design/r3/compare/results/edit-and-save-20261124T114747-8def.json
+edit-and-save            odoo  verified  steps 3  keys 12  machine 0.577s  human 8.72s  human+wait 8.976s  -> ../../evidence-staging/p18-visual-design/r3/compare/results/edit-and-save-20261124T114816-0a1c.json
+edit-and-save            verdict win (ours judged on its whole path 'national')
+switch-to-arabic         odoo  verified  steps 6  keys 1  machine 2.838s  human 15.28s  human+wait 16.861s  -> ../../evidence-staging/p18-visual-design/r3/compare/results/switch-to-arabic-20261124T114907-dfaf.json
+switch-to-arabic         ours  verified  steps 1  keys 0  machine 0.501s  human 2.65s  human+wait 2.656s  -> ../../evidence-staging/p18-visual-design/r3/compare/results/switch-to-arabic-20261124T114944-cd33.json
+switch-to-arabic         verdict win
+reach-screen-keyboard    odoo  verified  steps 3  keys 8  machine 1.132s  human 3.99s  human+wait 4.971s  -> ../../evidence-staging/p18-visual-design/r3/compare/results/reach-screen-keyboard-20261124T114955-0375.json
+reach-screen-keyboard    ours  verified  steps 2  keys 2  machine 0.262s  human 3.66s  human+wait 3.822s  -> ../../evidence-staging/p18-visual-design/r3/compare/results/reach-screen-keyboard-20261124T115019-de64.json
+reach-screen-keyboard    verdict win (ours judged on its whole path 'goTo')
+find-record              ours  verified  steps 3  keys 14  machine 0.751s  human 5.67s  human+wait 5.997s  -> ../../evidence-staging/p18-visual-design/r3/compare/results/find-record-20261124T115041-7c48.json
+find-record              odoo  verified  steps 5  keys 30  machine 2.05s  human 17.91s  human+wait 19.249s  -> ../../evidence-staging/p18-visual-design/r3/compare/results/find-record-20261124T115136-5472.json
+find-record              verdict win (ours judged on its whole path 'palette-shortest')
+find-user                ours  verified  steps 3  keys 3  machine 0.75s  human 8.29s  human+wait 8.625s  -> ../../evidence-staging/p18-visual-design/r3/compare/results/find-user-20261124T115229-da91.json
+find-user                odoo  verified  steps 6  keys 5  machine 1.879s  human 10.35s  human+wait 11.971s  -> ../../evidence-staging/p18-visual-design/r3/compare/results/find-user-20261124T115423-4a91.json
+find-user                verdict win (ours judged on its whole path 'initials')
+attach-file              odoo  verified  steps 3  keys 0  machine 0.289s  human 6.8s  human+wait 6.876s  -> ../../evidence-staging/p18-visual-design/r3/compare/results/attach-file-20261124T115708-5b5c.json
+attach-file              ours  error      (TimeoutError: locator.waitFor: Timeout 120000ms exceeded.)  -> ../../evidence-staging/p18-visual-design/r3/compare/results/attach-file-20261124T115730-0f6e.json
+    TimeoutError: locator.waitFor: Timeout 120000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="attachments"]') to be visible[22m
+    
+        (in the driver process)
+    Call log:
+    page: {"url":"/contacts/contacts/018917b1-0728-707e-a64d-1086d3e20e70","ready_state":"complete","title":"Contacts · ERP","focused":{"tag":"main","name":null,"type":null,"label":null},"navigation":true,"busy":[],"messages":["The list could not be loaded: HTTP 500"]}
+attach-file              verdict ours error
+new-user-keyboard        odoo  verified  steps 4  keys 10  machine 2.379s  human 5.9s  human+wait 8.126s  -> ../../evidence-staging/p18-visual-design/r3/compare/results/new-user-keyboard-20261124T115932-1b5d.json
+new-user-keyboard        ours  verified  steps 3  keys 4  machine 0.336s  human 5.57s  human+wait 5.688s  -> ../../evidence-staging/p18-visual-design/r3/compare/results/new-user-keyboard-20261124T115957-4063.json
+new-user-keyboard        verdict win (ours judged on its whole path 'goTo')
+open-third-user-keyboard odoo  verified  steps 8  keys 13  machine 1.471s  human 6.74s  human+wait 8.026s  -> ../../evidence-staging/p18-visual-design/r3/compare/results/open-third-user-keyboard-20261124T120026-8c6c.json
+open-third-user-keyboard ours  verified  steps 6  keys 6  machine 0.44s  human 6.13s  human+wait 6.339s  -> ../../evidence-staging/p18-visual-design/r3/compare/results/open-third-user-keyboard-20261124T120051-4858.json
+open-third-user-keyboard verdict win
+keyboard-navigation      odoo  verified  steps 9  keys 10  machine 1.28s  human 7.25s  human+wait 8.372s  -> ../../evidence-staging/p18-visual-design/r3/compare/results/keyboard-navigation-20261124T120058-436c.json
+keyboard-navigation      ours  not_built  (not built yet: waits for p04 (English/Arabic app shell) with p16 (contacts))  -> ../../evidence-staging/p18-visual-design/r3/compare/results/keyboard-navigation-20261124T120122-a987.json
+keyboard-navigation      verdict not_built
+blind review page: ../../../../evidence-staging/p18-visual-design/r3/compare/blind/review.html
+output: ../../../../evidence-staging/p18-visual-design/r3/compare
+EXIT 1

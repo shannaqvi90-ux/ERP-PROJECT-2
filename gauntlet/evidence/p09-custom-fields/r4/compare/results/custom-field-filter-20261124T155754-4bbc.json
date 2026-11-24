@@ -1,0 +1,440 @@
+{
+  "schema": 1,
+  "run_id": "custom-field-filter-20261124T155754-4bbc",
+  "instrument": 12,
+  "task": "custom-field-filter",
+  "task_title": "Add a custom field and filter by it",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Add a text field \"Licence ref\" to contacts, record \"LR-7731\" in it on the contact Shamma Waleed Al Romaithi, then filter the contact list to the contacts whose Licence ref is LR-7731.",
+  "done_when": "The contact list shows exactly one contact, Shamma Waleed Al Romaithi, filtered by the new field.",
+  "started_at": "2026-11-24T15:57:54.834Z",
+  "finished_at": "2026-11-24T15:58:17.464Z",
+  "environment": {
+    "base_url": "http://localhost:20950",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 11,
+    "keystrokes": 39,
+    "clicks": 4,
+    "scrolls": 0,
+    "field_entries": 3,
+    "key_chords": 4,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 2.161,
+    "system_wait_seconds": 0.66,
+    "human_seconds": 28.92,
+    "human_plus_wait_seconds": 29.58,
+    "klm_operator_counts": {
+      "K": 39,
+      "P": 4,
+      "B": 8,
+      "H": 5,
+      "M": 8
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Custom fields (navigation)",
+      "keystrokes": 0,
+      "at": 0.025,
+      "took": 0.11,
+      "began": 0.001,
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "New custom field",
+      "keystrokes": 0,
+      "at": 0.224,
+      "took": 0.126,
+      "began": 0.136,
+      "screen": "/customfields/fields",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "field label",
+      "keystrokes": 12,
+      "at": 0.366,
+      "took": 0.074,
+      "text": "Licence ref",
+      "same_field": false,
+      "screen": "/customfields/fields/new",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "save (Enter)",
+      "keystrokes": 1,
+      "at": 0.441,
+      "took": 0.012,
+      "chord": "Enter",
+      "screen": "/customfields/fields/new",
+      "chain": true
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "Contacts (navigation)",
+      "keystrokes": 0,
+      "at": 0.566,
+      "took": 0.115,
+      "began": 0.505,
+      "screen": "/customfields/fields/01a20e47-52ba-74e8-840f-6b70d28e4d7c",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "type",
+      "label": "the shortest word prefixes of the name",
+      "keystrokes": 11,
+      "at": 0.83,
+      "took": 0.116,
+      "text": "sha wal rom",
+      "same_field": false,
+      "screen": "/contacts/contacts",
+      "chain": false
+    },
+    {
+      "n": 7,
+      "kind": "key",
+      "label": "open the best match",
+      "keystrokes": 1,
+      "at": 1.382,
+      "took": 0.033,
+      "chord": "Enter",
+      "screen": "/contacts/contacts",
+      "chain": true
+    },
+    {
+      "n": 8,
+      "kind": "click",
+      "label": "the new field",
+      "keystrokes": 0,
+      "at": 1.557,
+      "took": 0.054,
+      "began": 1.509,
+      "screen": "/contacts/contacts/018917b1-0728-7d7a-95c5-bf6902aa5469",
+      "chain": false
+    },
+    {
+      "n": 9,
+      "kind": "type",
+      "label": "value",
+      "keystrokes": 9,
+      "at": 1.626,
+      "took": 0.09,
+      "text": "LR-7731",
+      "same_field": true,
+      "screen": "/contacts/contacts/018917b1-0728-7d7a-95c5-bf6902aa5469",
+      "chain": true
+    },
+    {
+      "n": 10,
+      "kind": "key",
+      "label": "save (Ctrl+S)",
+      "keystrokes": 2,
+      "at": 1.964,
+      "took": 0.034,
+      "chord": "Control+s",
+      "screen": "/contacts/contacts/018917b1-0728-7d7a-95c5-bf6902aa5469",
+      "chain": false
+    },
+    {
+      "n": 11,
+      "kind": "key",
+      "label": "list the records that hold this value (Alt+Shift+F)",
+      "keystrokes": 3,
+      "at": 2.047,
+      "took": 0.107,
+      "chord": "Alt+Shift+F",
+      "screen": "/contacts/contacts/018917b1-0728-7d7a-95c5-bf6902aa5469",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "new field form, label focused",
+      "at": 0.35,
+      "seconds": 0.005
+    },
+    {
+      "label": "saved",
+      "at": 0.454,
+      "seconds": 0.051
+    },
+    {
+      "label": "contact list ready, search focused",
+      "at": 0.682,
+      "seconds": 0.029
+    },
+    {
+      "label": "the contact in the list",
+      "at": 0.947,
+      "seconds": 0.433
+    },
+    {
+      "label": "the new field on the contact form",
+      "at": 1.416,
+      "seconds": 0.092
+    },
+    {
+      "label": "saved",
+      "at": 1.999,
+      "seconds": 0.048
+    },
+    {
+      "label": "filtered to one contact",
+      "at": 2.157,
+      "seconds": 0.002
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "9e3bde1179966389.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p09-custom-fields/r4/compare/blind/shots/9e3bde1179966389.jpg"
+    },
+    {
+      "moment": "field added and filled in",
+      "file": "0da9d9ff869f0ea6.jpg",
+      "at": 1.717,
+      "path": "../../evidence-staging/p09-custom-fields/r4/compare/blind/shots/0da9d9ff869f0ea6.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "d6115b13e44812a3.jpg",
+      "at": 2.161,
+      "path": "../../evidence-staging/p09-custom-fields/r4/compare/blind/shots/d6115b13e44812a3.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "field": {
+        "id": "01a20e47-52ba-74e8-840f-6b70d28e4d7c",
+        "recordType": "contacts.contacts",
+        "key": "cfLicenceRef",
+        "labelEn": "Licence ref",
+        "labelAr": "Licence ref",
+        "fieldType": "text",
+        "required": false,
+        "searchable": true,
+        "sortOrder": 180,
+        "isActive": true,
+        "updatedAt": "2026-11-24T15:58:04.990526+00:00",
+        "version": 3390486004
+      },
+      "stored": "LR-7731",
+      "rows": [
+        "Shamma Waleed Al Romaithi Person Zenith General Trading Est. shamma.al.romaithi.73519@mail.example +971 54 427 3034 Sharjah Sharjah Active"
+      ]
+    }
+  },
+  "path_notes": "Custom fields (navigation) > New custom field > type the label > Enter (saved) > Contacts (navigation) > type the shortest word prefixes of the contact's name > Enter opens it > click the new field > type the value > Ctrl+S > Alt+Shift+F: the form closes and the list is filtered by the field's value (a condition on that field only): exactly that contact.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/custom-field-filter.mjs",
+    "sha256": "215acec10fabb36f4e235ff52a7567d8a2537f7b961c8c984ced7f4caa2e7334"
+  },
+  "task_notes": "Set-up removes any earlier copy of the field.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 4,
+      "longest_pause_seconds": 0.004,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.034,
+      "verified": true
+    },
+    {
+      "requests": 4,
+      "longest_pause_seconds": 0.004,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.03,
+      "verified": true,
+      "gap_seconds": 1.101
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 2,
+    "first": [
+      "GET /api/contacts/contacts (fetch)",
+      "GET /api/contacts/contacts (fetch)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "cca1c81298786860",
+    "elements": 315
+  },
+  "screen_after_verify": {
+    "sha256": "cca1c81298786860",
+    "elements": 315,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 2,
+    "requests": 4,
+    "longest_pause_seconds": 0.003,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.072
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 2,
+    "reads_after": 2,
+    "read_both_times": 2,
+    "read_before": [
+      "GET /api/customfields/fields",
+      "GET /api/contacts/contacts/018917b1-0728-7d7a-95c5-bf6902aa5469"
+    ],
+    "read_after": [
+      "GET /api/customfields/fields",
+      "GET /api/contacts/contacts/018917b1-0728-7d7a-95c5-bf6902aa5469"
+    ],
+    "changed": [
+      "GET /api/customfields/fields",
+      "GET /api/contacts/contacts/018917b1-0728-7d7a-95c5-bf6902aa5469"
+    ],
+    "changed_parts": {
+      "GET /api/customfields/fields": [
+        "items.0.id",
+        "items.0.recordType",
+        "items.0.key",
+        "items.0.labelEn",
+        "items.0.labelAr",
+        "items.0.fieldType",
+        "items.0.required",
+        "items.0.searchable"
+      ],
+      "GET /api/contacts/contacts/018917b1-0728-7d7a-95c5-bf6902aa5469": [
+        "updatedAt",
+        "version",
+        "customFields.cfCreditCapR4E",
+        "customFields.cfCreditCapR4B",
+        "customFields.cfLicenceRef",
+        "customFieldDefinitions.5.value",
+        "customFieldDefinitions.13.value",
+        "customFieldDefinitions.14.key"
+      ]
+    },
+    "gained_entered_value": [
+      "GET /api/customfields/fields",
+      "GET /api/contacts/contacts/018917b1-0728-7d7a-95c5-bf6902aa5469"
+    ],
+    "end_state": [
+      "GET /api/customfields/fields [items.labelEn, items.fieldType]",
+      "GET /api/contacts/contacts/* [customFieldDefinitions.value]"
+    ],
+    "end_state_changed": {
+      "GET /api/customfields/fields": [
+        "items.0.labelEn",
+        "items.0.fieldType"
+      ],
+      "GET /api/contacts/contacts/018917b1-0728-7d7a-95c5-bf6902aa5469": [
+        "customFieldDefinitions.5.value",
+        "customFieldDefinitions.13.value",
+        "customFieldDefinitions.14.value"
+      ]
+    },
+    "end_state_gained": [
+      "Licence ref",
+      "LR-7731"
+    ],
+    "writes_sent": [
+      "POST /api/customfields/fields",
+      "PUT /api/contacts/contacts/018917b1-0728-7d7a-95c5-bf6902aa5469"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /api/customfields/fields",
+        "at": 0.45005098,
+        "by_step": 4,
+        "browser_record": {
+          "caused": true,
+          "by_step": 4,
+          "chain_seconds": 0.002,
+          "chain": [
+            "input of step 4"
+          ]
+        }
+      },
+      {
+        "write": "PUT /api/contacts/contacts/018917b1-0728-7d7a-95c5-bf6902aa5469",
+        "at": 1.9936142560000008,
+        "by_step": 10,
+        "browser_record": {
+          "caused": true,
+          "by_step": 10,
+          "chain_seconds": 0.002,
+          "chain": [
+            "input of step 10"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 71,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 2.061,
+      "by_step": 11,
+      "chain": [
+        "input of step 11"
+      ]
+    }
+  },
+  "set_up_writes": []
+}

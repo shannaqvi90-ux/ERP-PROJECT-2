@@ -1,0 +1,18 @@
+fields cfTradeLicence1795536308462 cfCreditCap1795536308462 cfLicenceExpiry1795536308462 cfVATRegistered1795536308462 cfIncoterm1795536308462
+upload 201 [["Name","name","name"],["Kind","kind","name"],["Country","country","name"],["Trade licence 1795536308462","custom.cfTradeLicence1795536308462","name"],["حد الائتمان 1795536308462","custom.cfCreditCap1795536308462","name"],["Licence expiry 1795536308462","custom.cfLicenceExpiry1795536308462","name"],["VAT registered 1795536308462","custom.cfVATRegistered1795536308462","name"],["شروط التسليم 1795536308462","custom.cfIncoterm1795536308462","name"]]
+run {"dryRun":true,"onError":"reject"} 200 
+status checked checked 3 valid 2 imported 0 failed 1 
+  issue row 4 custom.cfCreditCap1795536308462 Credit cap 1795536308462 importNumber Enter a number (digits and one decimal point).
+  issue row 4 custom.cfLicenceExpiry1795536308462 Licence expiry 1795536308462 importDate Enter a date as yyyy-mm-dd or dd/mm/yyyy.
+  issue row 4 custom.cfVATRegistered1795536308462 VAT registered 1795536308462 importBoolean Enter yes or no (true or false, 1 or 0).
+  issue row 4 custom.cfIncoterm1795536308462 Incoterm 1795536308462 importOption This is not one of the field's choices.
+run {"dryRun":false,"onError":"skip"} 200 
+status completed checked 3 valid 2 imported 2 failed 1 
+  issue row 4 custom.cfCreditCap1795536308462 Credit cap 1795536308462 importNumber Enter a number (digits and one decimal point).
+  issue row 4 custom.cfLicenceExpiry1795536308462 Licence expiry 1795536308462 importDate Enter a date as yyyy-mm-dd or dd/mm/yyyy.
+  issue row 4 custom.cfVATRegistered1795536308462 VAT registered 1795536308462 importBoolean Enter yes or no (true or false, 1 or 0).
+  issue row 4 custom.cfIncoterm1795536308462 Incoterm 1795536308462 importOption This is not one of the field's choices.
+Imp One 1795536308462 [["cfTradeLicence","TL-001"],["cfCreditCap","125000.50"],["cfLicenceExpiry","2027-03-31"],["cfVATRegistered",true],["cfIncoterm","FOB"]]
+Imp Two 1795536308462 [["cfTradeLicence","TL-002"],["cfCreditCap","1234.50"],["cfLicenceExpiry","2027-12-31"],["cfVATRegistered",false],["cfIncoterm","CIF"]]
+not found Imp Three 1795536308462
+filter by imported select 200 1

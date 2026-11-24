@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "run_id": "attach-file-20261124T115730-0f6e",
+  "instrument": 12,
+  "task": "attach-file",
+  "task_title": "Attach a file to a record",
+  "product": "ours",
+  "status": "error",
+  "goal": "Attach the file trade-licence-TL-2026-73519.pdf to the contact.",
+  "done_when": "The file is listed on the contact; the back end holds it attached to that contact.",
+  "started_at": "2026-11-24T11:57:30.927Z",
+  "finished_at": "2026-11-24T11:59:32.039Z",
+  "environment": {
+    "base_url": "http://localhost:21850",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": null,
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [],
+  "waits": [],
+  "screenshots": [],
+  "verification": null,
+  "path_notes": "Pick the file at the \"Add files\" button of the contact's Attachments section (the file dialog and the choice of the file are one step); the file is listed on the contact.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/attach-file.mjs",
+    "sha256": "c3e49f404ca34a4d837ae9bd37a555b891cd26fe0c675349eed6a25407482123"
+  },
+  "task_notes": "The file is committed (data/fixtures). Clean-up deletes the attachment.",
+  "error": "TimeoutError: locator.waitFor: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"attachments\"]') to be visible\u001b[22m\n\n    (in the driver process)\nCall log:",
+  "start_state": null,
+  "error_page": {
+    "url": "/contacts/contacts/018917b1-0728-707e-a64d-1086d3e20e70",
+    "ready_state": "complete",
+    "title": "Contacts · ERP",
+    "focused": {
+      "tag": "main",
+      "name": null,
+      "type": null,
+      "label": null
+    },
+    "navigation": true,
+    "busy": [],
+    "messages": [
+      "The list could not be loaded: HTTP 500"
+    ]
+  },
+  "verify_passes": null,
+  "requests_after_clock": null,
+  "requests_in_flight_at_clock": null,
+  "screen_at_clock": null,
+  "screen_after_verify": null,
+  "verify_before": null,
+  "set_up_writes_waited": null,
+  "failure_capture": {
+    "url": "http://localhost:21850/contacts/contacts/018917b1-0728-707e-a64d-1086d3e20e70",
+    "console": [
+      "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "warning: The resource http://localhost:21850/fonts/geist-mono-latin-wght-normal.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+      "warning: The resource http://localhost:21850/fonts/geist-latin-wght-normal.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    ],
+    "screenshot": "../../evidence-staging/p18-visual-design/r3/compare/failures/failure-481e4496b34e78cb.jpg"
+  }
+}
