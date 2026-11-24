@@ -24,3 +24,16 @@ column sort (the menu has none for tags). The pick list needs no typing, so it w
 
 One endpoint (G2 map line in tests/Gates/endpoint-permissions/contacts.txt); a module test
 `The_tag_choices_list_each_tag_of_the_workspace_once_and_never_another_workspaces`; a ListView unit test. No new dependency.
+
+## Round 3 fix after the integrator's alone verify (serial-25b)
+
+- The comparison health check judged export-filtered-list invalid: the pick list arrived by an async fetch after the click that opened the
+  filter editor, a render from a task the harness could not trace to a step. The list now fetches each `filterValues` source as it opens
+  (in a ref, no render when the answer lands) and gives the editor the values it already holds, so the pick list is in the commit of the click.
+  A refresh that finds the same values changes nothing on screen.
+- Run live on a stack seeded with gauntlet/compare/data/out: `node run.mjs --task export-filtered-list --product ours` = verified, 6 steps,
+  0 keys, human 15.9 s, machine 1.378 s.
+- The dotnet failure (G1ListVolumeTests, "could not resize shared memory segment ... No space left on device") was Docker's 64 MB /dev/shm in the
+  test database container. tests/Erp.Testing/TestDatabaseServer.cs now sets a 1 GiB /dev/shm (a ceiling on a memory mount, not memory taken up front).
+  This is p00's file; the change is one parameter. Targeted run: Erp.Gates.Tests (G1ListVolume, G2Permission, G1TenantSource, OpenApi,
+  G2SetBasedWriteSource, ListContractGate) 48 passed in 24 m 43 s; Contacts.Tests 48 passed; web unit tests for kernel/lists and contacts 126 passed, tsc clean.
