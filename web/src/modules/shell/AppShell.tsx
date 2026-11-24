@@ -1,3 +1,4 @@
+import { useOverflowTitles } from "../../kernel/overflowTitles";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { allowed, extensions, type ModuleAction } from "../../kernel/extensions";
@@ -19,6 +20,7 @@ import { GoToHint, goToTargets, useGoTo } from "./goTo";
 import { entryFor, groupLabelKey } from "./navigation";
 import { PreferencesDialog } from "./PreferencesDialog";
 import { ShortcutHelp } from "./ShortcutHelp";
+import { ToastHost } from "../../kernel/ui";
 import { usePreferenceActions } from "./usePreferenceActions";
 
 export const shellChords = {
@@ -77,6 +79,7 @@ const other = (language: Language): Language => (language === "ar" ? "en" : "ar"
  * address. Everything is reachable without a mouse (see the shortcut help sheet: ? or Ctrl+/).
  */
 export function AppShell({ session }: { session: Session }) {
+  useOverflowTitles();
   const { t, language, numerals, format } = useI18n();
   const { signOut, can } = useSession();
   const { changeLanguage, changeNumerals } = usePreferenceActions();
@@ -370,6 +373,7 @@ export function AppShell({ session }: { session: Session }) {
             </section>
           )}
         </main>
+        <ToastHost />
       </div>
       <footer className="statusbar">
         <span>{t("shell.status.signedInAs", { name: userName, workspace: session.tenant.code })}</span>

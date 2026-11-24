@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api, ApiError } from "../../kernel/api";
 import { customDraft, customRequest, CustomFieldsSection } from "../../kernel/forms/customFields";
-import { CountryField, LookupField, MoneyField, PhoneField, SelectField, TextAreaField, TextField } from "../../kernel/forms/fields";
+import { CountryField, LookupField, MoneyField, PhoneField, SelectField, TagField, TextAreaField, TextField } from "../../kernel/forms/fields";
 import { FormSection, RecordForm, type RecordNavigation } from "../../kernel/forms/RecordForm";
 import { useRecordForm, type FieldBinding } from "../../kernel/forms/useRecordForm";
 import { useI18n } from "../../kernel/i18n";
@@ -342,7 +342,7 @@ function ContactFormWith({ id, start, onSaved, onClose, onOpen, onNewPerson, nav
           label={t("contacts.contact.creditLimit")}
           hint={t("contacts.contact.creditLimitHint")}
         />
-        <TextField field={bind("tags")} label={t("contacts.contact.tags")} maxLength={400} hint={t("contacts.contact.tagsHint")} />
+        <TagField field={bind("tags")} label={t("contacts.contact.tags")} hint={t("contacts.contact.tagsHint")} />
       </FormSection>
       <CustomFieldsSection entries={contact ? contact.customFieldDefinitions : defaults?.customFieldDefinitions} bind={form.bind as (key: string) => FieldBinding<string>} />
       <FormSection title={t("contacts.section.notes")} columns={false}>

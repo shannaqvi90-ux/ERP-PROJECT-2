@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { installFocusCycle } from "./kernel/focusCycle";
+import { installOverflowTitles } from "./kernel/overflowTitles";
 import { installHistoryGuard } from "./kernel/historyGuard";
 import { App } from "./modules/shell/App";
 import { applyLook, followSystem } from "./kernel/theme";
@@ -26,6 +27,9 @@ installHistoryGuard();
 // Tab past the last control comes back to the first, with no dead stop on the document
 // (kernel/focusCycle); a modal dialog keeps its own cycle.
 installFocusCycle();
+
+// Text cut with an ellipsis carries its full text as a title (kernel/overflowTitles).
+installOverflowTitles();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

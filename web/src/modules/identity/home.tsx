@@ -6,7 +6,7 @@ export function IdentityHomeCard() {
     <HomeCard
       titleKey="identity.home.title"
       figures={[
-        { key: "identity.neverSignedIn", labelKey: "identity.home.neverSignedIn", endpoint: "/api/identity/users", filter: "lastSignInAt is null and isActive eq true", path: "/identity/users", attention: true },
+        { key: "identity.neverSignedIn", labelKey: "identity.home.neverSignedIn", endpoint: "/api/identity/users", filter: "lastSignInAt is null and isActive eq true", path: "/identity/users", attention: true, actPermission: "identity.users.update" },
         { key: "identity.inactive", labelKey: "identity.home.inactive", endpoint: "/api/identity/users", filter: "isActive eq false", path: "/identity/users" },
       ]}
       action={{ labelKey: "identity.home.open", path: "/identity/users" }}

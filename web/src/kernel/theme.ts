@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState } from "react";
  * The look of the screens: theme (light, dark, high contrast) and density (compact, comfortable).
  * Both are the person's own choice, remembered on this device (the same two device keys serve the
  * next sign-in of the same browser: kernel/deviceState.ts deviceKeys, tests/Gates/device-keys.txt).
- * Until a theme is chosen the screen follows the system: high contrast when the system asks for
- * more contrast, light or dark as the system is set, and it changes when the system does.
+ * Until a theme is chosen the screen is dark (the product's own look), or high contrast when the
+ * system asks for more contrast, and it changes when the system's contrast setting does.
  * The colours themselves live in design/tokens.css only; this file sets two attributes on <html>.
  */
 export type ThemeChoice = "system" | "light" | "dark" | "hc";
@@ -52,7 +52,7 @@ export function storedDensity(): Density {
 export function resolveTheme(choice: ThemeChoice): Theme {
   if (choice !== "system") return choice;
   if (matches("(prefers-contrast: more)")) return "hc";
-  if (matches("(prefers-color-scheme: light)")) return "light";
+  // Direction G's look is dark; light is a choice a person makes (owner, 2026-11-17), not the system's.
   return "dark";
 }
 
