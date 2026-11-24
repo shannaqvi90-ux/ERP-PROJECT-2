@@ -1,0 +1,20 @@
+// s6: the kernel date field by keyboard on a real record (contact custom date): typed as the placeholder shows, save
+import { browser, signIn, shot, BASE } from './lib.mjs';
+const b = await browser();
+const page = await (await b.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+const lang = process.env.LANG2 || 'en';
+await signIn(page, lang === 'ar' ? 'admin.ar@alnoor.example' : 'admin@alnoor.example');
+await page.goto(BASE + '/contacts/contacts'); await page.waitForTimeout(2500);
+await page.locator('tbody tr').nth(3).click(); await page.keyboard.press('Enter'); await page.waitForTimeout(2000);
+const d = page.locator('main input[name="customFields.cfCreditReview"]');
+console.log('date field present', await d.count(), 'placeholder', await d.getAttribute('placeholder'), 'value', await d.inputValue());
+await d.scrollIntoViewIfNeeded().catch(() => {});
+await d.focus(); await page.keyboard.press('Control+a'); await page.keyboard.press('Backspace');
+await page.keyboard.type(process.env.TYPED || '15/06/2027'); await page.waitForTimeout(300);
+console.log('typed ->', await d.inputValue());
+await page.keyboard.press('Control+s'); await page.waitForTimeout(2000);
+const msgs = await page.evaluate(() => [...document.querySelectorAll('[role=alert], .field-error, [role=status]')].map(e => e.textContent.trim()).filter(Boolean));
+console.log('after save', JSON.stringify(msgs));
+console.log('value now', await d.inputValue());
+await shot(page, process.env.SHOT || '07-date-typed-with-slashes-' + lang);
+await b.close();

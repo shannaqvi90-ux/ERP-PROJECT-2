@@ -1,0 +1,32 @@
+// Arabic, keyboard only: add a text field (searchable) and a yes/no field, set them on a contact, find it by the text through list search.
+import { open, shot, text, focused } from './pw.mjs';
+const email = process.argv[2] || 'admin.ar@alnoor.example', tag = process.argv[3] || 'ar';
+const ar = tag === 'ar';
+const { browser, page, errors } = await open(email);
+const msgs = () => page.$$eval('[role=alert], [role=status], .field-error', els => els.map(e => e.textContent.trim()).filter(Boolean).slice(0, 6));
+const k = async (key, n = 1) => { for (let i = 0; i < n; i++) await page.keyboard.press(key); };
+await page.keyboard.press('Control+k'); await page.keyboard.type(ar ? 'الحقول المخصصة' : 'Custom fields'); await page.waitForTimeout(1000); await k('Enter'); await page.waitForTimeout(2000);
+await k('Alt+n'); await page.waitForTimeout(800);
+await page.keyboard.type('Trade licence no R4'); await k('Tab'); await page.keyboard.type('رقم الرخصة التجارية R4');
+await k('Tab'); await k('Tab'); console.log('type', await focused(page)); // text is first
+await k('Tab'); console.log('f', await focused(page)); await k('Tab'); console.log('f', await focused(page));
+await k('Control+s'); await page.waitForTimeout(2000); console.log('saved text', await msgs());
+await k('Alt+n'); await page.waitForTimeout(800);
+await page.keyboard.type('Key account R4'); await k('Tab'); await page.keyboard.type('حساب رئيسي R4');
+await k('Tab'); await k('Tab'); await k('ArrowDown', 3); console.log('type', await focused(page));
+await k('Tab'); console.log('f', await focused(page)); await k('Tab'); console.log('f', await focused(page)); await k('ArrowDown'); console.log('default', await focused(page));
+await k('Control+s'); await page.waitForTimeout(2000); console.log('saved bool', await msgs());
+await k('Escape');
+await page.keyboard.press('g'); await page.keyboard.press('o'); await page.waitForTimeout(2500);
+await k('/'); await page.keyboard.type('Gulf Glass FZE'); await page.waitForTimeout(2000); await k('ArrowDown'); await k('Enter'); await page.waitForTimeout(3000);
+const t1 = 'TL-R4-' + Date.now().toString().slice(-6);
+await page.focus('input[name="customFields.cfTradeLicenceNoR4"]'); await page.keyboard.type(t1);
+const b = page.locator('[name="customFields.cfKeyAccountR4"]'); console.log('bool element', await b.evaluate(e => e.tagName + ' ' + e.type + ' ' + e.value));
+await b.focus(); await k(await b.evaluate(e => e.tagName) === 'SELECT' ? 'ArrowDown' : 'Space');
+await k('Control+s'); await page.waitForTimeout(2000); console.log('save', await msgs());
+await k('Escape'); await page.waitForTimeout(800);
+await page.keyboard.press('g'); await page.keyboard.press('o'); await page.waitForTimeout(2000);
+await k('/'); await page.keyboard.press('Control+a'); await page.keyboard.type(t1); await page.waitForTimeout(2500);
+console.log('search', t1, (await text(page)).split('\n').filter(l => /جهة اتصال|جهات اتصال/.test(l) && l.length < 40).slice(0, 3));
+await shot(page, `${tag}-search-by-custom-text`);
+console.log('errors', errors); await browser.close();

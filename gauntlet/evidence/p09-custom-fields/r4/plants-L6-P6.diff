@@ -1,0 +1,45 @@
+diff --git a/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs b/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs
+index 16a21cf7..efbede72 100644
+--- a/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs
++++ b/src/Modules/CustomFields/Erp.Modules.CustomFields/FieldEndpoints.cs
+@@ -128,8 +128,8 @@ internal static class FieldEndpoints
+ 
+         group.MapGet("/record-types", RecordTypes)
+             .WithName("customfields.recordTypes.list")
+-            .WithSummary("The kinds of record that can have custom fields, with how many each has.")
+-            .RequirePermission(CustomFieldsPermissions.FieldsRead);
++            .WithSummary("The kinds of record that can have custom fields, with how many each has.");
++            // CRITIC PLANT P6: the record-types list (with each kind's field count) declares no permission at all.
+     }
+ 
+     private static async Task<Results<Ok<ListPage<FieldRow>>, ProblemHttpResult>> List(
+diff --git a/src/Modules/CustomFields/Erp.Modules.CustomFields/Migrations/20261124000000_CriticSharedRead.cs b/src/Modules/CustomFields/Erp.Modules.CustomFields/Migrations/20261124000000_CriticSharedRead.cs
+new file mode 100644
+index 00000000..812f5049
+--- /dev/null
++++ b/src/Modules/CustomFields/Erp.Modules.CustomFields/Migrations/20261124000000_CriticSharedRead.cs
+@@ -0,0 +1,24 @@
++using Microsoft.EntityFrameworkCore.Infrastructure;
++using Microsoft.EntityFrameworkCore.Migrations;
++
++#nullable disable
++
++namespace Erp.Modules.CustomFields.Migrations
++{
++    // CRITIC PLANT L6: a second, permissive read policy so every workspace sees every workspace's active field definitions
++    // (row-level security stays enabled and forced; the tenant_isolation policy is untouched).
++    [DbContext(typeof(CustomFieldsDbContext))]
++    [Migration("20261124000000_CriticSharedRead")]
++    public partial class CriticSharedRead : Migration
++    {
++        protected override void Up(MigrationBuilder migrationBuilder)
++        {
++            migrationBuilder.Sql("CREATE POLICY shared_catalogue_read ON customfields.definitions AS PERMISSIVE FOR SELECT USING (is_active);");
++        }
++
++        protected override void Down(MigrationBuilder migrationBuilder)
++        {
++            migrationBuilder.Sql("DROP POLICY shared_catalogue_read ON customfields.definitions;");
++        }
++    }
++}

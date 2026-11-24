@@ -1,0 +1,253 @@
+{
+  "schema": 1,
+  "run_id": "open-third-user-keyboard-20261124T120051-4858",
+  "instrument": 12,
+  "task": "open-third-user-keyboard",
+  "task_title": "Open a record from a list by keyboard only (users list)",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Without touching the mouse, open the list of the workspace's users and open the third user in it.",
+  "done_when": "The third user of the list (in the list's own order) is open on screen, and no step used the mouse.",
+  "started_at": "2026-11-24T12:00:51.172Z",
+  "finished_at": "2026-11-24T12:00:58.743Z",
+  "environment": {
+    "base_url": "http://localhost:21850",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 6,
+    "keystrokes": 6,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 6,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.44,
+    "system_wait_seconds": 0.209,
+    "human_seconds": 6.13,
+    "human_plus_wait_seconds": 6.339,
+    "klm_operator_counts": {
+      "K": 6,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "go to",
+      "keystrokes": 1,
+      "at": 0.001,
+      "took": 0.025,
+      "chord": "g",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "Users",
+      "keystrokes": 1,
+      "at": 0.035,
+      "took": 0.067,
+      "chord": "u",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "row 1",
+      "keystrokes": 1,
+      "at": 0.241,
+      "took": 0.018,
+      "chord": "ArrowDown",
+      "screen": "/identity/users",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "row 2",
+      "keystrokes": 1,
+      "at": 0.259,
+      "took": 0.012,
+      "chord": "ArrowDown",
+      "screen": "/identity/users",
+      "chain": true
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "row 3",
+      "keystrokes": 1,
+      "at": 0.272,
+      "took": 0.009,
+      "chord": "ArrowDown",
+      "screen": "/identity/users",
+      "chain": true
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "open",
+      "keystrokes": 1,
+      "at": 0.285,
+      "took": 0.089,
+      "chord": "Enter",
+      "screen": "/identity/users",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "go-to keys shown",
+      "at": 0.026,
+      "seconds": 0.008
+    },
+    {
+      "label": "users list",
+      "at": 0.103,
+      "seconds": 0.137
+    },
+    {
+      "label": "third row active",
+      "at": 0.282,
+      "seconds": 0.002
+    },
+    {
+      "label": "third user open",
+      "at": 0.375,
+      "seconds": 0.062
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "dc314585243e8365.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p18-visual-design/r3/compare/blind/shots/dc314585243e8365.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "04b4d6c7ac5637be.jpg",
+      "at": 0.44,
+      "path": "../../evidence-staging/p18-visual-design/r3/compare/blind/shots/04b4d6c7ac5637be.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "expected": "viewer@alnoor.example",
+      "url": "/identity/users/01a20d56-c0f0-7d08-8f16-e265400aec15"
+    }
+  },
+  "path_notes": "G > U (users list, search focused) > Down x3 (third row) > Enter. [critic r9: go-to keys]",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/open-third-user-keyboard.mjs",
+    "sha256": "32a072329b51ab467c912fd8e23eb6443c3dcd070ac722fcf1e8aed7ae43e413"
+  },
+  "task_notes": "Proposed by the p04 critic, round 2 (kept by r3 and r4): the users-list stand-in for keyboard-navigation until the contacts list (p16) exists. Every step must be a key or key chord.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.004,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.004,
+      "verified": true,
+      "gap_seconds": 0.077
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 1,
+    "first": [
+      "GET /api/audit/records/01a20d56-c0f0-7d08-8f16-e265400aec15 (fetch)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "437f51490cf80ad6",
+    "elements": 826
+  },
+  "screen_after_verify": {
+    "sha256": "437f51490cf80ad6",
+    "elements": 826,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.056
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 12,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 0.443,
+      "by_step": 6,
+      "chain": [
+        "a task that followed at once (a message or an observer)",
+        "the answer to GET /api/audit/records/01a20d56-c0f0-7d08-8f16-e265400aec15 after 0.021 s",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "set_up_writes": []
+}

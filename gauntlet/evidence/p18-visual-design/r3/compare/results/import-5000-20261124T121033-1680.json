@@ -1,0 +1,474 @@
+{
+  "schema": 1,
+  "run_id": "import-5000-20261124T121033-1680",
+  "instrument": 12,
+  "task": "import-5000",
+  "task_title": "Import 5,000 rows",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Import the 5,000 contacts in contacts-import-5000.csv (columns Name, Email, Phone, Street, City, Country) into the contact list.",
+  "done_when": "The product reports the import finished; the back end holds the 5,000 new contacts.",
+  "started_at": "2026-11-24T12:10:33.383Z",
+  "finished_at": "2026-11-24T12:12:08.366Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 7,
+    "keystrokes": 0,
+    "clicks": 6,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 1,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 14.447,
+    "system_wait_seconds": 12.9,
+    "human_seconds": 17.4,
+    "human_plus_wait_seconds": 30.3,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 7,
+      "B": 16,
+      "H": 0,
+      "M": 6
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "apps menu",
+      "keystrokes": 0,
+      "at": 0.036,
+      "took": 0.069,
+      "began": 0.003,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Contacts app",
+      "keystrokes": 0,
+      "at": 0.15,
+      "took": 0.057,
+      "began": 0.106,
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "actions menu",
+      "keystrokes": 0,
+      "at": 0.928,
+      "took": 0.105,
+      "began": 0.863,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "Import",
+      "keystrokes": 0,
+      "at": 1.133,
+      "took": 0.113,
+      "began": 1.034,
+      "screen": "/odoo/contacts",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "open file dialog: contacts-import-5000.csv",
+      "keystrokes": 0,
+      "at": 1.532,
+      "took": 0.054,
+      "began": 1.483,
+      "screen": "/odoo/contacts/import",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "file-pick",
+      "label": "contacts-import-5000.csv",
+      "keystrokes": 0,
+      "at": 1.586,
+      "took": 0.02,
+      "file": "contacts-import-5000.csv",
+      "screen": "/odoo/contacts/import",
+      "chain": true
+    },
+    {
+      "n": 7,
+      "kind": "click",
+      "label": "Import",
+      "keystrokes": 0,
+      "at": 2.424,
+      "took": 0.11,
+      "began": 2.367,
+      "screen": "/odoo/contacts/import",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "Contacts loaded",
+      "at": 0.21,
+      "seconds": 0.644
+    },
+    {
+      "label": "contact list",
+      "at": 0.854,
+      "seconds": 0.008
+    },
+    {
+      "label": "import screen",
+      "at": 1.246,
+      "seconds": 0.236
+    },
+    {
+      "label": "column mapping preview",
+      "at": 1.607,
+      "seconds": 0.103
+    },
+    {
+      "label": "import finished, imported records listed",
+      "at": 2.537,
+      "seconds": 11.909
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "bbe314b46b680ebe.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p18-visual-design/r3/compare/blind/shots/bbe314b46b680ebe.jpg"
+    },
+    {
+      "moment": "columns matched",
+      "file": "0cddd4231f3f8062.jpg",
+      "at": 1.71,
+      "path": "../../evidence-staging/p18-visual-design/r3/compare/blind/shots/0cddd4231f3f8062.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "5f8a983609e7e02b.jpg",
+      "at": 14.447,
+      "path": "../../evidence-staging/p18-visual-design/r3/compare/blind/shots/5f8a983609e7e02b.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "imported": 5000,
+      "added": 5000,
+      "first_and_last_found": 2
+    }
+  },
+  "path_notes": "Apps menu > Contacts > actions menu (⋮) > Import > Upload (choose the file) > Import. Odoo maps the plain column headers (Name, Email, Phone, Street, City, Country) to contact fields by itself.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/import-5000.mjs",
+    "sha256": "90c0c2ae2f525cb832579136dd917b4cf46fb723ce22ef546095e62756d33079"
+  },
+  "task_notes": "The file is generated by data/generate.mjs: plain headers, as a user would bring from another system. Clean-up deletes the imported rows.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 4,
+      "longest_pause_seconds": 0.005,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.124,
+      "verified": true
+    },
+    {
+      "requests": 4,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.103,
+      "verified": true,
+      "gap_seconds": 1.101
+    }
+  ],
+  "requests_after_clock": 2,
+  "requests_in_flight_at_clock": {
+    "count": 49,
+    "first": [
+      "GET /web/image/res.partner/449128/avatar_128 (image)",
+      "GET /web/image/res.partner/450199/avatar_128 (image)",
+      "GET /web/image/res.partner/446988/avatar_128 (image)",
+      "GET /web/image/res.partner/447701/avatar_128 (image)",
+      "GET /web/image/res.partner/449757/avatar_128 (image)",
+      "GET /web/image/res.partner/446560/avatar_128 (image)",
+      "GET /web/image/res.partner/446668/avatar_128 (image)",
+      "GET /web/image/res.partner/450398/avatar_128 (image)",
+      "GET /web/image/res.partner/450224/avatar_128 (image)",
+      "GET /web/image/res.partner/448055/avatar_128 (image)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "5d39912d54bda746",
+    "elements": 2191
+  },
+  "screen_after_verify": {
+    "sha256": "5d39912d54bda746",
+    "elements": 2191,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 3,
+    "requests": 4,
+    "longest_pause_seconds": 0.004,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.119
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 3,
+    "reads_after": 3,
+    "read_both_times": 3,
+    "read_before": [
+      "POST /web/dataset/call_kw/res.partner/search_count",
+      "POST /web/dataset/call_kw/res.partner/search_count",
+      "POST /web/dataset/call_kw/res.partner/search_count"
+    ],
+    "read_after": [
+      "POST /web/dataset/call_kw/res.partner/search_count",
+      "POST /web/dataset/call_kw/res.partner/search_count",
+      "POST /web/dataset/call_kw/res.partner/search_count"
+    ],
+    "changed": [
+      "POST /web/dataset/call_kw/res.partner/search_count",
+      "POST /web/dataset/call_kw/res.partner/search_count",
+      "POST /web/dataset/call_kw/res.partner/search_count"
+    ],
+    "changed_parts": {
+      "POST /web/dataset/call_kw/res.partner/search_count": [
+        "result"
+      ]
+    },
+    "end_state": [
+      "POST /web/dataset/call_kw/res.partner/search_count [result]"
+    ],
+    "end_state_changed": {
+      "POST /web/dataset/call_kw/res.partner/search_count": [
+        "result"
+      ]
+    },
+    "writes_sent": [
+      "POST /web/dataset/call_kw/res.partner/get_import_templates",
+      "POST /web/dataset/call_kw/base_import.import/create",
+      "POST /web/dataset/call_kw/res.lang/get_installed",
+      "POST /base_import/set_file",
+      "POST /web/dataset/call_kw/base_import.import/parse_preview",
+      "POST /web/dataset/call_kw/base_import.import/execute_import",
+      "POST /web/dataset/call_kw/base_import.import/execute_import",
+      "POST /web/dataset/call_kw/base_import.import/execute_import"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /web/dataset/call_kw/res.partner/get_import_templates",
+        "at": 1.2190132999999987,
+        "by_step": 4,
+        "browser_record": {
+          "caused": true,
+          "by_step": 4,
+          "chain_seconds": 0.015,
+          "chain": [
+            "input of step 4"
+          ]
+        }
+      },
+      {
+        "write": "POST /web/dataset/call_kw/base_import.import/create",
+        "at": 1.2191893490000003,
+        "by_step": 4,
+        "browser_record": {
+          "caused": true,
+          "by_step": 4,
+          "chain_seconds": 0.016,
+          "chain": [
+            "input of step 4"
+          ]
+        }
+      },
+      {
+        "write": "POST /web/dataset/call_kw/res.lang/get_installed",
+        "at": 1.2192747190000008,
+        "by_step": 4,
+        "browser_record": {
+          "caused": true,
+          "by_step": 4,
+          "chain_seconds": 0.017,
+          "chain": [
+            "input of step 4"
+          ]
+        }
+      },
+      {
+        "write": "POST /base_import/set_file",
+        "at": 1.6058743809999942,
+        "by_step": 6,
+        "browser_record": {
+          "caused": true,
+          "by_step": 6,
+          "chain_seconds": 0.005,
+          "chain": [
+            "a DevTools command of step 6"
+          ]
+        }
+      },
+      {
+        "write": "POST /web/dataset/call_kw/base_import.import/parse_preview",
+        "at": 1.6742486739999949,
+        "by_step": 6,
+        "browser_record": {
+          "caused": true,
+          "by_step": 6,
+          "chain_seconds": 0.049,
+          "chain": [
+            "a DevTools command of step 6",
+            "the answer to POST /base_import/set_file after 0.043 s",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      {
+        "write": "POST /web/dataset/call_kw/base_import.import/execute_import",
+        "at": 2.523506005999996,
+        "by_step": 7,
+        "browser_record": {
+          "caused": true,
+          "by_step": 7,
+          "chain_seconds": 0.003,
+          "chain": [
+            "input of step 7"
+          ]
+        }
+      },
+      {
+        "write": "POST /web/dataset/call_kw/base_import.import/execute_import",
+        "at": 7.6522638099999964,
+        "continues": "POST /web/dataset/call_kw/base_import.import/execute_import",
+        "not_caused": "the browser's record shows it waited 5.185 s for the answer to POST /web/dataset/call_kw/base_import.import/execute_import: a delay longer than 2 s links nothing (the page held the write back)",
+        "browser_record": {
+          "caused": false,
+          "why": "it waited 5.185 s for the answer to POST /web/dataset/call_kw/base_import.import/execute_import: a delay longer than 2 s links nothing (the page held the write back)",
+          "chain": []
+        }
+      },
+      {
+        "write": "POST /web/dataset/call_kw/base_import.import/execute_import",
+        "at": 11.906337152,
+        "continues": "POST /web/dataset/call_kw/base_import.import/execute_import",
+        "not_caused": "9.372 s after step 7 ended",
+        "browser_record": {
+          "caused": false,
+          "why": "it waited 4.348 s for the answer to POST /web/dataset/call_kw/base_import.import/execute_import: a delay longer than 2 s links nothing (the page held the write back)",
+          "chain": []
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 147,
+    "not_caused": 13,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.223,
+        "event": "ParseHTML",
+        "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 0.341,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 1.008,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 1.216,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin: a page task no step caused ran just before the step's (0.006 s before it) and could have sent it: a DevTools command of the harness during step 4 (a click whose input the browser delivers; the harness's commands only read the page)",
+        "chain": []
+      },
+      {
+        "at": 1.555,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 1.569,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 1.697,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"animationstart\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      },
+      {
+        "at": 2.452,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a \"transitionrun\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 14.436,
+      "by_step": 7,
+      "chain": [
+        "an animation frame",
+        "an animation frame",
+        "an animation frame",
+        "an animation frame"
+      ]
+    }
+  },
+  "set_up_writes": []
+}

@@ -1,0 +1,3 @@
+bool field cfPreferredPartner required false default null
+bool field cfKeyAccountR4 required false default "true"
+POST contact without the field 400 {"type":"urn:erp:problem:validation","title":"Some fields need attention.","status":400,"code":"validation","traceId":"00-55c4bbc10f3b74cb892c2d909d886094-6977657bee4e8b0f-00","errors":{"customFields.cfKeyAccountR4":[{"code":"customFieldBoolean","message":"Choose yes or no."}]}}

@@ -1,0 +1,18 @@
+fields cfTradeLicence1795536201427 cfCreditCap1795536201427 cfLicenceExpiry1795536201427 cfVATRegistered1795536201427 cfIncoterm1795536201427
+upload 201 [["Name","name","name"],["Kind","kind","name"],["Country","country","name"],["Trade licence 1795536201427","custom.cfTradeLicence1795536201427","name"],["حد الائتمان 1795536201427","custom.cfCreditCap1795536201427","name"],["Licence expiry 1795536201427","custom.cfLicenceExpiry1795536201427","name"],["VAT registered 1795536201427","custom.cfVATRegistered1795536201427","name"],["شروط التسليم 1795536201427","custom.cfIncoterm1795536201427","name"]]
+run {"dryRun":true,"onError":"reject"} 200 
+status checked checked 3 valid 2 imported 0 failed 1 
+  issue row 4 custom.cfCreditCap1795536201427 Credit cap 1795536201427 importNumber Enter a number (digits and one decimal point).
+  issue row 4 custom.cfLicenceExpiry1795536201427 Licence expiry 1795536201427 importDate Enter a date as yyyy-mm-dd or dd/mm/yyyy.
+  issue row 4 custom.cfVATRegistered1795536201427 VAT registered 1795536201427 importBoolean Enter yes or no (true or false, 1 or 0).
+  issue row 4 custom.cfIncoterm1795536201427 Incoterm 1795536201427 importOption This is not one of the field's choices.
+run {"dryRun":false,"onError":"skip"} 500 {"type":"urn:erp:problem:internal","title":"Something went wrong on our side. Try again; if it keeps happening, quote the trace id to support.","status":500,"code":"internal","traceId":"00-bf1e2c07039dad8d0931d3393afff416-3450043a449060ff-00"}
+status checked checked 3 valid 2 imported 0 failed 1 
+  issue row 4 custom.cfCreditCap1795536201427 Credit cap 1795536201427 importNumber Enter a number (digits and one decimal point).
+  issue row 4 custom.cfLicenceExpiry1795536201427 Licence expiry 1795536201427 importDate Enter a date as yyyy-mm-dd or dd/mm/yyyy.
+  issue row 4 custom.cfVATRegistered1795536201427 VAT registered 1795536201427 importBoolean Enter yes or no (true or false, 1 or 0).
+  issue row 4 custom.cfIncoterm1795536201427 Incoterm 1795536201427 importOption This is not one of the field's choices.
+not found Imp One 1795536201427
+not found Imp Two 1795536201427
+not found Imp Three 1795536201427
+filter by imported select 200 0
