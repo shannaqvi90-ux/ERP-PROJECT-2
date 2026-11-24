@@ -104,4 +104,28 @@ describe("home dashboard", () => {
     expect(view.container.textContent).toContain("People and access");
     expect(asked.some((u) => u.startsWith("/api/identity/users"))).toBe(true);
   });
+
+  // Every figure that counts as work waiting (data-attention) is shown to a user who may act on it, and only to them.
+  const attentionFigures: { name: string; read: string[]; act: string; label: string; endpoint: string }[] = [
+    { name: "users who never signed in", read: ["identity.users.read"], act: "identity.users.update", label: "never signed in", endpoint: "/api/identity/users" },
+    { name: "failed jobs", read: ["jobs.jobs.read"], act: "jobs.jobs.run", label: "Failed jobs", endpoint: "/api/jobs/jobs" },
+  ];
+  for (const figure of attentionFigures) {
+    it(`does not call ${figure.name} work waiting for a user who cannot act on it, and does for one who can`, async () => {
+      for (const [permissions, expected] of [[figure.read, false], [[...figure.read, figure.act], true]] as [string[], boolean][]) {
+        mockFetch((method, url) => {
+          if (url === "/api/auth/session") return { status: 200, body: session(permissions) };
+          if (method === "GET" && url.startsWith(figure.endpoint)) return { status: 200, body: { items: [], total: 9 } };
+          return { status: 404, body: {} };
+        });
+        view = await render(<App language="en" />);
+        await settle();
+        await settle();
+        const attention = [...view.container.querySelectorAll(".home-figure[data-attention]")].map((el) => el.textContent ?? "");
+        expect(attention.some((t) => t.toLowerCase().includes(figure.label.toLowerCase())), `${figure.name} with ${permissions.join(", ")}`).toBe(expected);
+        view.unmount();
+        view = undefined;
+      }
+    });
+  }
 });

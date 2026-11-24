@@ -104,8 +104,8 @@ test.describe("design system", () => {
         // A cut cell is titled when the person points at it (nothing writes to the page by itself): point at
         // every cut element in turn and require the title.
         const cutWithoutTitle = async () => {
-          const spots = await page.evaluate(() =>
-            [...document.querySelectorAll<HTMLElement>(cutSelector)]
+          const spots = await page.evaluate((selector) =>
+            [...document.querySelectorAll<HTMLElement>(selector)]
               .map((el, i) => ({ el, i }))
               .filter(({ el }) => {
                 const box = el.getBoundingClientRect();
@@ -116,16 +116,17 @@ test.describe("design system", () => {
                 const box = el.getBoundingClientRect();
                 return { i, x: box.x + Math.min(box.width / 2, 20), y: box.y + box.height / 2, label: `${el.tagName.toLowerCase()}.${el.className} "${(el.textContent || (el as HTMLInputElement).value || "").trim().slice(0, 30)}"` };
               }),
+            cutSelector,
           );
           const missing: string[] = [];
           for (const spot of spots) {
             await page.mouse.move(spot.x, spot.y);
             const titled = await page.evaluate(
-              ({ i }) => {
-                const el = document.querySelectorAll<HTMLElement>(cutSelector)[i];
+              ({ i, selector }) => {
+                const el = document.querySelectorAll<HTMLElement>(selector)[i];
                 return !!el && (!!el.title || !!el.closest("[title]"));
               },
-              { i: spot.i },
+              { i: spot.i, selector: cutSelector },
             );
             if (!titled) missing.push(spot.label);
           }
