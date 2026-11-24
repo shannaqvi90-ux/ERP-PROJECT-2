@@ -24,7 +24,7 @@ export type AuditEvent = {
 export type RecordName = { name: string; nameAr: string | null };
 
 /** A custom field as the trail names it (the tenant's own words, in both languages) and, for a number, its decimals. */
-export type FieldLabel = { labelEn: string; labelAr: string; type: string; decimals: number };
+export type FieldLabel = { labelEn: string; labelAr: string; type: string; decimals: number; options?: { value: string; labelEn: string; labelAr: string }[] };
 
 export type AuditHistory = { recordType: string | null; items: AuditEvent[]; next: string | null; names: Record<string, RecordName>; fields?: Record<string, FieldLabel> };
 
@@ -74,6 +74,12 @@ export type ValueFormat = {
 export function valueText(value: unknown, f: ValueFormat, decimals?: number, field?: string): string {
   // A choice shows the chosen option's label (the module registers it as audit.choice.<kind>.<field>.<value>),
   // never its code.
+  // A tenant's single-select custom field shows the option's label in the screen's language, never the stored key.
+  if (field && typeof value === "string" && value !== "") {
+    const custom = f.fields?.[field];
+    const option = custom?.type === "select" ? custom.options?.find((o) => o.value === value) : undefined;
+    if (option) return (f.language === "ar" ? option.labelAr || option.labelEn : option.labelEn || option.labelAr) || value;
+  }
   if (field && f.recordType && (typeof value === "string" || typeof value === "number") && value !== "") {
     const key = `audit.choice.${f.recordType}.${field}.${value}`;
     const text = f.t(key);

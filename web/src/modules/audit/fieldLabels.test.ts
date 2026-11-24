@@ -64,3 +64,28 @@ describe("a recorded value is shown the way its own screen shows it", () => {
     expect(valueText("contacts.contacts", f, undefined, "record_type")).toBe("جهة اتصال");
   });
 });
+
+describe("every kind of custom field is shown by its meaning in both languages", () => {
+  const kinds = {
+    "custom_fields.cfSegment": { labelEn: "Segment", labelAr: "الشريحة", type: "select", decimals: 0, options: [{ value: "wholesale", labelEn: "Wholesale", labelAr: "جملة" }] },
+    "custom_fields.cfCap": { labelEn: "Cap", labelAr: "الحد", type: "number", decimals: 2 },
+    "custom_fields.cfDay": { labelEn: "Day", labelAr: "اليوم", type: "date", decimals: 0 },
+    "custom_fields.cfVip": { labelEn: "Vip", labelAr: "مهم", type: "boolean", decimals: 0 },
+  };
+  const strings: Record<string, string> = { "audit.value.yes": "Yes", "audit.value.no": "No" };
+  const withKinds = (language: "en" | "ar"): ValueFormat => {
+    const base = format(language, false);
+    return { ...base, t: (k) => strings[k] ?? k, fields: kinds, formatDate: calendarDate(createFormatter(language, "latn")) };
+  };
+  it("a select shows the option's label, never its stored key", () => {
+    expect(valueText("wholesale", withKinds("en"), undefined, "custom_fields.cfSegment")).toBe("Wholesale");
+    expect(valueText("wholesale", withKinds("ar"), undefined, "custom_fields.cfSegment")).toBe("جملة");
+  });
+  it("a number keeps its declared decimals and a date its day-month-year form", () => {
+    expect(valueText(250000.75, withKinds("en"), 2, "custom_fields.cfCap")).toBe("250,000.75");
+    expect(valueText("2027-12-31", withKinds("en"), undefined, "custom_fields.cfDay")).toBe("31/12/2027");
+  });
+  it("a yes/no shows Yes or No", () => {
+    expect(valueText(true, withKinds("en"), undefined, "custom_fields.cfVip")).toBe("Yes");
+  });
+});

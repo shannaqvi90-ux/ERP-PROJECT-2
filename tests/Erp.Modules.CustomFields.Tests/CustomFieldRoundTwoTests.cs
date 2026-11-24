@@ -99,6 +99,16 @@ public sealed class CustomFieldRoundTwoTests(CustomFieldsFixture fixture) : ICla
         Assert.Equal(HttpStatusCode.OK, saved.StatusCode);
         Assert.Equal("General", Api.Entry(await Api.Json(saved), key).GetProperty("value").GetString());
 
+        // A form shows the default for an old record and sends the field empty: saved, with the default.
+        var old = await Api.CreateContactAsync(admin, Api.Contact(Api.Unique("Before required two LLC")));
+        var late = await Api.DefineAsync(admin, Api.Field("number", Api.Unique("Cap"), "سقف", new { required = true, @default = "1500.25", decimals = 2 }));
+        var lateKey = late.GetProperty("key").GetString()!;
+        var sentEmpty = Api.Contact(old.GetProperty("nameEn").GetString()!, new() { [lateKey] = null });
+        sentEmpty["version"] = old.GetProperty("version").GetUInt32();
+        var accepted = await admin.PutAsJsonAsync($"/api/contacts/contacts/{old.GetProperty("id").GetGuid()}", sentEmpty, Api.Cancel);
+        Assert.Equal(HttpStatusCode.OK, accepted.StatusCode);
+        Assert.Equal("1500.25", Api.Entry(await Api.Json(accepted), lateKey).GetProperty("value").GetString());
+
         // Once it holds one, clearing it is refused on an update as on a creation.
         var again = Api.Contact(before.GetProperty("nameEn").GetString()!, new() { [key] = "" });
         again["version"] = (await Api.Json(await admin.GetAsync($"/api/contacts/contacts/{before.GetProperty("id").GetGuid()}", Api.Cancel))).GetProperty("version").GetUInt32();
@@ -239,6 +249,60 @@ public sealed class CustomFieldRoundTwoTests(CustomFieldsFixture fixture) : ICla
         // The audit log's line for the change says the same, in the reader's language.
         var log = await admin.GetFromJsonAsync<JsonElement>($"/api/audit/log?filter={Uri.EscapeDataString($"recordId eq '{contact.GetProperty("id").GetGuid()}'")}&language=ar", Api.Cancel);
         Assert.Contains(log.GetProperty("items").EnumerateArray(), r => r.GetProperty("changes").GetString()!.Contains("حد الجولة"));
+    }
+
+    [Fact]
+    public async Task The_trail_shows_every_kind_of_custom_field_by_its_meaning_in_both_languages()
+    {
+        var (admin, f) = await DefineAsync();
+        using var _ = admin;
+        var note = (await Api.DefineAsync(admin, Api.Field("text", Api.Unique("Meaning note"), "ملاحظة"))).GetProperty("key").GetString()!;
+        var parentKey = (await Api.DefineAsync(admin, Api.Field("lookup", Api.Unique("Meaning parent"), "أصل", new { lookupTarget = "contacts.contacts" }))).GetProperty("key").GetString()!;
+        // Every kind of field is exercised: a new kind of field fails here until its meaning is shown too.
+        Assert.Equal(Erp.Kernel.CustomFields.CustomFieldTypes.All.Order(), new[] { "text", "number", "date", "boolean", "select", "lookup" }.Order());
+        var parentName = Api.Unique($"{f.Stem} Parent Firm");
+        var parent = await Api.CreateContactAsync(admin, Api.Contact(parentName));
+        var contact = await Api.CreateContactAsync(admin, Api.Contact(Api.Unique($"{f.Stem} Meaning LLC"),
+            new() { [f.Segment] = "retail", [f.Credit] = 1000, [f.Since] = "2027-01-02", [f.Vip] = false, [note] = "first" }));
+        var update = Api.Contact(contact.GetProperty("nameEn").GetString()!,
+            new() { [f.Segment] = "wholesale", [f.Credit] = 250000.75, [f.Since] = "2027-12-31", [f.Vip] = true, [note] = "second", [parentKey] = parent.GetProperty("id").GetGuid() });
+        update["version"] = contact.GetProperty("version").GetUInt32();
+        Assert.Equal(HttpStatusCode.OK, (await admin.PutAsJsonAsync($"/api/contacts/contacts/{contact.GetProperty("id").GetGuid()}", update, Api.Cancel)).StatusCode);
+        var id = contact.GetProperty("id").GetGuid();
+
+        // The record's history hands the web the options, so a select shows its label there.
+        var history = await admin.GetFromJsonAsync<JsonElement>($"/api/audit/records/{id}?type=contacts.contacts", Api.Cancel);
+        var options = history.GetProperty("fields").GetProperty($"custom_fields.{f.Segment}").GetProperty("options").EnumerateArray().ToList();
+        Assert.Contains(options, o => o.GetProperty("value").GetString() == "wholesale" && o.GetProperty("labelAr").GetString() == "جملة" && o.GetProperty("labelEn").GetString() == "Wholesale");
+
+        // The log's change line, its print and its export say the same, in each language.
+        var filter = Uri.EscapeDataString($"recordId eq '{id}'");
+        foreach (var (language, retail, wholesale, date, number, yes) in new[]
+        {
+            ("en", "Retail", "Wholesale", "31/12/2027", "250,000.75", "Yes"),
+            ("ar", "تجزئة", "جملة", "31/12/2027", "250,000.75", "نعم"),
+        })
+        {
+            var log = await admin.GetFromJsonAsync<JsonElement>($"/api/audit/log?filter={filter}&language={language}", Api.Cancel);
+            var lines = string.Join(" | ", log.GetProperty("items").EnumerateArray().Select(r => r.GetProperty("changes").GetString()));
+            Assert.Contains(retail, lines);
+            Assert.Contains(wholesale, lines);
+            Assert.Contains(date, lines);
+            Assert.Contains(number, lines);
+            Assert.Contains(yes, lines);
+            Assert.Contains("second", lines);
+            Assert.Contains(parentName, lines);
+            Assert.DoesNotContain(parent.GetProperty("id").GetGuid().ToString(), lines, StringComparison.Ordinal);
+            Assert.DoesNotContain("retail", lines, StringComparison.Ordinal);
+            Assert.DoesNotContain("wholesale", lines, StringComparison.Ordinal);
+            Assert.DoesNotContain("2027-12-31", lines, StringComparison.Ordinal);
+            var csv = await admin.GetAsync($"/api/reports/lists/audit.log?filter={filter}&format=csv&language={language}&numerals=latn", Api.Cancel);
+            var text = await csv.Content.ReadAsStringAsync(Api.Cancel);
+            Assert.True(csv.StatusCode == HttpStatusCode.OK, text);
+            Assert.Contains(wholesale, text);
+            Assert.DoesNotContain("wholesale", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("2027-12-31", text, StringComparison.Ordinal);
+        }
     }
 
     [Fact]
