@@ -32,13 +32,13 @@ const people: Row[] = Array.from({ length: 30 }, (_, i) => ({
 }));
 
 /** What the server answers about saved views: whether the caller may share, and its views. */
-type ServeOptions = { canShare?: boolean; views?: unknown[] };
+type ServeOptions = { canShare?: boolean; views?: unknown[]; presets?: unknown[] };
 
 function serve(calls: { method: string; url: string; body: unknown }[] = [], options: ServeOptions = {}) {
   return mockFetch((method, url, body) => {
     calls.push({ method, url, body });
     const parsed = new URL(url, "http://localhost");
-    if (parsed.pathname.endsWith("/definition")) return { status: 200, body: { ...definition, canShare: options.canShare ?? definition.canShare } };
+    if (parsed.pathname.endsWith("/definition")) return { status: 200, body: { ...definition, canShare: options.canShare ?? definition.canShare, presets: options.presets ?? definition.presets } };
     if (parsed.pathname.endsWith("/views") && method === "GET") return { status: 200, body: { items: options.views ?? [], total: options.views?.length ?? 0 } };
     if (parsed.pathname.endsWith("/views") && method === "POST") {
       return { status: 201, body: { id: "v1", listKey: "identity.users", name: (body as { name: string }).name, isShared: false, isDefault: false, isMine: true, columns: [], sort: null, filter: null, search: null, groupBy: null, updatedAt: "", version: 1 } };
@@ -739,5 +739,23 @@ describe("view tabs", () => {
     calls.length = 0;
     await show();
     expect(calls.filter((c) => param(c.url, "take") === "1")).toHaveLength(0);
+  });
+  it("asks once for views that hold the same rows (the same filter) and counts each of their tabs from that answer", async () => {
+    const calls: { method: string; url: string; body: unknown }[] = [];
+    const preset = (key: string, filter: string | null) => ({ key, labelKey: "identity.users.view.active", filter, sort: null, groupBy: null });
+    serve(calls, { presets: [preset("arabic", "language eq 'ar'"), preset("also-arabic", "language eq 'ar'"), preset("everyone", null)] });
+    view = await render(
+      <I18nProvider initial="en">
+        <ListView listKey="identity.users" titleKey="identity.users.title" countKey="identity.users.count" searchPlaceholderKey="identity.users.search" viewCounts />
+      </I18nProvider>,
+    );
+    await settle();
+    await settle();
+    await wait(5);
+    const counting = calls.filter((c) => param(c.url, "take") === "1");
+    expect(counting.map((c) => param(c.url, "filter"))).toEqual([null, "language eq 'ar'"]);
+    const counts = tabs().map((t) => t.querySelector(".list-tab-count")?.textContent);
+    expect(counts.length).toBeGreaterThan(2);
+    expect(counts.every((c) => c === "30")).toBe(true);
   });
 });

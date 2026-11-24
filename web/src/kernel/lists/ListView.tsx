@@ -520,13 +520,21 @@ export function ListView(props: ListViewProps) {
     if (!props.viewCounts || !definition || definition.presets.length === 0 || countedFor.current === definition.key) return;
     countedFor.current = definition.key;
     const asks: [string, string | null][] = [["", null], ...definition.presets.map((p) => [`preset:${p.key}`, p.filter] as [string, string | null])];
-    for (const [id, filter] of asks) {
+    // Tabs that hold the same rows (the same filter) share one request: fewer requests than the browser's connections
+    // per host, so no answer waits in a queue and lands late, after the person has already moved on.
+    const tabsByFilter = new Map<string, string[]>();
+    for (const [id, filter] of asks) tabsByFilter.set(filter ?? "", [...(tabsByFilter.get(filter ?? "") ?? []), id]);
+    // The counts are shown in one commit, inside the task that delivers the last answer: one render of the screen (not
+    // one per tab) and no render left to a later scheduler task, which a person's next action could fall between.
+    const answers = [...tabsByFilter].map(([filter, ids]) => {
       const params = new URLSearchParams({ take: "1" });
       if (filter) params.set("filter", filter);
-      api<{ total: number }>("GET", `${definition.endpoint}?${params}`)
-        .then((page) => setViewCounts((c) => ({ ...c, [id]: page.total })))
-        .catch(() => setViewCounts((c) => ({ ...c, [id]: null })));
-    }
+      return api<{ total: number }>("GET", `${definition.endpoint}?${params}`).then(
+        (page) => ids.map((id) => [id, page.total] as const),
+        () => ids.map((id) => [id, null] as const),
+      );
+    });
+    void Promise.all(answers).then((tabs) => flushSync(() => setViewCounts((c) => ({ ...c, ...Object.fromEntries(tabs.flat()) }))));
   }, [props.viewCounts, definition]);
 
   // Widths the person dragged (or set with the arrow keys on a column's edge), in pixels, for this screen's visit.
