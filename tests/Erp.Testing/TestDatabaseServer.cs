@@ -77,6 +77,10 @@ public sealed class TestDatabaseServer
             .WithCommand("-c", "fsync=off", "-c", "synchronous_commit=off", "-c", "full_page_writes=off", "-c", "max_connections=1500",
                 "-c", "shared_buffers=256MB")
             .WithTmpfsMount("/var/lib/postgresql/data")
+            // Docker gives a container 64 MB of /dev/shm; a parallel query at demo volume needs more
+            // ("could not resize shared memory segment ... No space left on device", G1ListVolumeTests).
+            // It is only a ceiling on a memory-backed mount, not memory taken up front.
+            .WithCreateParameterModifier(parameters => parameters.HostConfig!.ShmSize = 1024L * 1024 * 1024)
             .Build();
         await container.StartAsync();
         return new TestDatabaseServer(container, adminPassword);
