@@ -435,6 +435,7 @@ public static partial class IsolationAttack
         // requests (a branch in B's emirate): A's answer for them shows A's own records, so it is
         // judged for B's markers but not compared with a value that exists nowhere.
         state.AttackerHeld = await HeldByAsync(Env, a.Id, values.Strings);
+        state.AttackerHolds = marker => AttackerRows.HoldsAsync(Env, a.Id, marker).GetAwaiter().GetResult();
         state.Corpus = await ControlCorpus.ReadAsync(Env, a.Id);
         Assert.True(state.Corpus.Characters > 0, "The attacker's own data could not be read, so controls would not be checked against it.");
         var work = new List<(bool Get, Func<Task> Run)>();
@@ -1110,6 +1111,10 @@ public static partial class IsolationAttack
                     var body = schema is { } s
                         ? openApi.BuildBody(s, leaf ?? ((type, format, name) => OwnLeaf(type, format, name, own, i, signIn, env, b)), useDocumentedValues: true) as JsonObject ?? []
                         : [];
+                    if (schema is { } tagged)
+                    {
+                        AttackNames.TagExampleNames(openApi, tagged, body, AttackNames.RunToken);
+                    }
                     foreach (var (name, value) in extra ?? [])
                     {
                         body[name] = value;
@@ -1192,13 +1197,13 @@ public static partial class IsolationAttack
             // request counter made "switch-<n>" long enough to be a valid password, every later
             // reconnect failed. The switch inputs are judged on a plain, successful sign-in.
             "string" when signIn && lower.Contains("newpassword") => null,
-            "string" when lower.Contains("email") => signIn ? env.Email(env.TenantA, "admin") : $"switch{n}@{env.TenantA.EmailDomain}",
+            "string" when lower.Contains("email") => signIn ? env.Email(env.TenantA, "admin") : $"switch{AttackNames.Letters(n, 1)}@{env.TenantA.EmailDomain}",
             "string" when lower == "workspace" => env.TenantA.Code,
             "string" when lower == "password" => signIn ? ErpTestEnvironment.Password : "Switch-Password-2026!",
             "string" when lower == "language" => "en",
             "string" when lower.Contains("permission") => "identity.users.read",
             "string" when format == "date-time" => DateTimeOffset.UtcNow.ToString("O"),
-            "string" => $"switch-{n}",
+            "string" => $"switch-{AttackNames.RunToken}-{AttackNames.Letters(n, 1)}",
             "integer" => 0,
             "number" => "1",
             "boolean" => true,
@@ -1414,13 +1419,13 @@ public static partial class IsolationAttack
         return type switch
         {
             "string" when format == "uuid" => victimIds[n % victimIds.Count],
-            "string" when lower.Contains("email") => signIn ? $"admin@{b.EmailDomain}" : $"attack{n}@attack-{n}.example",
+            "string" when lower.Contains("email") => signIn ? $"admin@{b.EmailDomain}" : $"{AttackNames.Text(n)}@attack.example",
             "string" when lower == "workspace" => signIn ? b.Code : "alpha",
             "string" when lower == "password" => "Attack-Password-1",
             "string" when lower == "language" => "en",
             "string" when lower.Contains("permission") => "identity.users.read",
             "string" when format == "date-time" => DateTimeOffset.UtcNow.ToString("O"),
-            "string" => $"attack-{n}",
+            "string" => AttackNames.Text(n),
             "integer" => 0,
             "number" => "1",
             "boolean" => true,
@@ -1430,6 +1435,10 @@ public static partial class IsolationAttack
 
     /// <summary>What the attack has seen so far and how it judges a response.</summary>
     /// <summary>The differential check's normalisation, one pass and two (for its own test).</summary>
+    /// <summary>The marker judgement of an answer, for the gate's own test.</summary>
+    internal static string? JudgeMarker(string text, Func<string, string?> victimMarker, Func<string, string?> valueMarker, Func<string, bool>? attackerHolds) =>
+        AttackState.FindForeignMarker(text, victimMarker, valueMarker, attackerHolds);
+
     internal static (string OnePass, string TwoPasses) NormalizationsOf(string text, string first, string second) =>
         (AttackState.NormalizeBoth(text, first, second), AttackState.Normalize(AttackState.Normalize(text, first), second));
 
@@ -1690,7 +1699,28 @@ public static partial class IsolationAttack
         public string? FindMarker(string text, IReadOnlyCollection<string> sent)
         {
             var scrubbed = MarkerScrub.Scrub(text, sent.Concat(Stored), Scrub);
-            return victim.FindMarker(scrubbed) ?? _valueMarkers.Find(scrubbed);
+            return FindForeignMarker(scrubbed, victim.FindMarker, _valueMarkers.Find, AttackerHolds);
+        }
+
+        /// <summary>Asks, when a marker is found, whether tenant A now holds that text in its own
+        /// rows (a value its own valid writes created after the markers were read).</summary>
+        public Func<string, bool>? AttackerHolds { get; set; }
+
+        /// <summary>The first marker of tenant B that tenant A cannot hold itself: a marker tenant A
+        /// holds in its own rows is scrubbed from the text and the search goes on, so another marker
+        /// in the same answer is still found.</summary>
+        internal static string? FindForeignMarker(string text, Func<string, string?> victimMarker, Func<string, string?> valueMarker, Func<string, bool>? attackerHolds)
+        {
+            for (var round = 0; round < 64; round++)
+            {
+                var marker = victimMarker(text) ?? valueMarker(text);
+                if (marker is null || attackerHolds is null || !attackerHolds(marker))
+                {
+                    return marker;
+                }
+                text = text.Replace(marker, "<own>", StringComparison.OrdinalIgnoreCase);
+            }
+            return null;
         }
 
         private static string Scrub(string text, string value)
