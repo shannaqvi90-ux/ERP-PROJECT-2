@@ -9,6 +9,9 @@ import { freshStart, signIn, users } from "./demo";
 
 const theme = (page: Page) => page.locator("html").getAttribute("data-theme");
 
+/** What may be cut: the cell or control itself, and an element inside it (a cell's text span carries the ellipsis, not the cell). */
+const cutSelector = "td, th, td span, th span, [role=gridcell] span, [role=tab], button, a, label, legend, input, select, .section-tab";
+
 /** Controls whose own text is cut off by their box (a button showing "De", a currency showing "AEC"). */
 async function clippedControls(page: Page): Promise<string[]> {
   return page.evaluate(() =>
@@ -102,7 +105,7 @@ test.describe("design system", () => {
         // every cut element in turn and require the title.
         const cutWithoutTitle = async () => {
           const spots = await page.evaluate(() =>
-            [...document.querySelectorAll<HTMLElement>("td, th, [role=tab], button, a, label, legend, input, select, .section-tab")]
+            [...document.querySelectorAll<HTMLElement>(cutSelector)]
               .map((el, i) => ({ el, i }))
               .filter(({ el }) => {
                 const box = el.getBoundingClientRect();
@@ -119,7 +122,7 @@ test.describe("design system", () => {
             await page.mouse.move(spot.x, spot.y);
             const titled = await page.evaluate(
               ({ i }) => {
-                const el = document.querySelectorAll<HTMLElement>("td, th, [role=tab], button, a, label, legend, input, select, .section-tab")[i];
+                const el = document.querySelectorAll<HTMLElement>(cutSelector)[i];
                 return !!el && (!!el.title || !!el.closest("[title]"));
               },
               { i: spot.i },
@@ -135,6 +138,13 @@ test.describe("design system", () => {
         await page.locator("table[role=grid] tbody tr").first().click();
         await page.waitForTimeout(500);
         expect(await cutWithoutTitle(), "contacts list with a record open").toEqual([]);
+        // The settings lists show codes in their own cut spans, the Arabic ones most (the first screenful of each).
+        for (const path of ["/tenancy/companies", "/tenancy/branches", "/numbering/sequences"]) {
+          await page.goto(path);
+          await expect(page.locator("table[role=grid] tbody tr").first()).toBeVisible();
+          await page.waitForTimeout(400);
+          expect(await cutWithoutTitle(), path).toEqual([]);
+        }
         // Column widths can be changed: the edge of each header, and Wider in the column menu.
         expect(await page.locator(".list-resizer").count()).toBeGreaterThan(0);
       });

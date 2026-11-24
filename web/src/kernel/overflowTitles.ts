@@ -10,7 +10,7 @@
  */
 import { useLayoutEffect } from "react";
 
-const candidates = "td, th, [role=gridcell], [role=columnheader], [role=tab], [role=option], [role=menuitem], .list-text, .list-sort-label, .list-headlabel, .badge, label, legend, button, a, h1, h2, h3, dt, dd, li, .truncate, input, select, textarea";
+const candidates = "td, th, td span, th span, [role=gridcell] span, [role=columnheader] span, dd span, li span, [role=gridcell], [role=columnheader], [role=tab], [role=option], [role=menuitem], .list-text, .list-sort-label, .list-headlabel, .badge, label, legend, button, a, h1, h2, h3, dt, dd, li, .truncate, input, select, textarea";
 const marker = "data-overflow-title";
 
 function fullText(el: HTMLElement): string {

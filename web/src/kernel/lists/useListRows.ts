@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError } from "../api";
+import { commitNow } from "../commitNow";
 import type { ListGroup, ListPage, Row } from "./model";
 
 export const chunkSize = 100;
@@ -71,22 +72,26 @@ export function useListRows(endpoint: string | null, query: URLSearchParams | nu
           state.rows.set(index, page.items);
           state.next.set(index, page.next);
           state.pending.delete(index);
-          if (index === 0) {
-            shown.current = state;
-            setTotal(page.total);
-            setRanked(page.ranked === true);
-            setGroups(page.groups ?? null);
-            setLoading(false);
-            setLoadedKey(state.key);
-            setError(null);
-          }
-          setVersion((v) => v + 1);
+          commitNow(() => {
+            if (index === 0) {
+              shown.current = state;
+              setTotal(page.total);
+              setRanked(page.ranked === true);
+              setGroups(page.groups ?? null);
+              setLoading(false);
+              setLoadedKey(state.key);
+              setError(null);
+            }
+            setVersion((v) => v + 1);
+          });
         })
         .catch((e: Error) => {
           if (state.controller.signal.aborted || chunks.current !== state) return;
           state.pending.delete(index);
-          setError(e);
-          setLoading(false);
+          commitNow(() => {
+            setError(e);
+            setLoading(false);
+          });
         });
     },
     [endpoint, query, groupBy],
