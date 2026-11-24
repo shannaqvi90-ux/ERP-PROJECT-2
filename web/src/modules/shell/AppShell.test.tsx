@@ -82,6 +82,41 @@ describe("command palette", () => {
     expect(document.querySelector(".breadcrumbs")!.textContent).toContain("Settings");
   });
 
+  it("'>' asks for commands only, '#' for records only, and Tab on a record lists what can be done with it", async () => {
+    const calls = serve(admin);
+    view = await render(<App language="en" />);
+    await settle();
+    const input = await openPalette();
+    setInput(input, ">");
+    await settle();
+    expect(options()).toContain("Dark theme");
+    setInput(input, ">dark");
+    await settle();
+    expect(options()).toEqual(["Dark theme"]);
+    expect(calls.some((c) => c.url.startsWith("/api/identity/users?search="))).toBe(false);
+    expect(options()).not.toContain("Roles");
+    setInput(input, "#omar");
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 200));
+    });
+    await settle();
+    expect(calls.some((c) => c.url.startsWith("/api/identity/users?search=omar"))).toBe(true);
+    expect(options()).toContain("Omar Haddad");
+    expect(options()).not.toContain("Roles");
+    const index = options().indexOf("Omar Haddad");
+    for (let i = 0; i < index; i++) press({ code: "ArrowDown", key: "ArrowDown" }, input);
+    press({ code: "Tab", key: "Tab" }, input);
+    await settle();
+    expect(options()).toEqual(["Open Omar Haddad", "Copy the name"]);
+    press({ code: "Tab", key: "Tab", shiftKey: true }, input);
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 200));
+    });
+    await settle();
+    expect(input.value).toBe("#omar");
+    expect(options()).toContain("Omar Haddad");
+  });
+
   it("finds an English screen by its Arabic name and records through module sources", async () => {
     const calls = serve(admin);
     view = await render(<App language="en" />);

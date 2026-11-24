@@ -5,25 +5,8 @@
  * tatweel removed, and the Arabic letter variants people type interchangeably unified
  * (أ إ آ ٱ → ا, ى → ي, ة → ه, ؤ → و, ئ → ي). Arabic-Indic digits match Latin digits.
  */
-const arabicMarks = /[ؐ-ًؚ-ٰٟۖ-ۭـ]/g;
-const latinMarks = /[̀-ͯ]/g;
-
-export function fold(text: string): string {
-  return text
-    .normalize("NFKD")
-    .replace(latinMarks, "")
-    .replace(arabicMarks, "")
-    .replace(/[أإآٱ]/g, "ا")
-    .replace(/ى/g, "ي")
-    .replace(/ة/g, "ه")
-    .replace(/ؤ/g, "و")
-    .replace(/ئ/g, "ي")
-    .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660))
-    .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06f0))
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
-}
+import { fold } from "../../kernel/fold";
+export { fold };
 
 const wordsOf = (text: string): string[] => text.split(/[\s\-_/·:.,()«»"“”]+/).filter(Boolean);
 

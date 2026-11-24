@@ -26,10 +26,10 @@ async function clippedControls(page: Page): Promise<string[]> {
 }
 
 test.describe("design system", () => {
-  test("follows the system theme until one is chosen, then keeps the choice across a reload", async ({ page }) => {
+  test("is dark (direction G) until a theme is chosen, whatever colour the system prefers, then keeps the choice across a reload", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "light" });
     await freshStart(page, "en");
-    expect(await theme(page)).toBe("light");
+    expect(await theme(page)).toBe("dark");
     await page.emulateMedia({ colorScheme: "dark" });
     await expect.poll(() => theme(page)).toBe("dark");
     await signIn(page, users.admin);
@@ -42,7 +42,7 @@ test.describe("design system", () => {
     // The choice is the device's: still light after the system changes.
     await page.emulateMedia({ colorScheme: "dark" });
     expect(await theme(page)).toBe("light");
-    // Pressing the chosen theme again hands the choice back to the system.
+    // Pressing the chosen theme again hands the choice back to the default (dark).
     await page.getByRole("button", { name: "Light", exact: true }).click();
     await expect.poll(() => theme(page)).toBe("dark");
   });
@@ -90,6 +90,67 @@ test.describe("design system", () => {
       });
     }
   }
+
+  for (const language of ["en", "ar"] as const) {
+    for (const density of ["compact", "comfortable"] as const) {
+      test(`text cut with an ellipsis always carries its full text as a title, in ${language}, ${density} (list cells, tabs, placeholders, form values)`, async ({ page }) => {
+        await freshStart(page, language);
+        await page.evaluate((d) => localStorage.setItem("erp.density", d), density);
+        await page.reload();
+        await signIn(page, language === "ar" ? users.adminArabic : users.admin);
+        // A cut cell is titled when the person points at it (nothing writes to the page by itself): point at
+        // every cut element in turn and require the title.
+        const cutWithoutTitle = async () => {
+          const spots = await page.evaluate(() =>
+            [...document.querySelectorAll<HTMLElement>("td, th, [role=tab], button, a, label, legend, input, select, .section-tab")]
+              .map((el, i) => ({ el, i }))
+              .filter(({ el }) => {
+                const box = el.getBoundingClientRect();
+                if (box.width === 0 || box.height === 0 || getComputedStyle(el).visibility === "hidden" || el.closest("[aria-hidden=true]")) return false;
+                return el.scrollWidth > el.clientWidth + 1 && !el.title && !el.closest("[title]");
+              })
+              .map(({ el, i }) => {
+                const box = el.getBoundingClientRect();
+                return { i, x: box.x + Math.min(box.width / 2, 20), y: box.y + box.height / 2, label: `${el.tagName.toLowerCase()}.${el.className} "${(el.textContent || (el as HTMLInputElement).value || "").trim().slice(0, 30)}"` };
+              }),
+          );
+          const missing: string[] = [];
+          for (const spot of spots) {
+            await page.mouse.move(spot.x, spot.y);
+            const titled = await page.evaluate(
+              ({ i }) => {
+                const el = document.querySelectorAll<HTMLElement>("td, th, [role=tab], button, a, label, legend, input, select, .section-tab")[i];
+                return !!el && (!!el.title || !!el.closest("[title]"));
+              },
+              { i: spot.i },
+            );
+            if (!titled) missing.push(spot.label);
+          }
+          return missing;
+        };
+        await page.locator('nav a[href="/contacts/contacts"]').first().click();
+        await expect(page.locator("table[role=grid] tbody tr").first()).toBeVisible();
+        await page.waitForTimeout(400);
+        expect(await cutWithoutTitle(), "contacts list").toEqual([]);
+        await page.locator("table[role=grid] tbody tr").first().click();
+        await page.waitForTimeout(500);
+        expect(await cutWithoutTitle(), "contacts list with a record open").toEqual([]);
+        // Column widths can be changed: the edge of each header, and Wider in the column menu.
+        expect(await page.locator(".list-resizer").count()).toBeGreaterThan(0);
+      });
+    }
+  }
+
+  test("every control of a form is reachable by Tab: the section tabs and the calendar button are not skipped", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.admin);
+    await page.locator('nav a[href="/tenancy/companies"]').first().click();
+    await expect(page.locator("table[role=grid] tbody tr").first()).toBeVisible();
+    await page.locator("table[role=grid] tbody tr").first().click();
+    await expect(page.locator(".record-form")).toBeVisible();
+    const skipped = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>(".section-tab, .date-picker-button")].filter((el) => el.tabIndex < 0).length);
+    expect(skipped).toBe(0);
+  });
 
   test("the home screen counts what waits for the user and leads to it", async ({ page }) => {
     await freshStart(page, "en");

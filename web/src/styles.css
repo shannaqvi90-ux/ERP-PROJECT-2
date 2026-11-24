@@ -590,7 +590,18 @@ input[aria-invalid="true"] {
   margin-block-start: 8px;
 }
 
-.nav-group[data-label]::before {
+.nav-group-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  inline-size: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.nav-group-toggle::before {
   content: attr(data-label);
   display: block;
   font-size: var(--fs-2xs);
@@ -599,6 +610,33 @@ input[aria-invalid="true"] {
   letter-spacing: var(--ls-caps);
   color: var(--fg-subtle);
   padding: var(--sp-3) var(--sp-6);
+}
+
+.nav-group-toggle {
+  color: var(--fg-subtle);
+  padding-inline-end: var(--sp-6);
+}
+
+.nav-group-caret {
+}
+
+.nav-group[data-collapsed] .nav-group-caret {
+  transform: rotate(-90deg);
+}
+
+[dir="rtl"] .nav-group[data-collapsed] .nav-group-caret {
+  transform: rotate(90deg);
+}
+
+.navpane a {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.nav-icon {
+  flex: none;
+  opacity: 0.85;
 }
 
 .navpane ul {
@@ -1592,4 +1630,131 @@ input[aria-invalid="true"] {
     transition: none !important;
     animation: none !important;
   }
+}
+
+/* Shared design-system parts (kernel/ui.tsx): tooltip, skeleton, toast, sparkline. */
+.tooltip-host {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltip-bubble {
+  position: absolute;
+  inset-block-start: calc(100% + 6px);
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  max-inline-size: 22rem;
+  padding: 4px 8px;
+  border-radius: var(--radius-2, 4px);
+  background: var(--raised, var(--surface-3));
+  color: var(--fg);
+  border: 1px solid var(--line-strong, var(--line));
+  box-shadow: var(--shadow-2);
+  font-size: var(--fs-xs, 0.75rem);
+  white-space: normal;
+  pointer-events: none;
+}
+
+[dir="rtl"] .tooltip-bubble {
+  transform: translateX(50%);
+}
+
+.skeleton {
+  display: inline-block;
+  border-radius: var(--radius-2, 4px);
+  background: linear-gradient(90deg, var(--surface-3) 25%, var(--hover) 50%, var(--surface-3) 75%);
+}
+
+.skeleton-rows {
+  display: grid;
+  gap: 10px;
+  padding: var(--sp-4);
+}
+
+
+.toast-host {
+  position: fixed;
+  inset-block-end: 2.2rem;
+  inset-inline-end: var(--sp-4);
+  z-index: 80;
+  display: grid;
+  gap: var(--sp-2);
+  max-inline-size: min(26rem, calc(100vw - 2 * var(--sp-4)));
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--raised, var(--surface-3));
+  color: var(--fg);
+  border: 1px solid var(--line-strong, var(--line));
+  border-inline-start: 3px solid var(--accent);
+  border-radius: var(--radius-2, 4px);
+  box-shadow: var(--shadow-2);
+}
+
+.toast[data-kind="success"] { border-inline-start-color: var(--positive); }
+.toast[data-kind="error"] { border-inline-start-color: var(--danger); }
+.toast-text { flex: 1; }
+
+.toast-close {
+  border: 0;
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.sparkline { display: block; }
+[dir="rtl"] .sparkline { transform: scaleX(-1); }
+.sparkline-area { fill: var(--accent); opacity: 0.18; }
+.sparkline-line { stroke: var(--accent); stroke-width: 1.6; stroke-linejoin: round; }
+.sparkline-dot { fill: var(--accent); }
+
+/* Home: what to do first, and figures with their trend. */
+.home-first {
+  margin-block: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--warning, var(--accent));
+  border-radius: var(--radius-2);
+  background: var(--surface-2);
+}
+
+.home-first-title {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-caps);
+  color: var(--fg-subtle);
+}
+
+.home-first-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.home-first-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-1) var(--sp-2);
+  color: var(--fg);
+  text-decoration: none;
+  border-radius: var(--radius-2);
+}
+
+.home-first-item:hover { background: var(--hover); }
+.home-first-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.home-first-count { font-variant-numeric: tabular-nums; font-weight: var(--fw-semibold); }
+.home-figure .sparkline { margin-block-start: var(--sp-1); }
+
+.navpane a .nav-icon {
+  margin-inline-end: var(--sp-3);
 }

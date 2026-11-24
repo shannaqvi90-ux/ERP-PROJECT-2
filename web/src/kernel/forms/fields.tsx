@@ -5,6 +5,7 @@ import { chordForAria, chordKeys } from "../shortcuts";
 import { minorUnitsOf } from "../format";
 import { countryChoices } from "./countries";
 import { DateInput } from "./dateInput";
+import { SearchSelect } from "./SearchSelect";
 import { caretAfter, completesOnEntry, HOME_PREFIX, isCompletePhone, latinDigits, phoneValue } from "./phone";
 import { formChords } from "./RecordForm";
 import type { FieldBinding } from "./useRecordForm";
@@ -411,20 +412,37 @@ export function BooleanField({ field, label, disabled }: { field: FieldBinding<b
   );
 }
 
-/** One of a few values. With `empty`, the field may be left blank. */
-export function SelectField<V extends string>({ field, options, empty, ...p }: Common & { field: FieldBinding<V | "">; options: readonly { value: V; label: string }[]; empty?: string }) {
+/** One of a few values. With `empty`, the field may be left blank. A long list (12 choices or more,
+ * or `searchable`) is a drop-down with search (SearchSelect); a short one stays a plain select. */
+export function SelectField<V extends string>({ field, options, empty, searchable, ...p }: Common & { field: FieldBinding<V | "">; options: readonly { value: V; label: string }[]; empty?: string; searchable?: boolean }) {
+  const search = searchable ?? options.length >= 12;
   return (
     <Field name={field.name} label={p.label} errors={field.errors} hint={p.hint} wide={p.wide}>
-      {(a11y) => (
-        <select {...a11y} name={field.name} value={field.value ?? ""} disabled={p.disabled || field.readOnly} autoFocus={p.autoFocus} onChange={(e) => field.onChange(e.target.value as V | "")}>
-          {empty !== undefined && <option value="">{empty}</option>}
-          {options.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-      )}
+      {(a11y) =>
+        search ? (
+          <SearchSelect
+            id={a11y.id}
+            name={field.name}
+            value={field.value ?? ""}
+            options={options}
+            empty={empty}
+            disabled={p.disabled || field.readOnly}
+            autoFocus={p.autoFocus}
+            invalid={a11y["aria-invalid"]}
+            describedBy={a11y["aria-describedby"]}
+            onChange={(v) => field.onChange(v as V | "")}
+          />
+        ) : (
+          <select {...a11y} name={field.name} value={field.value ?? ""} disabled={p.disabled || field.readOnly} autoFocus={p.autoFocus} onChange={(e) => field.onChange(e.target.value as V | "")}>
+            {empty !== undefined && <option value="">{empty}</option>}
+            {options.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        )
+      }
     </Field>
   );
 }
@@ -434,7 +452,7 @@ export function SelectField<V extends string>({ field, options, empty, ...p }: C
 export function CountryField({ field, ...p }: Common & { field: FieldBinding<string> }) {
   const { language } = useI18n();
   const options = useMemo(() => countryChoices(language, field.value || undefined), [language, field.value]);
-  return <SelectField field={field} options={options} {...p} />;
+  return <SelectField field={field} options={options} searchable {...p} />;
 }
 
 export type LookupRow = { id: string } & Record<string, unknown>;
@@ -573,6 +591,67 @@ export function LookupField({ field, endpoint, labelOf, initialLabel, filter, ..
               ))}
             </ul>
           )}
+        </span>
+      )}
+    </Field>
+  );
+}
+
+/**
+ * Tags: each is a chip with its own remove button; type a word and press Enter, comma or Tab to
+ * add it (a comma or semicolon, in either script, also splits a pasted list), Backspace on an empty
+ * box takes the last one off. The value is kept as the tags joined with ", ", the form the
+ * record's text field always had, so a saved record, a saved draft and the server see no change.
+ */
+export function TagField({ field, maxTags = 20, maxLength = 40, ...p }: Common & { field: FieldBinding<string>; maxTags?: number; maxLength?: number }) {
+  const { t } = useI18n();
+  const [text, setText] = useState("");
+  const tags = field.value.split(/[,،;]/).map((x) => x.trim()).filter(Boolean);
+  const set = (next: string[]) => field.onChange(next.join(", "));
+  const add = (raw: string) => {
+    const incoming = raw.split(/[,،;]/).map((x) => x.trim().slice(0, maxLength)).filter(Boolean);
+    const next = [...tags];
+    for (const tag of incoming) if (next.length < maxTags && !next.some((k) => k.toLowerCase() === tag.toLowerCase())) next.push(tag);
+    set(next);
+    setText("");
+  };
+  const readOnly = p.disabled || field.readOnly;
+  return (
+    <Field name={field.name} label={p.label} errors={field.errors} hint={p.hint ?? t("forms.tags.hint")} wide={p.wide}>
+      {(a11y) => (
+        <span className="tag-field">
+          {tags.map((tag) => (
+            <span className="tag-chip" key={tag} title={tag}>
+              <span className="tag-chip-text">{tag}</span>
+              {!readOnly && (
+                <button type="button" className="tag-chip-remove" aria-label={t("forms.tags.remove", { tag })} onClick={() => set(tags.filter((x) => x !== tag))}>
+                  ×
+                </button>
+              )}
+            </span>
+          ))}
+          <input
+            {...a11y}
+            name={field.name}
+            value={text}
+            disabled={readOnly}
+            autoFocus={p.autoFocus}
+            autoComplete="off"
+            maxLength={maxLength}
+            placeholder={tags.length === 0 ? t("forms.tags.placeholder") : ""}
+            onChange={(e) => (/[,،;]/.test(e.target.value) ? add(e.target.value) : setText(e.target.value))}
+            onBlur={() => text.trim() && add(text)}
+            onKeyDown={(e) => {
+              if ((e.key === "Enter" || (e.key === "Tab" && !e.shiftKey)) && text.trim()) {
+                e.preventDefault();
+                e.stopPropagation();
+                add(text);
+              } else if (e.key === "Backspace" && text === "" && tags.length > 0) {
+                e.preventDefault();
+                set(tags.slice(0, -1));
+              }
+            }}
+          />
         </span>
       )}
     </Field>
