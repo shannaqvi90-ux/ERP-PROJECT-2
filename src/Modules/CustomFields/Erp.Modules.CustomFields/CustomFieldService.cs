@@ -108,7 +108,7 @@ internal sealed class CustomFieldService(CustomFieldsDbContext db, ModuleCatalog
             var missing = !isNew && field.Required && !held.ContainsKey((recordId, field.Id));
             if ((isNew || missing) && field.Default is { } text)
             {
-                var defaulted = await ParseAsync(field, JsonSerializer.SerializeToElement(text), validator, cancellationToken);
+                var defaulted = await ParseAsync(field, JsonOfText(field, text), validator, cancellationToken);
                 parsed[field.Id] = defaulted;
             }
             else if ((isNew || missing) && field.Required)
@@ -180,7 +180,7 @@ internal sealed class CustomFieldService(CustomFieldsDbContext db, ModuleCatalog
             {
                 if (field.Default is { } text)
                 {
-                    parsed[field.Id] = await ParseAsync(field, JsonSerializer.SerializeToElement(text), validator, cancellationToken);
+                    parsed[field.Id] = await ParseAsync(field, JsonOfText(field, text), validator, cancellationToken);
                 }
                 else if (field.Required)
                 {
