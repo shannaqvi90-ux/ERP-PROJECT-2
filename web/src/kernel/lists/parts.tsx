@@ -370,11 +370,11 @@ export function FilterEditor({
         <div className="list-range">
           <label className="field">
             <span className="field-label">{t("lists.filter.from")}</span>
-            {type === "date" ? <DateInput noPicker value={from} onChange={setFrom} /> : <input type={type} value={from} onChange={(e) => setFrom(e.target.value)} dir="ltr" />}
+            {type === "date" ? <DateInput value={from} onChange={setFrom} rangeFrom={from} rangeTo={to} /> : <input type={type} value={from} onChange={(e) => setFrom(e.target.value)} dir="ltr" />}
           </label>
           <label className="field">
             <span className="field-label">{t("lists.filter.to")}</span>
-            {type === "date" ? <DateInput noPicker value={to} onChange={setTo} /> : <input type={type} value={to} onChange={(e) => setTo(e.target.value)} dir="ltr" />}
+            {type === "date" ? <DateInput value={to} onChange={setTo} rangeFrom={from} rangeTo={to} /> : <input type={type} value={to} onChange={(e) => setTo(e.target.value)} dir="ltr" />}
           </label>
         </div>
       );

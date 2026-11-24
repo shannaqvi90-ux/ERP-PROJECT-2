@@ -45,7 +45,9 @@ const reflective = /^(globalThis\.(eval|Function|Proxy|Reflect)|Reflect\.\w+|Pro
  */
 const documentBound: Record<string, string[]> = {
   "Reads and moves the grid's own elements (layout, scroll, focus, attributes); gone with the document": [
+    "CSSStyleProperties.direction",
     "CSSStyleProperties.fontSize",
+    "MouseEvent.clientX",
     "DOMRect.width",
     "DOMStringMap.__index",
     "Document.body",
@@ -138,6 +140,7 @@ const outlivingReviewed: Record<string, { count: number; reason: string }> = {
 const reviewedImports: Record<string, string> = {
   "react": "The UI library.",
   "react-dom": "flushSync, for focus that must follow a render at once.",
+  "src/kernel/overflowTitles.ts": "A hook that, after each render, gives text the screen cuts its full text as a title; reads layout and sets title attributes, keeps nothing.",
   "src/kernel/api.ts": "The one way to the server (same-origin fetch with the session cookie); keeps nothing.",
   "src/kernel/deviceState.ts": "identityScoped(): memory the forgetter empties when the identity ends.",
   "src/kernel/forms/dateInput.tsx": "The date filter's text box: reads and writes only its own typed text and the browser's date picker element it renders; no storage, no network, no address, no cookie (p18).",

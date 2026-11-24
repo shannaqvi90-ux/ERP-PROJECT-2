@@ -1,3 +1,4 @@
+import { useOverflowTitles } from "../overflowTitles";
 import { flushSync } from "react-dom";
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { api, ApiError } from "../api";
@@ -120,6 +121,7 @@ const searchDelay = 150;
  * reload opens the same list.
  */
 export function ListView(props: ListViewProps) {
+  useOverflowTitles();
   const { listKey, titleKey, countKey, searchPlaceholderKey } = props;
   const i18n = useI18n();
   const { t } = i18n;
@@ -529,6 +531,8 @@ export function ListView(props: ListViewProps) {
     }
   }, [props.viewCounts, definition]);
 
+  // Widths the person dragged (or set with the arrow keys on a column's edge), in pixels, for this screen's visit.
+  const [resized, setResized] = useState<Record<string, number>>({});
   if (loadError) {
     return (
       <section className="list-screen">
@@ -956,10 +960,11 @@ export function ListView(props: ListViewProps) {
     : [];
   const viewName = current?.view ? (viewChoices.find((c) => c.id === current.view)?.label ?? t("lists.views.standard")) : t("lists.views.standard");
 
-  const columnsTemplate = `${selectColumnRem}rem ${shown.map((c) => `minmax(${columnMinimum(c)}rem, ${columnWidth(c).share}fr)`).join(" ")}${waiting.length ? ` ${moreColumnRem}rem` : ""}`;
+  const columnSize = (c: ListColumn): string => (resized[c.key] ? `${resized[c.key]! / rem}rem` : `minmax(${columnMinimum(c)}rem, ${columnWidth(c).share}fr)`);
+  const columnsTemplate = `${selectColumnRem}rem ${shown.map(columnSize).join(" ")}${waiting.length ? ` ${moreColumnRem}rem` : ""}`;
   // Every row and the header share one width (the columns' minimums, or the grid's when wider),
   // so a long value in one row never widens that row's columns: cells cut long text instead.
-  const rowMinWidth = `${selectColumnRem + shown.reduce((sum, c) => sum + columnMinimum(c), 0) + (waiting.length ? moreColumnRem : 0)}rem`;
+  const rowMinWidth = `${selectColumnRem + shown.reduce((sum, c) => sum + (resized[c.key] ? resized[c.key]! / rem : columnMinimum(c)), 0) + (waiting.length ? moreColumnRem : 0)}rem`;
   // On paper the columns share the page's width by their shares alone, with no selection column
   // and no minimum, and long values wrap (lists.css, @media print): an A4 page is narrower than the
   // columns' screen minimums, and the last column (Roles, in Arabic the leftmost) fell off the page
@@ -1323,6 +1328,12 @@ export function ListView(props: ListViewProps) {
                   ) : (
                     <span className="list-headlabel" title={label}>{label}</span>
                   )}
+                  <ColumnResizer
+                    label={t("lists.column.resize", { column: label })}
+                    onSize={(px) => setResized((r) => ({ ...r, [c.key]: Math.max(minimumPixels, Math.min(maxPixels, px)) }))}
+                    current={(el) => resized[c.key] ?? el.getBoundingClientRect().width}
+                    reset={() => setResized((r) => { const { [c.key]: _gone, ...rest } = r; return rest; })}
+                  />
                   {(c.sortable || c.filterable || c.groupable) && (
                     <span className={`list-anchor${position >= shown.length / 2 ? " end" : ""}`}>
                       <button
@@ -1355,6 +1366,17 @@ export function ListView(props: ListViewProps) {
                           {c.groupable && (
                             <button type="button" role="menuitem" className="list-menuitem" onClick={() => { update((s) => ({ ...s, groupBy: c.key })); setMenu(null); }}>
                               {t("lists.group.by")}
+                            </button>
+                          )}
+                          <button type="button" role="menuitem" className="list-menuitem" onClick={(e) => { const w = (e.currentTarget.closest("th") as HTMLElement).getBoundingClientRect().width; setResized((r) => ({ ...r, [c.key]: Math.min(maxPixels, (r[c.key] ?? w) + 64) })); setMenu(null); }}>
+                            {t("lists.column.wider")}
+                          </button>
+                          <button type="button" role="menuitem" className="list-menuitem" onClick={(e) => { const w = (e.currentTarget.closest("th") as HTMLElement).getBoundingClientRect().width; setResized((r) => ({ ...r, [c.key]: Math.max(minimumPixels, (r[c.key] ?? w) - 64) })); setMenu(null); }}>
+                            {t("lists.column.narrower")}
+                          </button>
+                          {resized[c.key] !== undefined && (
+                            <button type="button" role="menuitem" className="list-menuitem" onClick={() => { setResized((r) => { const { [c.key]: _gone, ...rest } = r; return rest; }); setMenu(null); }}>
+                              {t("lists.column.resetWidth")}
                             </button>
                           )}
                           {visible.length > 1 && (
@@ -1811,5 +1833,41 @@ function ListPrintMenu({ listKey, state }: { listKey: string; state: ListState }
         </div>
       )}
     </div>
+  );
+}
+
+const minimumPixels = 56;
+const maxPixels = 640;
+
+/**
+ * The edge of a column header: drag it with the pointer (double-click gives the column its natural
+ * width back). From the keyboard the column's menu has Wider, Narrower and Reset width.
+ * It sits at the column's end side, so it mirrors by itself in right-to-left.
+ */
+function ColumnResizer({ label, onSize, current, reset }: { label: string; onSize: (px: number) => void; current: (header: HTMLElement) => number; reset: () => void }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const header = () => ref.current?.closest("th") as HTMLElement;
+  return (
+    <span
+      ref={ref}
+      aria-hidden="true"
+      title={label}
+      className="list-resizer"
+      onDoubleClick={reset}
+      onPointerDown={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const rtl = getComputedStyle(header()).direction === "rtl";
+        const startX = e.clientX;
+        const start = current(header());
+        const move = (m: PointerEvent) => onSize(start + (rtl ? startX - m.clientX : m.clientX - startX));
+        const up = () => {
+          window.removeEventListener("pointermove", move);
+          window.removeEventListener("pointerup", up);
+        };
+        window.addEventListener("pointermove", move);
+        window.addEventListener("pointerup", up);
+      }}
+    />
   );
 }

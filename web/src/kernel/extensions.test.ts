@@ -32,4 +32,12 @@ describe("shell extension points", () => {
     expect(extensions.palette.length).toBeGreaterThan(0);
     for (const source of extensions.palette) expect(source.permission).toBeTruthy();
   });
+
+  it("guards every home card with a permission, so a user without it gets neither the card nor its requests", () => {
+    expect(extensions.home.length).toBeGreaterThan(0);
+    for (const card of extensions.home) expect(card.permission, card.key).toBeTruthy();
+    expect(extensions.home.find((c) => c.key === "identity.home")?.permission).toBe("identity.users.read");
+    expect(extensions.home.find((c) => c.key === "contacts.home")?.permission).toBe("contacts.contacts.read");
+    expect(extensions.home.find((c) => c.key === "jobs.home")?.permission).toBe("jobs.jobs.read");
+  });
 });
