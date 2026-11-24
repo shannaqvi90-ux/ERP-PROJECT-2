@@ -129,21 +129,20 @@ internal sealed class DefaultSequences(NumberingDbContext db, DocumentTypeCatalo
 }
 
 /// <summary>The audit trail's name for a sequence (and so for its counters, which the database names from it):
-/// the kind of document and the company, in English and Arabic.</summary>
+/// the kind of document, in English and Arabic. It is product text only: the company's name is never copied
+/// into a numbering row (the company is a column of the sequence and shown beside it), so no tenant-entered
+/// text is stored a second time.</summary>
 internal static class SequenceLabels
 {
     public static void Apply(NumberSequence sequence, Tenancy.Contracts.CompanyInfo? company, DocumentTypeCatalog types)
     {
-        sequence.NameEn = Label(types.Name(sequence.DocumentType, "en"), company?.LegalNameEn);
-        sequence.NameAr = Label(types.Name(sequence.DocumentType, "ar"), string.IsNullOrWhiteSpace(company?.LegalNameAr) ? company?.LegalNameEn : company.LegalNameAr);
+        sequence.NameEn = Clip(types.Name(sequence.DocumentType, "en"));
+        sequence.NameAr = Clip(types.Name(sequence.DocumentType, "ar"));
         sequence.Code = sequence.DocumentType;
     }
 
-    private static string Label(string type, string? company)
-    {
-        var text = string.IsNullOrWhiteSpace(company) ? type : $"{type} · {company.Trim()}";
-        return text.Length <= NumberingDbContext.LabelLength ? text : text[..NumberingDbContext.LabelLength];
-    }
+    private static string Clip(string text) =>
+        text.Length <= NumberingDbContext.LabelLength ? text : text[..NumberingDbContext.LabelLength];
 }
 
 /// <summary>A new company gets a sequence for every document type, in the transaction that creates it.</summary>

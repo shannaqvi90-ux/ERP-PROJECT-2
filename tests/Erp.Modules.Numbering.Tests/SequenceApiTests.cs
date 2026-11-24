@@ -320,14 +320,15 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
         Assert.Contains((before + 400).ToString(System.Globalization.CultureInfo.InvariantCulture), setTo, StringComparison.Ordinal);
         Assert.Contains("next_set_from", setTo, StringComparison.Ordinal);
 
-        // No audited row of numbering reads "(empty)": each names the kind of document and the company, in English and Arabic.
+        // No audited row of numbering reads "(empty)": each names the kind of document, in English and Arabic.
         Assert.Equal(0, await Db.ScalarAsync(Env,
             "SELECT count(*) FROM audit.entries WHERE table_schema = 'numbering' AND (record_label IS NULL OR record_label_ar IS NULL OR record_code IS NULL) AND table_name <> 'issued_numbers'"));
         var label = await Db.TextAsync(Env,
             "SELECT record_label || ' | ' || record_label_ar FROM audit.entries WHERE table_schema = 'numbering' AND table_name = 'counters' AND changes ? 'next_value' ORDER BY occurred_at DESC LIMIT 1");
         Assert.Contains("Supplier bill", label, StringComparison.Ordinal);
         Assert.Contains("فاتورة مورد", label, StringComparison.Ordinal);
-        Assert.Contains(" · ", label, StringComparison.Ordinal);
+        // Product text only: no company name is copied into the label.
+        Assert.DoesNotContain(" · ", label, StringComparison.Ordinal);
         // The recorded changes hold no name column: the names are for the heading, not data.
         Assert.Equal(0, await Db.ScalarAsync(Env, "SELECT count(*) FROM audit.entries WHERE table_schema = 'numbering' AND (changes ? 'name_en' OR changes ? 'name_ar' OR changes ? 'code')"));
     }
