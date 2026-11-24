@@ -126,6 +126,23 @@ export function ListView(props: ListViewProps) {
   const i18n = useI18n();
   const { t } = i18n;
   const references = props.references;
+  // Pick-list values of the filter editor, fetched as the list opens and kept in a ref (no render when they arrive), so the editor shows them in the commit of the click that opens it.
+  const valuesKnown = useRef<Record<string, string[]>>({});
+  const valueSources = props.filterValues;
+  useEffect(() => {
+    let live = true;
+    for (const [key, load] of Object.entries(valueSources ?? {})) {
+      load?.().then(
+        (values) => {
+          if (live) valuesKnown.current[key] = values;
+        },
+        () => undefined,
+      );
+    }
+    return () => {
+      live = false;
+    };
+  }, [valueSources]);
   const formatters: Formatters = useMemo(
     () => ({
       t,
@@ -1393,6 +1410,7 @@ export function ListView(props: ListViewProps) {
                           search={c.type === "reference" ? references?.[c.key]?.search : undefined}
                           labelOf={c.type === "reference" ? references?.[c.key]?.label : undefined}
                           suggest={c.type === "text" ? props.filterValues?.[c.key] : undefined}
+                          known={c.type === "text" ? valuesKnown.current[c.key] : undefined}
                           current={current.conditions.filter((x) => x.column === c.key)}
                           onApply={(conditions) => update((s) => ({ ...s, conditions: [...s.conditions.filter((x) => x.column !== c.key), ...conditions] }))}
                           onClose={() => setMenu(null)}

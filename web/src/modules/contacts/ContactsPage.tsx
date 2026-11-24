@@ -42,6 +42,7 @@ export async function setContactsActive(rows: Row[], active: boolean): Promise<{
 /** The list's search box (the list framework's own). */
 /** The tags the workspace's contacts carry: the Tags filter lists them to pick from. */
 const contactTags = () => api<string[]>("GET", "/api/contacts/contacts/tags");
+const contactFilterValues = { tags: contactTags };
 
 const searchBox = () => document.querySelector<HTMLInputElement>(".list-search input");
 
@@ -131,7 +132,7 @@ export function ContactsPage() {
         viewCounts
         can={can}
         openOnClick
-        filterValues={{ tags: contactTags }}
+        filterValues={contactFilterValues}
         reloadKey={panel.reload}
         openId={panel.openId}
         onOpenIdChange={onOpenIdChange}
