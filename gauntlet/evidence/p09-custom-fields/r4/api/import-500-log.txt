@@ -1,0 +1,7 @@
+      Request 00-bf1e2c07039dad8d0931d3393afff416-3450043a449060ff-00 failed with internal
+      System.InvalidOperationException: A custom field value that passed the check was refused on saving: cfKeyAccountR4 customFieldBoolean
+         at Erp.Modules.Contacts.ContactsImport.<>c__DisplayClass7_0.<<ProcessAsync>g__FlushAsync|4>d.MoveNext() in /src/src/Modules/Contacts/Erp.Modules.Contacts/ContactsImport.cs:line 134
+      --- End of stack trace from previous location ---
+         at Erp.Modules.Contacts.ContactsImport.ProcessAsync(IServiceProvider services, ImportBatch batch, CancellationToken cancellationToken) in /src/src/Modules/Contacts/Erp.Modules.Contacts/ContactsImport.cs:line 276
+         at Erp.Modules.ImportExport.Imports.ImportRunner.RunAsync(IServiceProvider services, ImportExportDbContext db, ImportSession session, ImportFile file, Func`3 report, CancellationToken cancellationToken) in /src/src/Modules/ImportExport/Erp.Modules.ImportExport/Imports/ImportRunner.cs:line 88
+         at Erp.Modules.ImportExport.Imports.ImportEndpoints.RunAsync(ImportRecordType type, Guid id, RunImportRequest request, ImportExportDbContext db, IJobQueue jobs, HttpContext http, CancellationToken cancellationToken) in /src/src/Modules/ImportExport/Erp.Modules.ImportExport/Imports/ImportEndpoints.cs:line 549

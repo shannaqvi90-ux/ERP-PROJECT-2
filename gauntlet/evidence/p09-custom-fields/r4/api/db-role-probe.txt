@@ -1,0 +1,91 @@
+BEGIN
+SET
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1795535466.618559
+(1 row)
+
+   ?column?   |          current_tenant_id           
+--------------+--------------------------------------
+ bound tenant | 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+        ?column?        | count 
+------------------------+-------
+ A sees own definitions |     7
+(1 row)
+
+       ?column?       | count 
+----------------------+-------
+ A sees B definitions |     0
+(1 row)
+
+    ?column?     | count 
+-----------------+-------
+ A sees B values |     0
+(1 row)
+
+          ?column?           | count 
+-----------------------------+-------
+ value_text on B rows (as A) |     0
+(1 row)
+
+       ?column?       | count 
+----------------------+-------
+ update B values rows |     0
+(1 row)
+
+         ?column?          | count 
+---------------------------+-------
+ delete B definitions rows |     0
+(1 row)
+
+SAVEPOINT
+ERROR:  new row violates row-level security policy for table "definitions"
+ROLLBACK
+ROLLBACK
+BEGIN
+SET
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000002 | 1795535466.627195
+(1 row)
+
+            ?column?            | count 
+--------------------------------+-------
+ control B sees own definitions |     9
+(1 row)
+
+         ?column?          | count 
+---------------------------+-------
+ control B sees own values |  2416
+(1 row)
+
+ROLLBACK
+--- unbound erp_app
+BEGIN
+SET
+unbound defs|0
+unbound values|0
+ROLLBACK
+--- RLS flags
+definitions|t|t
+__ef_migrations_history|f|f
+field_values|t|t
+--- policies
+definitions|tenant_isolation|PERMISSIVE|ALL|(tenant_id = erp.current_tenant_id())
+field_values|tenant_isolation|PERMISSIVE|ALL|(tenant_id = erp.current_tenant_id())
+--- definer funcs
+match_text|f
+match_number|f
+match_any|f
+match_date|f
+match_bool|f
+match_ref|f
+search_text|f
+value_date|f
+value_bool|f
+value_text|f
+value_number|f
+value_date_trunc|f
+history_change|f
