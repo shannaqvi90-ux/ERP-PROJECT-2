@@ -56,6 +56,9 @@ public static class ListAnswers
     /// total the last first page counted, whatever its tenant, and a walk of one page never saw it).</summary>
     private const int PagesAimedFor = 4;
 
+    /// <summary>The most pages the larger tenant's walk may take when the take follows the smaller tenant.</summary>
+    private const int MaxPagesForSmallTake = 300;
+
     /// <param name="first">The tenant that sends each query first (fills any cache).</param>
     /// <param name="judged">The tenant whose answer is judged.</param>
     /// <param name="judgedIds">Every id of the judged tenant's rows (from the database).</param>
@@ -81,7 +84,8 @@ public static class ListAnswers
                 var query = baseQueries[q];
                 List<JsonElement>? judgedRows = null, firstRows = null;
                 var outcome = await JudgeAsync(tally, list, first, judged, query,
-                    query.Length == 0 && list.SearchFields.Count > 0 ? (mine, theirs) => (judgedRows, firstRows) = (mine, theirs) : null);
+                    query.Length == 0 && list.SearchFields.Count > 0 ? (mine, theirs) => (judgedRows, firstRows) = (mine, theirs) : null,
+                    needPaging: listPaged == 0 || listOffsetPaged == 0);
                 if (judgedRows is not null && firstRows is not null)
                 {
                     foreach (var word in OwnWords(list, firstRows, judgedRows))
@@ -118,7 +122,7 @@ public static class ListAnswers
             var judgeSorted = sortedLists?.Invoke(list) ?? true;
             foreach (var (query, basis, sort) in judgeSorted ? SortedQueriesFor(list, baseQueries) : [])
             {
-                if (await JudgeAsync(tally, list, first, judged, query) is not { } outcome)
+                if (await JudgeAsync(tally, list, first, judged, query, needPaging: sortedPaged == 0 || sortedOffsetPaged == 0) is not { } outcome)
                 {
                     continue;
                 }
@@ -152,7 +156,7 @@ public static class ListAnswers
             }
             if (listPaged == 0)
             {
-                tally.Blind.Add($"{label}: list '{list.Key}': no query was answered over more than one keyset page, so a total or group remembered for the next pages would go unseen");
+                tally.Blind.Add($"{label}: list '{list.Key}': no query was answered over more than one keyset page, so a total or group remembered for the next pages would go unseen" + tally.SampleOf(list.Key));
             }
             if (listOffsetPaged == 0)
             {
@@ -211,6 +215,11 @@ public static class ListAnswers
         public int OffsetPagesJudged { get; set; }
         public int SortedQueries { get; set; }
         public int SortedDiscriminating { get; set; }
+        public Dictionary<string, List<string>> Samples { get; } = [];
+
+        /// <summary>The first few queries of each list with their totals and pages, printed with a
+        /// blindness finding so it can be told why no query spanned several pages.</summary>
+        public string SampleOf(string listKey) => Samples.TryGetValue(listKey, out var s) ? " [first queries: " + string.Join("; ", s) + "]" : "";
     }
 
     /// <summary>One query, judged: the other tenant sends it first, then the judged tenant; both walk
@@ -218,7 +227,7 @@ public static class ListAnswers
     /// the tenant's own walked rows. Null when it could not be judged (reported as wrong).</summary>
     /// <param name="walked">Called with the judged tenant's and the other tenant's walked rows.</param>
     private static async Task<Judged?> JudgeAsync(Tally tally, ListDefinition list, HttpClient first, HttpClient judged, string query,
-        Action<List<JsonElement>, List<JsonElement>>? walked = null)
+        Action<List<JsonElement>, List<JsonElement>>? walked = null, bool needPaging = false)
     {
         var label = tally.Label;
         var judgedIds = tally.JudgedIds;
@@ -240,11 +249,32 @@ public static class ListAnswers
         // behind is in place when the other's next page is answered. Every page of both walks
         // is judged, not only the first.
         var take = Math.Clamp((Math.Max(total, firstTotal) + PagesAimedFor - 1) / PagesAimedFor, 1, MaxTake);
+        // The take follows the larger tenant, so that tenant's walk has several pages. When the
+        // judged tenant's own rows then fit in one page (round 23: tenant A's own writes now all
+        // succeed, so it holds 1,607 roles to tenant B's 25, and a take of 199 left B's walk one
+        // page), and no query of this list has yet been answered over several pages, the take
+        // follows the judged tenant instead, as long as the larger tenant's walk stays short.
+        if (needPaging && total >= 2 && (total + take - 1) / take < 2)
+        {
+            var smaller = Math.Clamp((total + PagesAimedFor - 1) / PagesAimedFor, 1, MaxTake);
+            if ((Math.Max(total, firstTotal) + smaller - 1) / smaller <= MaxPagesForSmallTake)
+            {
+                take = smaller;
+            }
+        }
         var (walk, firstWalk) = await WalkTogetherAsync(judged, first, list.Endpoint, query, take);
         if (walk is null || firstWalk is null)
         {
             wrong.Add($"{label}: keyset walk of GET {list.Endpoint}?take={take}{query} did not finish (judged {(walk is null ? "failed" : "ok")}, other {(firstWalk is null ? "failed" : "ok")})");
             return null;
+        }
+        if (!tally.Samples.TryGetValue(list.Key, out var samples))
+        {
+            tally.Samples[list.Key] = samples = [];
+        }
+        if (samples.Count < 5)
+        {
+            samples.Add($"'{(query.Length > 50 ? query[..50] : query)}' total {total} (other {firstTotal}) take {take} keyset pages {walk.Pages.Count}");
         }
         var rows = walk.Rows;
         walked?.Invoke(rows, firstWalk.Rows);
