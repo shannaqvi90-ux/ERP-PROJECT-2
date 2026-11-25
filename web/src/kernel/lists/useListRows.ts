@@ -100,8 +100,11 @@ export function useListRows(endpoint: string | null, query: URLSearchParams | nu
   useEffect(() => {
     if (!key) return;
     const state: Chunks = { key, rows: new Map(), next: new Map(), pending: new Set(), controller: new AbortController() };
+    // A reload of the query already on screen (a job ended, a record saved) keeps the rows and draws
+    // nothing busy: the answer replaces them in place. Only a new query marks the list busy.
+    const reloadOfShown = shown.current !== null && shown.current.key === key;
     chunks.current = state;
-    setLoading(true);
+    if (!reloadOfShown) setLoading(true);
     fetchChunk(state, 0);
     return () => state.controller.abort();
   }, [key, fetchChunk, reloads]);
