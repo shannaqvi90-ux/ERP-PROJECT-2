@@ -47,8 +47,10 @@ public interface IUserDirectory
 {
     Task<IReadOnlyDictionary<Guid, UserSummary>> GetAsync(IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken);
 
-    /// <summary>Users whose name (English or Arabic) or e-mail contains <paramref name="search"/> (all when empty), by name.</summary>
-    Task<UserSummaryPage> SearchAsync(string? search, int skip, int take, CancellationToken cancellationToken);
+    /// <summary>Users whose name (English or Arabic) or e-mail contains <paramref name="search"/> (all when empty).
+    /// With a text: a name equal to it first, then names that start with it, then the rest; each group by name in
+    /// <paramref name="language"/> ("ar" orders by the Arabic name; Arabic letter forms, diacritics and tatweel do not matter).</summary>
+    Task<UserSummaryPage> SearchAsync(string? search, int skip, int take, CancellationToken cancellationToken, string? language = null);
 
     /// <summary>The permissions the user's roles grant (empty for a user without roles or one
     /// that does not exist). Another module that lets one user act on another (company access)
