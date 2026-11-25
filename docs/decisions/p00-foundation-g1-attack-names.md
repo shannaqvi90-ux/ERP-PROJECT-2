@@ -35,3 +35,11 @@ Blindness findings now print the first five queries with totals, take and pages.
 the check still requires a multi-page walk of the judged tenant. The extra requests are a few queries per list.
 
 Runs (alone, through verify-slot): share 4 before the fix failed (30 m 19 s); after it passed (36 m 45 s).
+
+GateSelfTests.The_HTTP_attack_catches_planted_header_route_and_body_leaks: its "take=50 answered wrong
+outside its sorted searches" assertion matched the walk's own findings whenever a tenant held 197 to 200
+rows (a walk takes ceil(rows/4) = 50), which the planted pages-after-the-first memo is meant to cause. It
+now matches only findings about the request the check sends itself (": GET ...?take=50"). Run alone: passed (13 m 40 s).
+In one batch run with the other self tests the same test died of an OutOfMemoryException decoding a PDF
+(1 h 3 m, ResponseText.Pdf); it did not repeat in two single runs (15 m, 13 m 40 s) and the integrator's run took 24 m 14 s.
+Runs of this fix: share 4 passed (36 m 45 s); GateSelfTests, MarkerJudgeSelfTests, G1TenantSourceTests, ListAnswers filter: 32 of 33 passed, the 33rd is the test above.
