@@ -42,21 +42,25 @@ import { sandboxed } from './helpers/driver-module.mjs';
 
 let server, base, tmp, needles;
 const stamps = [];
-const state = { openAtStart: 0, inPlace: false, poll: false, goAt: 0, recent: null, recentOn: 'home', view: null, slow: 0, onShot: false, onRead: false };
-const reset = () => Object.assign(state, { openAtStart: 0, inPlace: false, poll: false, goAt: 0, recent: null, recentOn: 'home', view: null, slow: 0, onShot: false, onRead: false });
+const state = { openAtStart: 0, inPlace: false, poll: false, goAt: 0, recent: null, recentOn: 'home', view: null, slow: 0, onShot: false, onRead: false, reveal: false, dropFocus: 0, observer: 0 };
+const reset = () => Object.assign(state, { openAtStart: 0, inPlace: false, poll: false, goAt: 0, recent: null, recentOn: 'home', view: null, slow: 0, onShot: false, onRead: false, reveal: false, dropFocus: 0, observer: 0 });
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 const RECORD_HTML = n => `<aside id="record"><h1>${esc(n.name)}</h1><dl><dt>Mobile</dt><dd>${esc(n.mobile)}</dd></dl></aside>`;
 const recentLink = where => (state.recent && state.recentOn === where ? `<p>Recently viewed: <a id="recent" href="/contact/r1">${esc(state.recent.name)}</a></p>` : '');
 
-const HOME = () => `<!doctype html><html><head><title>Home</title></head><body>
+const HOME = () => `<!doctype html><html><head><title>Home</title>${state.reveal || state.dropFocus || state.observer ? '<style>button:hover,a:hover{outline:2px solid #06c}button:focus-visible{outline:2px solid #c60}#slot{min-height:10px}</style>' : ''}</head><body>
 <nav aria-label="Main navigation"><a id="contacts" href="/contacts">Contacts</a></nav>
 <p id="plain">Welcome</p>
 <label id="field">Note <input id="note"></label>
 <a id="stamp" href="/stamped">Stamp</a>
 ${recentLink('home')}
 <div id="slot"></div>
+${state.reveal ? '<button id="reveal" type="button">Show</button>' : ''}${state.dropFocus ? '<button id="drop" type="button" autofocus>Focus</button>' : ''}
 <script>
+${state.reveal ? `document.getElementById('reveal').addEventListener('click', e => { e.currentTarget.remove(); document.getElementById('slot').innerHTML = ${JSON.stringify(RECORD_HTML(needles.contact))}; });` : ''}
+${state.dropFocus ? `document.getElementById('drop').focus(); setTimeout(() => { document.getElementById('drop').remove(); document.getElementById('slot').innerHTML = ${JSON.stringify(RECORD_HTML(needles.contact))}; }, ${state.dropFocus});` : ''}
+${state.observer ? `new ResizeObserver(() => { if (document.getElementById('slot').offsetHeight > 100) document.getElementById('slot').innerHTML = ${JSON.stringify(RECORD_HTML(needles.contact))}; }).observe(document.getElementById('slot')); setTimeout(() => { document.getElementById('slot').style.height = '200px'; }, ${state.observer});` : ''}
 ${state.openAtStart ? `setTimeout(() => { ${state.inPlace ? `const a = document.createElement('aside'); a.id = 'record'; a.append(document.createElement('h1'), document.createElement('p')); a.firstChild.textContent = ${JSON.stringify(needles.contact.name)}; a.lastChild.textContent = ${JSON.stringify(needles.contact.mobile)}; document.getElementById('slot').append(a);` : "location.href = '/contact/r1';"} }, ${state.openAtStart});` : ''}
 ${state.onShot ? `new MutationObserver(() => { if (document.title === 'Product') document.getElementById('slot').innerHTML = ${JSON.stringify(RECORD_HTML(needles.contact))}; }).observe(document.querySelector('title'), { childList: true, characterData: true, subtree: true });` : ''}
 ${state.onRead ? `const own = Node.prototype.contains; Node.prototype.contains = function (x) { document.getElementById('slot').innerHTML = ${JSON.stringify(RECORD_HTML(needles.contact))}; return own.call(this, x); };` : ''}
@@ -548,4 +552,54 @@ test('control: set-up writes the fixture its task declares and the run verifies'
   }, DECLARED);
   assert.equal(r.status, 'verified', r.error);
   assert.deepEqual(r.set_up_writes, ['fetch POST /api/settings']);
+});
+
+
+// -- round 15: the health-check fault. The browser's own follow-ups of a step are the step's (the pointer's
+// :hover inside the frame that delivers the move, the focus it clears when the clicked control goes
+// away); the same follow-ups of a page that acts on its own, or an observer it sets off, are not.
+
+test('control (round 15): a click on a control that removes itself and shows the record (hover, focus cleared) verifies, all its screen changes caused', async () => {
+  reset();
+  state.reveal = true;
+  const r = await runDriver({
+    ...home,
+    async run(op) {
+      await op.click('#reveal', { label: 'Show' });
+      await op.waitFor(() => !!document.querySelector('aside'), { label: 'record' });
+      return {};
+    },
+    verify: verifyRecord,
+  }, NO_FINDS);
+  assert.equal(r.status, 'verified', r.error);
+  assert.equal(r.screen_changes.not_caused, 0, JSON.stringify(r.screen_changes));
+  assert.ok(r.screen_changes.judged > 0);
+});
+
+test('plant U1 (round 15): the page removes its focused control and shows the record on its own timer; run() clicks plain text -> refused', async () => {
+  reset();
+  state.dropFocus = 4500;
+  refused('U1', await runDriver({
+    ...home,
+    async run(op) {
+      await op.click('#plain', { label: 'plain text' });
+      await op.waitFor(() => !!document.querySelector('aside'), { label: 'record', timeout: 9000 });
+      return {};
+    },
+    verify: verifyRecord,
+  }, NO_FINDS), SCREEN);
+});
+
+test('plant U2 (round 15): the page\'s timer resizes a box and its resize observer shows the record; run() clicks plain text -> refused', async () => {
+  reset();
+  state.observer = 4500;
+  refused('U2', await runDriver({
+    ...home,
+    async run(op) {
+      await op.click('#plain', { label: 'plain text' });
+      await op.waitFor(() => !!document.querySelector('aside'), { label: 'record', timeout: 9000 });
+      return {};
+    },
+    verify: verifyRecord,
+  }, NO_FINDS), SCREEN);
 });
