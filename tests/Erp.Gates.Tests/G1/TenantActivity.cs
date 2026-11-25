@@ -1032,6 +1032,7 @@ public sealed class TenantActivity
         if (template is null)
         {
             UniqueDocumentedValues(schema, body, n);
+            AttackNames.TagExampleNames(_openApi, schema, body, _tenant.Canary ?? _tenant.Code);
         }
         if (template is JsonObject source)
         {
