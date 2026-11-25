@@ -63,3 +63,7 @@ only (about 1 s).
 
 No task changed. `switch-company`, `edit-and-save` and others keep their r3 results (the code paths
 changed here do not add steps or keystrokes).
+
+## Round 4, integration fix 1: the jobs list's busy flag on a reload
+
+The integrator's health check judged see-and-rerun-job invalid: the jobs list's aria-busy went from true to false after run() returned. Cause: useListRows set loading=true on every effect run, including a reload of the query already on screen (the job panel's poll ends, the page asks the list to read again); with commitNow the answer is drawn in its own task, after the step's last wait was satisfied by the panel. Fix: a reload of the shown query keeps the rows and does not mark the list busy (only a new query does). Verified on a clean generated-users stack (project b-p18-visual-design): see-and-rerun-job verified 3 of 3; export-filtered-list, custom-field-filter and import-5000 verified once each in that order; web unit tests 817 passed; G1ClientStateTests, AuditGateTests, G1TenantSourceTests 18 passed. No full verify run; no processor time added.
