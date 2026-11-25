@@ -950,3 +950,67 @@ test('causation (round 14): a message task that begins the microsecond the step\
   assert.equal(v.caused, true, v.why);
   assert.equal(v.step, 1);
 });
+
+// -- round 15: the health-check fault (the browser's own follow-ups of a step, linked by flow ids) -----
+
+const flowFrom = (at, id) => ({ ph: 's', name: 'SequenceManager PostTask', cat: 'toplevel.flow', at, id });
+const flowTo = (at, id) => ({ ph: 'f', name: 'SequenceManager PostTask', cat: 'toplevel.flow', at, id, bp: 'e' });
+const FOCUS_TASK = 'document.cc:ClearFocusedElementIfNeeded';
+const focusCleared = (id = 7) => [flowTo(0.5, id), X('EventDispatch', 0.8, 0.2, { type: 'blur' }), change(1, 'StyleRecalcInvalidationTracking', { reason: 'PseudoClass', extraData: ':focus', nodeName: 'BUTTON' })];
+
+test('causation (round 15): a task the page\'s own task posted is judged by the poster, through the browser\'s flow ids', () => {
+  // The browser clears the focus of a control the click's handler removed: a task the click's task posted.
+  const click1 = screens([task(101, INPUT, [...click(), flowFrom(3, 7)]), task(110, FOCUS_TASK, focusCleared())]);
+  assert.equal(click1.length, 1);
+  assert.equal(click1[0].caused, true, click1[0].why);
+  assert.equal(click1[0].step, 1);
+  assert.ok(click1[0].chain.some(c => /posted/.test(c)), JSON.stringify(click1[0].chain));
+  // The same task posted by a timer the page armed before the clock: no step's, and the poster is named.
+  const timer = screens([task(101, INPUT, click()), task(90, TIMER, [fire(1, 2), flowFrom(3, 7)]), task(110, FOCUS_TASK, focusCleared())]);
+  assert.equal(timer.length, 1);
+  assert.equal(timer[0].caused, false);
+  assert.match(timer[0].why, /posted by a task no step caused/);
+  assert.match(timer[0].why, /armed before the clock/);
+  // The flow id of another task (ids that differ) links nothing: it is judged as before (the click's task ran just before it).
+  const other = screens([task(101, INPUT, [...click(), flowFrom(3, 8)]), task(110, FOCUS_TASK, focusCleared(7))]);
+  assert.equal(other.length, 1);
+  assert.match(other[0].chain.join(' '), /followed at once/);
+  // A poster that is a DevTools command (the harness reading the page during a click) caused nothing.
+  const read = screens([task(101, INPUT, click()), task(105, IPC, [X('DevToolsSession::DispatchProtocolCommand', 1, 3), flowFrom(2, 7)]), task(110, FOCUS_TASK, focusCleared())]);
+  assert.equal(read.length, 1);
+  assert.equal(read[0].caused, false);
+  // An id used twice names no poster.
+  const twice = screens([task(101, INPUT, [...click(), flowFrom(3, 7)]), task(105, TIMER, [fire(1, 2), flowFrom(2, 7)]), task(110, FOCUS_TASK, focusCleared())]);
+  assert.equal(twice[0].caused, false);
+});
+
+const hoverChange = (at = 1) => change(at, 'StyleRecalcInvalidationTracking', { reason: 'PseudoClass', extraData: ':hover', nodeName: 'BUTTON' });
+const MOVES = [X('EventDispatch', 2, 0.5, { type: 'pointerover' }), X('EventDispatch', 2.6, 0.5, { type: 'mousemove' })];
+
+test('causation (round 15): the :hover the browser sets for a step\'s pointer move, inside the frame that delivers it, is the step\'s', () => {
+  const QUEUE = 'main_thread_event_queue.cc:SetNeedsMainFrame';
+  // A task of the input queue handed the page the move since the frame before: the step's pointer.
+  const moved = screens([task(101, QUEUE, [], { dur: 1 }), task(103, FRAME, [hoverChange(), ...MOVES])]);
+  assert.equal(moved.length, 1);
+  assert.equal(moved[0].caused, true, moved[0].why);
+  assert.equal(moved[0].step, 1);
+  // No task of the input queue since the frame before: the events are the boundary events of a pointer the
+  // page moved content under, and the hover follows a change the page made (judged where it was made).
+  const under = screens([task(30, TIMER, [fire(1, 2)]), task(103, FRAME, [hoverChange(), ...MOVES])]);
+  assert.equal(under.length, 1);
+  assert.equal(under[0].caused, false);
+  // An input-queue task older than the frame before does not count.
+  const old = screens([task(101, QUEUE, [], { dur: 1 }), task(102, FRAME, [X('FireAnimationFrame', 1, 0.5)], { dur: 1.5 }), task(104, FRAME, [hoverChange(), ...MOVES])]);
+  assert.equal(old.find(c => c.event === 'StyleRecalcInvalidationTracking' && c.at > 0.104).caused, false);
+  // A state class the page's own script set (inside a timer's call) is the timer's.
+  const scripted = screens([task(101, QUEUE, [], { dur: 1 }), task(103, TIMER, [fire(1, 2), X('FunctionCall', 1.2, 2, { url: 'http://p/' }), hoverChange(1.5)])]);
+  assert.equal(scripted.length, 1);
+  assert.equal(scripted[0].caused, false);
+  // A move before every step is no step's; a change of another kind (a node inserted) in the same frame is not covered.
+  assert.equal(screens([task(51, QUEUE, [], { dur: 1 }), task(53, FRAME, [hoverChange(), ...MOVES])])[0].caused, false);
+  const inserted = screens([task(101, QUEUE, [], { dur: 1 }), task(103, FRAME, [change(1), ...MOVES])]);
+  assert.equal(inserted[0].caused, false);
+  // The hover after the pointer events were dispatched (a layout that moved content under the pointer) is not covered.
+  const late = screens([task(101, QUEUE, [], { dur: 1 }), task(103, FRAME, [...MOVES, hoverChange(3.5)])]);
+  assert.equal(late[0].caused, false);
+});

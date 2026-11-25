@@ -59,6 +59,9 @@ export const TRACE_CATEGORIES = Object.freeze([
   'devtools.timeline', 'disabled-by-default-devtools.timeline', 'toplevel', 'devtools', 'navigation', 'blink.user_timing', 'loading',
   // Round 14: every change of what the page shows, inside the task that made it (screenCauses).
   'disabled-by-default-devtools.timeline.invalidationTracking',
+  // Round 15: which task posted which (a flow id on the post and on the run: SequenceManager PostTask),
+  // so a task the browser or the page's own layout posted is linked to its poster, not guessed from timing.
+  'toplevel.flow',
 ]);
 /** An answer the page waited on for longer than this before it sent its write links nothing (plant S2). */
 export const LINK_SECONDS = 2;
@@ -213,6 +216,23 @@ export function analyseTrace(events) {
   const sendEvents = events.filter(e => e.name === 'ResourceSendRequest' && e.args?.data?.requestId);
   // Where the page's frames started navigations (a form posted, an address set), with the address.
   const navigationStarts = events.filter(e => e.name === 'FrameLoader::StartNavigation' && e.args?.url);
+  // Round 15 (the health-check fault): the task that posted each task, from Chromium's flow ids of its
+  // task posts (a post is a flow start inside the posting task; the run is a flow end inside the task
+  // that ran it). An id seen more than once is no link.
+  const flowStarts = new Map();
+  const flowEnds = new Map();
+  for (const e of events) {
+    if (e.name !== 'SequenceManager PostTask' || (e.ph !== 's' && e.ph !== 'f') || e.id === undefined) continue;
+    const map = e.ph === 's' ? flowStarts : flowEnds;
+    map.set(e.id, map.has(e.id) ? null : e);
+  }
+  for (const [id, end] of flowEnds) {
+    const start = flowStarts.get(id);
+    if (!start || !end) continue;
+    const run = taskAt({ threads }, keyOf(end), end.ts);
+    const poster = taskAt({ threads }, keyOf(start), start.ts);
+    if (run && poster && poster !== run) run.postedBy = { event: start, task: poster };
+  }
   for (const v of sockets.values()) { v.sends.sort((a, b) => a.event.ts - b.event.ts); v.receives.sort((a, b) => a.event.ts - b.event.ts); }
   // Round 14: a task that only delivered what the browser fetched of its own accord (the page's icon) and
   // ran nothing of the page's (no script, no event, nothing inside its microtask checkpoint) cannot have
@@ -433,7 +453,59 @@ function pointCause(ctx, point, depth) {
   // Round 13: a refresh the page set (a meta refresh, a Refresh header) navigates when its delay ends.
   if (task.events.some(e => e.name === 'HttpRefreshScheduler::NavigateTask')) return no('a refresh the page set (a meta refresh or a Refresh header): when it navigates is set by its delay, not by the person');
   if (task.observerScript && animatedAt(ctx, task.ts)) return no(ANIMATED_OBSERVER);
+  const posted = postedCause(ctx, task, depth);
+  if (posted) return posted;
+  const hover = pointerStateCause(ctx, task, point);
+  if (hover) return hover;
   return otherCause(ctx, task, depth);
+}
+
+/**
+ * Round 15 (the health-check fault, owner's lead): a task the page's main thread ran that another task
+ * of the page's main thread posted (Chromium's flow ids) is that task's: the browser's own follow-up
+ * of a change (focus cleared when the focused control went away, a deferred layout step) is judged by
+ * the task that made the change, at the point where it posted. Only a poster on a main thread of the
+ * page counts: a task posted from the compositor, the network or the browser process stays untraceable
+ * here and is judged as before. What the poster did not cause is not caused, and why is the poster's.
+ */
+function postedCause(ctx, task, depth) {
+  const from = task.postedBy;
+  if (!from || !ctx.model.threads.get(from.task.thread)?.main) return null;
+  const c = pointCause(ctx, { ...from.event, pid: Number(from.task.thread.split(':')[0]), tid: Number(from.task.thread.split(':')[1]) }, depth + 1);
+  return c.caused ? yes(c.step, [...c.chain, 'a task the page\'s own task posted'], c.origin) : noFrom('a task posted by a task no step caused', c);
+}
+
+/** Pointer events a frame hands the page from the input queue (moves and boundary events), not discrete input. */
+const POINTER_MOVES = /^(pointer(move|over|out|enter|leave|rawupdate)|mouse(move|over|out|enter|leave))$/;
+/** The browser's own state classes of the element under the pointer or in focus. */
+const POINTER_STATES = /^:(hover|active|focus|focus-visible|focus-within)$/;
+
+/**
+ * Round 15 (the health-check fault): the pointer a step moves reaches the page inside a frame's task
+ * (the browser aligns moves with frames), and the browser puts the :hover state on the element under
+ * the pointer there, before it dispatches the move events: a style recalculation outside any script,
+ * in a frame task that dispatched pointer moves outside script, after a task of the input queue
+ * handed the page that input since the frame before. That input is a step's: only the harness's steps
+ * put input in the page. A pointer the page moved content under dispatches the same events without a
+ * task of the input queue before the frame, and what moved the content is judged where it moved.
+ */
+function pointerStateCause(ctx, task, point) {
+  if (!point || point.name !== 'StyleRecalcInvalidationTracking' || point.args?.data?.reason !== 'PseudoClass' || !POINTER_STATES.test(String(point.args?.data?.extraData || ''))) return null;
+  if (!task.src || !/BeginMainFrame/.test(task.src) || task.protocol) return null;
+  const moves = task.topDispatches.filter(e => POINTER_MOVES.test(e.args?.data?.type || ''));
+  if (!moves.length || !moves.some(e => e.ts >= point.ts)) return null;
+  const inScript = task.events.some(e => e.ph === 'X' && SCRIPT_SPAN.test(e.name) && spanHolds(e, point.ts));
+  if (inScript) return null;
+  const thread = ctx.model.threads.get(task.thread);
+  let queued = null;
+  for (let i = task.index - 1; i >= 0 && !queued; i--) {
+    const t = thread.tasks[i];
+    if (/BeginMainFrame/.test(t.src || '')) break;
+    if (/main_thread_event_queue/.test(t.src || '')) queued = t;
+  }
+  if (!queued) return null;
+  const s = stepBefore(ctx, queued.ts);
+  return s ? yes(s.n, [`pointer input of step ${s.n} (delivered with a frame)`], queued.ts) : null;
 }
 
 function timerCause(ctx, timer, depth) {
