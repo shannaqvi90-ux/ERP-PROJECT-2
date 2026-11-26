@@ -8,6 +8,7 @@ prefix /api/contacts/
 GET /api/contacts/contacts contacts.contacts.read # the contacts list (the caller's workspace only)
 GET /api/contacts/contacts/duplicates contacts.contacts.read # contacts that share a name, e-mail, number or TRN with one being typed: what the list itself shows to the same reader
 GET /api/contacts/contacts/defaults contacts.contacts.read # what a new contact starts with: the country and the base currency of the caller's own working company, which a credit limit is stated in
+GET /api/contacts/contacts/tags contacts.contacts.read # the tags the caller's own workspace's contacts carry, which the list shows to the same reader
 GET /api/contacts/contacts/{id:guid} contacts.contacts.read # one contact: names, address, registration numbers, credit limit
 POST /api/contacts/contacts contacts.contacts.create # a new organisation or person in the shared directory
 PUT /api/contacts/contacts/{id:guid} contacts.contacts.update # changing a contact's details, its organisation or its credit limit; never its status

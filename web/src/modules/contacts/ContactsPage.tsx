@@ -1,5 +1,5 @@
 import { TagChips } from "./TagChips";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../kernel/api";
 import { newRecord, useRecordPanel } from "../../kernel/forms/recordPanel";
 import { useI18n } from "../../kernel/i18n";
@@ -40,6 +40,9 @@ export async function setContactsActive(rows: Row[], active: boolean): Promise<{
 }
 
 /** The list's search box (the list framework's own). */
+/** The tags the workspace's contacts carry: the Tags filter lists them to pick from. */
+const contactTags = () => api<string[]>("GET", "/api/contacts/contacts/tags");
+
 const searchBox = () => document.querySelector<HTMLInputElement>(".list-search input");
 
 /**
@@ -53,6 +56,7 @@ const searchBox = () => document.querySelector<HTMLInputElement>(".list-search i
 export function ContactsPage() {
   const { t, language } = useI18n();
   const { can } = useSession();
+  const contactFilterValues = useMemo(() => ({ tags: contactTags }), []);
   const panel = useRecordPanel(can("contacts.contacts.create"));
   const [start, setStart] = useState<NewContact | undefined>(undefined);
   const [message, setMessage] = useState<string | null>(null);
@@ -128,6 +132,7 @@ export function ContactsPage() {
         viewCounts
         can={can}
         openOnClick
+        filterValues={contactFilterValues}
         reloadKey={panel.reload}
         openId={panel.openId}
         onOpenIdChange={onOpenIdChange}

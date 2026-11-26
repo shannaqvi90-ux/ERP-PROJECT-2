@@ -217,6 +217,11 @@ internal static class ContactEndpoints
             .WithSummary("What a new contact starts with for the caller: the country (AE) and the working company's base currency, which is also the currency a credit limit's base amount is stated in.")
             .RequirePermission(ContactsPermissions.ContactsRead);
 
+        group.MapGet("/contacts/tags", Tags)
+            .WithName("contacts.contacts.tags")
+            .WithSummary("The tags the workspace's contacts carry, each once, most used first, at most 200: the choices the list's Tags filter offers so a tag is picked, not typed.")
+            .RequirePermission(ContactsPermissions.ContactsRead);
+
         group.MapGet("/contacts/{id:guid}", Get)
             .WithName("contacts.contacts.get")
             .WithSummary("One contact of the workspace.")
@@ -328,6 +333,28 @@ internal static class ContactEndpoints
     {
         var working = await companies.GetWorkingAsync(cancellationToken);
         return new CurrencyCode(working?.BaseCurrency is { } code && CurrencyCode.IsKnown(code) ? code : CurrencyCode.Aed.Code);
+    }
+
+    /// <summary>Most tags the filter's pick list offers.</summary>
+    public const int MaxTagChoices = 200;
+
+    private static async Task<Ok<IReadOnlyList<string>>> Tags(ContactsDbContext db, CancellationToken cancellationToken)
+    {
+        // Tags are stored as one text per contact; the same few combinations repeat, so grouping the stored texts first keeps
+        // this to one pass over the table whatever the number of contacts (row-level security keeps it in the caller's workspace).
+        var stored = await db.Contacts.Where(c => c.Tags != null && c.Tags != "")
+            .GroupBy(c => c.Tags!).Select(g => new { Tags = g.Key, Count = g.Count() })
+            .OrderByDescending(g => g.Count).Take(5000).ToListAsync(cancellationToken);
+        var counts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var row in stored)
+        {
+            foreach (var tag in ContactsValidation.TagsOf(row.Tags))
+            {
+                counts[tag] = counts.GetValueOrDefault(tag) + row.Count;
+            }
+        }
+        IReadOnlyList<string> tags = counts.OrderByDescending(p => p.Value).ThenBy(p => p.Key, StringComparer.CurrentCulture).Take(MaxTagChoices).Select(p => p.Key).ToList();
+        return TypedResults.Ok(tags);
     }
 
     private static async Task<Ok<IReadOnlyList<ContactDuplicate>>> Duplicates([AsParameters] DuplicateQuery query, ContactsDbContext db, CancellationToken cancellationToken)
