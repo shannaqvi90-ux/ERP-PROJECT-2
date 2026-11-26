@@ -117,6 +117,63 @@ public sealed class CustomFieldRoundTwoTests(CustomFieldsFixture fixture) : ICla
         Assert.Contains($"customFields.{key}", await refused.Content.ReadAsStringAsync(Api.Cancel));
     }
 
+    public static TheoryData<string, string, string, bool> DefaultsByType => new()
+    {
+        { "text", "General", "General", false },
+        { "number", "1500.25", "1500.25", false },
+        { "date", "2027-12-31", "2027-12-31", false },
+        { "select", "fob", "fob", false },
+        { "boolean", "true", "true", false },
+        { "boolean", "false", "false", false },
+    };
+
+    [Theory]
+    [MemberData(nameof(DefaultsByType))]
+    public async Task A_default_of_every_type_fills_a_new_record_without_the_key_and_an_old_record_when_required(string type, string def, string expected, bool _unused)
+    {
+        _ = _unused;
+        var (admin, _) = await DefineAsync();
+        using var __ = admin;
+        var old = await Api.CreateContactAsync(admin, Api.Contact(Api.Unique("Old default LLC")));
+        var body = new Dictionary<string, object?> { ["recordType"] = "contacts.contacts", ["type"] = type, ["labelEn"] = Api.Unique($"Dflt {type}"), ["labelAr"] = "افتراضي", ["required"] = true, ["default"] = def };
+        if (type == "number") body["decimals"] = 2;
+        if (type == "select") body["options"] = new[] { new { value = "exw", labelEn = "EXW", labelAr = "تسليم المصنع" }, new { value = "fob", labelEn = "FOB", labelAr = "فوب" } };
+        var field = await Api.DefineAsync(admin, body);
+        var key = field.GetProperty("key").GetString()!;
+
+        // A new record created without the key gets the default.
+        var created = await Api.CreateContactAsync(admin, Api.Contact(Api.Unique("New default LLC")));
+        AssertValue(Api.Entry(created, key).GetProperty("value"), type, expected);
+
+        // An old record saved unchanged (the form sends the shown value or nothing) gets it too.
+        foreach (var sent in new object?[] { null, expected is "true" or "false" ? bool.Parse(expected) : expected })
+        {
+            var oldNow = await Api.Json(await admin.GetAsync($"/api/contacts/contacts/{old.GetProperty("id").GetGuid()}", Api.Cancel));
+            var update = Api.Contact(old.GetProperty("nameEn").GetString()!, sent is null ? new() { [key] = null } : new() { [key] = sent });
+            update["version"] = oldNow.GetProperty("version").GetUInt32();
+            var saved = await admin.PutAsJsonAsync($"/api/contacts/contacts/{old.GetProperty("id").GetGuid()}", update, Api.Cancel);
+            Assert.Equal(HttpStatusCode.OK, saved.StatusCode);
+            AssertValue(Api.Entry(await Api.Json(saved), key).GetProperty("value"), type, expected);
+        }
+        // Switch it off again: a workspace holds at most 40 fields per kind of record.
+        body["isActive"] = false;
+        body["version"] = field.GetProperty("version").GetUInt32();
+        var off = await admin.PutAsJsonAsync($"/api/customfields/fields/{field.GetProperty("id").GetGuid()}", body, Api.Cancel);
+        Assert.Equal(HttpStatusCode.OK, off.StatusCode);
+    }
+
+    private static void AssertValue(JsonElement value, string type, string expected)
+    {
+        if (type == "boolean")
+        {
+            Assert.Equal(bool.Parse(expected), value.GetBoolean());
+        }
+        else
+        {
+            Assert.Equal(expected, value.GetString());
+        }
+    }
+
     [Fact]
     public async Task A_list_is_sorted_and_grouped_by_a_custom_field_through_every_page()
     {

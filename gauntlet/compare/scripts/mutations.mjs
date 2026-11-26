@@ -180,6 +180,10 @@ export const MUTATIONS = [
   ['M132', "a frame only the harness asked for taken for the page's own", 'lib/causation.mjs', '    if (!asked.every(x => x && x.task.protocol)) continue;', '    continue;', 'test/causation.test.mjs', 'only the harness asked for'],
   ['M133', 'a task that begins where the one before it ended absorbed into it', 'lib/causation.mjs', "      if (e.ph === 'X' && e.name === 'RunTask' && (!current || e.ts >= current.end)) {", "      if (e.ph === 'X' && e.name === 'RunTask' && (!current || e.ts > current.end)) {", 'test/causation.test.mjs', 'the very microsecond'],
   ['M134', "a task's own end taken as a time of the task that begins there", 'lib/causation.mjs', 'ts: Math.max(task.ts, task.end - 1),', 'ts: task.end,', 'test/causation.test.mjs', 'no loop through'],
+  ['M135', 'a task the page posted taken as nobody\'s (no link through the flow ids)', 'lib/causation.mjs', '  const from = task.postedBy;', '  const from = null;', 'test/causation.test.mjs', 'round 15\\): a task the page'],
+  ['M136', 'a task posted by a task no step caused taken as the step\'s', 'lib/causation.mjs', "  return c.caused ? yes(c.step, [...c.chain, 'a task the page\\'s own task posted'], c.origin) : noFrom('a task posted by a task no step caused', c);", "  return yes(c.step ?? 1, [...c.chain, 'a task the page\\'s own task posted'], c.origin);", 'test/causation.test.mjs', 'round 15\\): a task the page'],
+  ['M137', 'the pointer\'s :hover in a frame taken as the step\'s without a task of the input queue before it', 'lib/causation.mjs', '  if (!queued) return null;', '  if (!queued) queued = task;', 'test/causation.test.mjs', 'round 15\\): the :hover'],
+  ['M138', 'a state class set after the pointer events taken as the pointer\'s', 'lib/causation.mjs', '!moves.some(e => e.ts >= point.ts)', 'false', 'test/causation.test.mjs', 'round 15\\): the :hover'],
 ];
 
 function copyHarness() {

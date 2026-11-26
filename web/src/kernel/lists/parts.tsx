@@ -156,11 +156,18 @@ export function FilterEditor({
   options,
   search,
   labelOf,
+  suggest,
+  known,
   current,
   onApply,
   onClose,
 }: {
   column: ListColumn;
+  /** The values a text column already holds (for example a contact's tags): the editor lists them so one is picked,
+   * not typed. A click applies "contains <value>" at once. */
+  suggest?: () => Promise<string[]>;
+  /** The values `suggest` returned earlier (the list fetches them as it opens), so the pick list is in the commit that opens the editor. */
+  known?: string[];
   /** Finds the records of a reference column by what the user types (a person by name); the filter
    * then offers a picker and never takes free text. */
   search?: (text: string) => Promise<{ value: string; label: string }[]>;
@@ -235,6 +242,26 @@ export function FilterEditor({
     onApply(build());
     onClose();
   };
+  const [offered, setOffered] = useState<string[] | null>(known ?? null);
+  useEffect(() => {
+    if (!suggest || column.type !== "text") return;
+    let live = true;
+    suggest().then(
+      // When the values were already shown, a refresh that finds the same ones changes nothing on screen.
+      (values) => live && setOffered((old) => (old && old.length === values.length && old.every((v, i) => v === values[i]) ? old : values)),
+      () => live && setOffered([]),
+    );
+    return () => {
+      live = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [column.key]);
+  const pick = (value: string) => {
+    onApply([{ column: column.key, op: "contains", values: [value] }]);
+    onClose();
+  };
+  const typed = text.trim().toLowerCase();
+  const matching = (offered ?? []).filter((v) => !typed || v.toLowerCase().includes(typed));
 
   let body: ReactNode;
   switch (column.type) {
@@ -258,6 +285,18 @@ export function FilterEditor({
               <span className="field-label">{t("lists.filter.value")}</span>
               <input value={text} onChange={(e) => setText(e.target.value)} autoComplete="off" />
             </label>
+          )}
+          {suggest && offered !== null && offered.length > 0 && (
+            <ul className="list-picker list-values" role="listbox" aria-label={t("lists.filter.values")}>
+              {matching.length === 0 && <li className="muted">{t("lists.filter.noValue")}</li>}
+              {matching.slice(0, 60).map((value) => (
+                <li key={value} role="option" aria-selected={current.some((c) => c.values[0] === value)}>
+                  <button type="button" className="list-menuitem" onClick={() => pick(value)}>
+                    <bdi>{value}</bdi>
+                  </button>
+                </li>
+              ))}
+            </ul>
           )}
         </>
       );

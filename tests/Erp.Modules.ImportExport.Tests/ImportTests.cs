@@ -269,6 +269,43 @@ public sealed class ImportTests(ImportExportFixture fixture) : IClassFixture<Imp
     }
 
     [Fact]
+    public async Task A_row_without_a_custom_column_gets_each_types_default_and_imports()
+    {
+        using var admin = await AdminAsync();
+        var stem = Guid.NewGuid().ToString("N")[..6];
+        var made = new Dictionary<string, string>();
+        foreach (var (type, def) in new[] { ("text", "General"), ("number", "1500.25"), ("date", "2027-12-31"), ("boolean", "true"), ("boolean", "false"), ("select", "fob") })
+        {
+            var body = new Dictionary<string, object?>
+            {
+                ["recordType"] = "contacts.contacts", ["labelEn"] = $"Dflt {type} {def} {stem}", ["labelAr"] = $"افتراضي {stem} {made.Count}", ["type"] = type, ["required"] = false, ["default"] = def,
+            };
+            if (type == "number") body["decimals"] = 2;
+            if (type == "select") body["options"] = new[] { new { value = "exw", labelEn = "EXW", labelAr = "تسليم المصنع" }, new { value = "fob", labelEn = "FOB", labelAr = "فوب" } };
+            using var created = await admin.PostAsJsonAsync("/api/customfields/fields", body, Cancel);
+            var field = await Api.ReadAsync(created, HttpStatusCode.Created);
+            made[$"{type}:{def}"] = field.GetProperty("key").GetString()!;
+        }
+        var name = Api.Unique("Defaulted") + " LLC";
+        var upload = await Api.UploadCsvAsync(admin, $"Name\r\n{name}\r\n");
+        var id = upload.GetProperty("id").GetGuid();
+        var check = await Api.RunAsync(fixture, admin, id, dryRun: true);
+        Assert.Equal(1, check.GetProperty("rowsValid").GetInt32());
+        var done = await Api.RunAsync(fixture, admin, id, dryRun: false, onError: "skip");
+        Assert.Equal("completed", done.GetProperty("status").GetString());
+        Assert.Equal(1, done.GetProperty("rowsImported").GetInt32());
+        var contact = (await ListContactsAsync(admin, name)).GetProperty("items").EnumerateArray().Single(i => i.GetProperty("nameEn").GetString() == name);
+        var full = await admin.GetFromJsonAsync<JsonElement>($"/api/contacts/contacts/{contact.GetProperty("id").GetGuid()}", Cancel);
+        var values = full.GetProperty("customFields");
+        Assert.Equal("General", values.GetProperty(made["text:General"]).GetString());
+        Assert.Equal("1500.25", values.GetProperty(made["number:1500.25"]).GetString());
+        Assert.Equal("2027-12-31", values.GetProperty(made["date:2027-12-31"]).GetString());
+        Assert.True(values.GetProperty(made["boolean:true"]).GetBoolean());
+        Assert.False(values.GetProperty(made["boolean:false"]).GetBoolean());
+        Assert.Equal("fob", values.GetProperty(made["select:fob"]).GetString());
+    }
+
+    [Fact]
     public async Task A_template_lists_the_fields_and_a_file_that_is_not_a_table_is_refused_with_a_reason()
     {
         using var admin = await AdminAsync();
