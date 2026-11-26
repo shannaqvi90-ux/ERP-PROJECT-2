@@ -1,0 +1,1144 @@
+{
+  "schema": 1,
+  "run_id": "find-record-20261126T134546-8b6b",
+  "instrument": 12,
+  "task": "find-record",
+  "task_title": "Find one record among 100,000",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Open the contact whose name the user knows (Shamma Waleed Al Romaithi) out of 100,000 contacts and read its mobile number.",
+  "done_when": "The contact's own record is open on screen and shows the mobile number +971 54 427 3034.",
+  "started_at": "2026-11-26T13:45:46.802Z",
+  "finished_at": "2026-11-26T13:46:33.864Z",
+  "environment": {
+    "base_url": "http://localhost:20150",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v24.20.0"
+  },
+  "counts": {
+    "steps": 3,
+    "keystrokes": 14,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 2,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.627,
+    "system_wait_seconds": 0.271,
+    "human_seconds": 5.67,
+    "human_plus_wait_seconds": 5.941,
+    "klm_operator_counts": {
+      "K": 14,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 1
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "command palette",
+      "keystrokes": 2,
+      "at": 0.001,
+      "took": 0.046,
+      "chord": "Control+k",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "contact name",
+      "keystrokes": 11,
+      "at": 0.052,
+      "took": 0.117,
+      "text": "sha wal rom",
+      "same_field": false,
+      "screen": "/",
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "open the contact",
+      "keystrokes": 1,
+      "at": 0.463,
+      "took": 0.045,
+      "chord": "Enter",
+      "screen": "/",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "palette input focused",
+      "at": 0.048,
+      "seconds": 0.001
+    },
+    {
+      "label": "the contact offered first",
+      "at": 0.169,
+      "seconds": 0.159
+    },
+    {
+      "label": "the contact's record with the mobile number",
+      "at": 0.509,
+      "seconds": 0.111
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "43bbbf82f7504fd6.jpg",
+      "at": 0,
+      "path": "../out/blind/shots/43bbbf82f7504fd6.jpg"
+    },
+    {
+      "moment": "result list",
+      "file": "9257d8733d939dcd.jpg",
+      "at": 0.329,
+      "path": "../out/blind/shots/9257d8733d939dcd.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "af2bd41da4ecf85d.jpg",
+      "at": 0.627,
+      "path": "../out/blind/shots/af2bd41da4ecf85d.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "record_shows_name": true,
+      "record_shows_mobile": true,
+      "url": "http://localhost:20150/contacts/contacts/018917b1-0728-7a93-b583-68a7aae060f8?q=sha+wal+rom"
+    }
+  },
+  "path_notes": "palette: Ctrl+K > type the contact's name > Enter opens the contact's form. | palette-shortest: Ctrl+K > the shortest word prefixes of the name (three letters or more each) that rank the contact first, e.g. \"sha wal rom\" > Enter opens the contact's form. | menu: Contacts (navigation; the search box has the focus) > type the name > Enter opens the best match. | goto: G then O (Contacts; the search box has the focus) > type the name > Enter opens the best match. | shortest: Contacts (navigation; the search box has the focus) > the shortest word prefixes of the name (three letters or more each) that rank the contact first, e.g. \"sha wal rom\" > Enter opens the best match.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/find-record.mjs",
+    "sha256": "d33648b14db78906add28b79d8b369b02d6f9737e5a774583714790fa9b72252"
+  },
+  "task_notes": "The name occurs exactly once in the shared dataset (gauntlet/compare/data). Both products hold the same 100,000 contacts.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.003,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.004,
+      "verified": true,
+      "gap_seconds": 0.057
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 5,
+    "first": [
+      "GET /api/contacts/contacts (fetch)",
+      "GET /api/contacts/contacts (fetch)",
+      "GET /api/contacts/contacts (fetch)",
+      "GET /api/contacts/contacts (fetch)",
+      "GET /api/contacts/contacts (fetch)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "3e1a6243e657db81",
+    "elements": 759
+  },
+  "screen_after_verify": {
+    "sha256": "3e1a6243e657db81",
+    "elements": 759,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0.001,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.004
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 29,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 0.655,
+      "by_step": 3,
+      "chain": [
+        "a task the page's own task posted",
+        "a task the page's own task posted",
+        "a task the page's own task posted",
+        "a task the page's own task posted"
+      ]
+    }
+  },
+  "finds": {
+    "value": "Shamma Waleed Al Romaithi",
+    "on_start_screen": false,
+    "typed_at_step": 2,
+    "shown_before": false
+  },
+  "set_up_writes": [],
+  "screenshots_path": "palette-shortest",
+  "best_path_per_metric": {
+    "steps": "palette",
+    "keystrokes": "shortest",
+    "machine_seconds": "palette-shortest",
+    "human_seconds": "palette-shortest",
+    "human_plus_wait_seconds": "palette-shortest"
+  },
+  "counts_path": "palette-shortest",
+  "variants": [
+    {
+      "id": "palette",
+      "path": "Ctrl+K > type the contact's name > Enter opens the contact's form.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 32,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.74,
+        "system_wait_seconds": 0.312,
+        "human_seconds": 10.71,
+        "human_plus_wait_seconds": 11.022,
+        "klm_operator_counts": {
+          "K": 32,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "command palette",
+          "keystrokes": 2,
+          "at": 0.001,
+          "took": 0.048,
+          "chord": "Control+k",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "contact name",
+          "keystrokes": 29,
+          "at": 0.054,
+          "took": 0.201,
+          "text": "Shamma Waleed Al Romaithi",
+          "same_field": false,
+          "screen": "/",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open the contact",
+          "keystrokes": 1,
+          "at": 0.582,
+          "took": 0.046,
+          "chord": "Enter",
+          "screen": "/",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "palette input focused",
+          "at": 0.05,
+          "seconds": 0.001
+        },
+        {
+          "label": "the contact offered first",
+          "at": 0.255,
+          "seconds": 0.209
+        },
+        {
+          "label": "the contact's record with the mobile number",
+          "at": 0.629,
+          "seconds": 0.102
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "record_shows_name": true,
+          "record_shows_mobile": true,
+          "url": "http://localhost:20150/contacts/contacts/018917b1-0728-7a93-b583-68a7aae060f8?q=Shamma+Waleed+Al+Romaithi"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.004,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.004,
+          "verified": true,
+          "gap_seconds": 0.062
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 8,
+        "first": [
+          "GET /api/contacts/contacts (fetch)",
+          "GET /api/contacts/contacts (fetch)",
+          "GET /api/contacts/contacts (fetch)",
+          "GET /api/contacts/contacts (fetch)",
+          "GET /api/contacts/contacts (fetch)",
+          "GET /api/contacts/contacts (fetch)",
+          "GET /api/audit/records/018917b1-0728-7a93-b583-68a7aae060f8 (fetch)",
+          "GET /api/attachments/contacts.contacts/018917b1-0728-7a93-b583-68a7aae060f8/files (fetch)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "f394094b4b5af7b8",
+        "elements": 758
+      },
+      "screen_after_verify": {
+        "sha256": "f394094b4b5af7b8",
+        "elements": 758,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.01
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 45,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.775,
+          "by_step": 3,
+          "chain": [
+            "a task the page's own task posted",
+            "a task the page's own task posted",
+            "a task the page's own task posted",
+            "the answer to GET /api/audit/records/018917b1-0728-7a93-b583-68a7aae060f8 after 0.039 s"
+          ]
+        }
+      },
+      "finds": {
+        "value": "Shamma Waleed Al Romaithi",
+        "on_start_screen": false,
+        "typed_at_step": 2,
+        "shown_before": false
+      },
+      "set_up_writes": []
+    },
+    {
+      "id": "palette-shortest",
+      "path": "Ctrl+K > the shortest word prefixes of the name (three letters or more each) that rank the contact first, e.g. \"sha wal rom\" > Enter opens the contact's form.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 14,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.627,
+        "system_wait_seconds": 0.271,
+        "human_seconds": 5.67,
+        "human_plus_wait_seconds": 5.941,
+        "klm_operator_counts": {
+          "K": 14,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "command palette",
+          "keystrokes": 2,
+          "at": 0.001,
+          "took": 0.046,
+          "chord": "Control+k",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "contact name",
+          "keystrokes": 11,
+          "at": 0.052,
+          "took": 0.117,
+          "text": "sha wal rom",
+          "same_field": false,
+          "screen": "/",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open the contact",
+          "keystrokes": 1,
+          "at": 0.463,
+          "took": 0.045,
+          "chord": "Enter",
+          "screen": "/",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "palette input focused",
+          "at": 0.048,
+          "seconds": 0.001
+        },
+        {
+          "label": "the contact offered first",
+          "at": 0.169,
+          "seconds": 0.159
+        },
+        {
+          "label": "the contact's record with the mobile number",
+          "at": 0.509,
+          "seconds": 0.111
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "record_shows_name": true,
+          "record_shows_mobile": true,
+          "url": "http://localhost:20150/contacts/contacts/018917b1-0728-7a93-b583-68a7aae060f8?q=sha+wal+rom"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.004,
+          "verified": true,
+          "gap_seconds": 0.057
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 5,
+        "first": [
+          "GET /api/contacts/contacts (fetch)",
+          "GET /api/contacts/contacts (fetch)",
+          "GET /api/contacts/contacts (fetch)",
+          "GET /api/contacts/contacts (fetch)",
+          "GET /api/contacts/contacts (fetch)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "3e1a6243e657db81",
+        "elements": 759
+      },
+      "screen_after_verify": {
+        "sha256": "3e1a6243e657db81",
+        "elements": 759,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.004
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 29,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.655,
+          "by_step": 3,
+          "chain": [
+            "a task the page's own task posted",
+            "a task the page's own task posted",
+            "a task the page's own task posted",
+            "a task the page's own task posted"
+          ]
+        }
+      },
+      "finds": {
+        "value": "Shamma Waleed Al Romaithi",
+        "on_start_screen": false,
+        "typed_at_step": 2,
+        "shown_before": false
+      },
+      "set_up_writes": []
+    },
+    {
+      "id": "menu",
+      "path": "Contacts (navigation; the search box has the focus) > type the name > Enter opens the best match.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 30,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.955,
+        "system_wait_seconds": 0.362,
+        "human_seconds": 12.8,
+        "human_plus_wait_seconds": 13.162,
+        "klm_operator_counts": {
+          "K": 30,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Contacts",
+          "keystrokes": 0,
+          "at": 0.032,
+          "took": 0.075,
+          "began": 0.001,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "contact name",
+          "keystrokes": 29,
+          "at": 0.263,
+          "took": 0.2,
+          "text": "Shamma Waleed Al Romaithi",
+          "same_field": false,
+          "screen": "/contacts/contacts",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open the best match",
+          "keystrokes": 1,
+          "at": 0.858,
+          "took": 0.027,
+          "chord": "Enter",
+          "screen": "/contacts/contacts",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "contact list ready, search focused",
+          "at": 0.107,
+          "seconds": 0.036
+        },
+        {
+          "label": "the row with the name",
+          "at": 0.463,
+          "seconds": 0.269
+        },
+        {
+          "label": "the contact's record with the mobile number",
+          "at": 0.886,
+          "seconds": 0.057
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "record_shows_name": true,
+          "record_shows_mobile": true,
+          "url": "http://localhost:20150/contacts/contacts/018917b1-0728-7a93-b583-68a7aae060f8?q=Shamma+Waleed+Al+Romaithi"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.004,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.004,
+          "verified": true,
+          "gap_seconds": 0.074
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 2,
+        "first": [
+          "GET /api/audit/records/018917b1-0728-7a93-b583-68a7aae060f8 (fetch)",
+          "GET /api/attachments/contacts.contacts/018917b1-0728-7a93-b583-68a7aae060f8/files (fetch)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "140731e21cddea81",
+        "elements": 765
+      },
+      "screen_after_verify": {
+        "sha256": "140731e21cddea81",
+        "elements": 765,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.004
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 43,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.962,
+          "by_step": 3,
+          "chain": [
+            "the answer to GET /api/attachments/contacts.contacts/018917b1-0728-7a93-b583-68a7aae060f8/files after 0.017 s",
+            "a task the page's own task posted",
+            "a task the page's own task posted",
+            "a task the page's own task posted"
+          ]
+        }
+      },
+      "finds": {
+        "value": "Shamma Waleed Al Romaithi",
+        "on_start_screen": false,
+        "typed_at_step": 2,
+        "shown_before": false
+      },
+      "set_up_writes": []
+    },
+    {
+      "id": "goto",
+      "path": "G then O (Contacts; the search box has the focus) > type the name > Enter opens the best match.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 4,
+        "keystrokes": 32,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 3,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.752,
+        "system_wait_seconds": 0.335,
+        "human_seconds": 13.41,
+        "human_plus_wait_seconds": 13.745,
+        "klm_operator_counts": {
+          "K": 32,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 3
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "go to",
+          "keystrokes": 1,
+          "at": 0.001,
+          "took": 0.017,
+          "chord": "g",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "Contacts",
+          "keystrokes": 1,
+          "at": 0.018,
+          "took": 0.038,
+          "chord": "o",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "contact name",
+          "keystrokes": 29,
+          "at": 0.062,
+          "took": 0.22,
+          "text": "Shamma Waleed Al Romaithi",
+          "same_field": false,
+          "screen": "/contacts/contacts",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "open the best match",
+          "keystrokes": 1,
+          "at": 0.653,
+          "took": 0.015,
+          "chord": "Enter",
+          "screen": "/contacts/contacts",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "contact list ready, search focused",
+          "at": 0.057,
+          "seconds": 0.003
+        },
+        {
+          "label": "the row with the name",
+          "at": 0.283,
+          "seconds": 0.261
+        },
+        {
+          "label": "the contact's record with the mobile number",
+          "at": 0.668,
+          "seconds": 0.071
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "record_shows_name": true,
+          "record_shows_mobile": true,
+          "url": "http://localhost:20150/contacts/contacts/018917b1-0728-7a93-b583-68a7aae060f8?q=Shamma+Waleed+Al+Romaithi"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.004,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true,
+          "gap_seconds": 0.059
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 2,
+        "first": [
+          "GET /api/audit/records/018917b1-0728-7a93-b583-68a7aae060f8 (fetch)",
+          "GET /api/attachments/contacts.contacts/018917b1-0728-7a93-b583-68a7aae060f8/files (fetch)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "140731e21cddea81",
+        "elements": 765
+      },
+      "screen_after_verify": {
+        "sha256": "140731e21cddea81",
+        "elements": 765,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.004
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 41,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.761,
+          "by_step": 4,
+          "chain": [
+            "the answer to GET /api/attachments/contacts.contacts/018917b1-0728-7a93-b583-68a7aae060f8/files after 0.017 s",
+            "a task the page's own task posted",
+            "a task the page's own task posted",
+            "a task the page's own task posted"
+          ]
+        }
+      },
+      "finds": {
+        "value": "Shamma Waleed Al Romaithi",
+        "on_start_screen": false,
+        "typed_at_step": 3,
+        "shown_before": false
+      },
+      "set_up_writes": []
+    },
+    {
+      "id": "shortest",
+      "path": "Contacts (navigation; the search box has the focus) > the shortest word prefixes of the name (three letters or more each) that rank the contact first, e.g. \"sha wal rom\" > Enter opens the best match.",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 12,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 1,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.764,
+        "system_wait_seconds": 0.336,
+        "human_seconds": 7.76,
+        "human_plus_wait_seconds": 8.096,
+        "klm_operator_counts": {
+          "K": 12,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Contacts",
+          "keystrokes": 0,
+          "at": 0.021,
+          "took": 0.075,
+          "began": 0.001,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "contact name",
+          "keystrokes": 11,
+          "at": 0.218,
+          "took": 0.09,
+          "text": "sha wal rom",
+          "same_field": false,
+          "screen": "/contacts/contacts",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open the best match",
+          "keystrokes": 1,
+          "at": 0.665,
+          "took": 0.028,
+          "chord": "Enter",
+          "screen": "/contacts/contacts",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "contact list ready, search focused",
+          "at": 0.096,
+          "seconds": 0.028
+        },
+        {
+          "label": "the row with the name",
+          "at": 0.308,
+          "seconds": 0.25
+        },
+        {
+          "label": "the contact's record with the mobile number",
+          "at": 0.695,
+          "seconds": 0.058
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "record_shows_name": true,
+          "record_shows_mobile": true,
+          "url": "http://localhost:20150/contacts/contacts/018917b1-0728-7a93-b583-68a7aae060f8?q=sha+wal+rom"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.004,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true,
+          "gap_seconds": 0.064
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 2,
+        "first": [
+          "GET /api/audit/records/018917b1-0728-7a93-b583-68a7aae060f8 (fetch)",
+          "GET /api/attachments/contacts.contacts/018917b1-0728-7a93-b583-68a7aae060f8/files (fetch)"
+        ]
+      },
+      "screen_at_clock": {
+        "sha256": "5e92f84a4da9d9b2",
+        "elements": 765
+      },
+      "screen_after_verify": {
+        "sha256": "5e92f84a4da9d9b2",
+        "elements": 765,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.003
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 29,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.771,
+          "by_step": 3,
+          "chain": [
+            "the answer to GET /api/attachments/contacts.contacts/018917b1-0728-7a93-b583-68a7aae060f8/files after 0.016 s",
+            "a task the page's own task posted",
+            "a task the page's own task posted",
+            "a task the page's own task posted"
+          ]
+        }
+      },
+      "finds": {
+        "value": "Shamma Waleed Al Romaithi",
+        "on_start_screen": false,
+        "typed_at_step": 2,
+        "shown_before": false
+      },
+      "set_up_writes": []
+    }
+  ]
+}

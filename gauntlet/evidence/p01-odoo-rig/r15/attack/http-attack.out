@@ -1,0 +1,38 @@
+B ids not in A: 476; B words: 1769: ['Abdullah Al Dhaheri', 'Abdullah Al Falasi', 'Abdullah Al Hashimi', 'Abdullah Al Ketbi', 'Abdullah Al Mansoori', 'Abdullah Al Marzooqi', 'Abdullah Al Mazrouei', 'Abdullah Al Nuaimi', 'Abdullah Al Shamsi', 'Abdullah Al Suwaidi', 'Abdullah Cruz', 'Abdullah Darwish']
+{
+ "stats": {
+  "requests": 1669,
+  "429": 0,
+  "status": {
+   "200": 1189,
+   "400": 200,
+   "404": 271,
+   "204": 9
+  }
+ },
+ "findings": 23,
+ "B_changed": []
+}
+{'kind': 'write-accepted-on-B-id', 'method': 'DELETE', 'path': '/api/currency/rates/01a21795-e906-736e-9d23-f8118ccd9909', 'code': 204, 'body': ''}
+{'kind': 'write-accepted-on-B-id', 'method': 'DELETE', 'path': '/api/currency/rates/01a21795-e906-7397-9cc4-9a9101ab96ee', 'code': 204, 'body': ''}
+{'kind': 'write-accepted-on-B-id', 'method': 'DELETE', 'path': '/api/currency/rates/01a21795-e906-755c-a97a-39ca9326419a', 'code': 204, 'body': ''}
+{'kind': 'write-accepted-on-B-id', 'method': 'DELETE', 'path': '/api/currency/rates/01a21795-e906-7696-836d-2a4b47196254', 'code': 204, 'body': ''}
+{'kind': 'write-accepted-on-B-id', 'method': 'DELETE', 'path': '/api/attachments/contacts.contacts/files/018cd0ec-f780-757d-9395-1fda5b33e984', 'code': 204, 'body': ''}
+{'kind': 'write-accepted-on-B-id', 'method': 'DELETE', 'path': '/api/attachments/contacts.contacts/files/0188759c-2378-73c4-8a1e-1467e73c318f', 'code': 204, 'body': ''}
+{'kind': 'write-accepted-on-B-id', 'method': 'DELETE', 'path': '/api/attachments/contacts.contacts/files/01a21795-e8a6-7dea-a873-a6d35d5790b2', 'code': 204, 'body': ''}
+{'kind': 'write-accepted-on-B-id', 'method': 'DELETE', 'path': '/api/attachments/contacts.contacts/files/01a21795-eb6d-7872-b81a-6bc421990170', 'code': 204, 'body': ''}
+{'kind': 'write-accepted-on-B-id', 'method': 'DELETE', 'path': '/api/importexport/contacts.contacts/imports/01a21795-f5fe-7da9-89e5-75d464b26c7e', 'code': 204, 'body': ''}
+{'kind': 'query', 'method': 'GET', 'path': '/api/contacts/contacts?companyId=2541195a-6563-4535-9e9f-0d839cababdb', 'code': 200, 'hits': ['Aisha Al Nuaimi', 'Hamdan Al Suwaidi', 'Khalid Al Shamsi', 'Latifa Al Falasi', 'Mariam Al Ketbi']}
+{'kind': 'query', 'method': 'GET', 'path': '/api/contacts/contacts?branchId=01a21795-eb6d-7f76-89fe-e6868984dcb9', 'code': 200, 'hits': ['Aisha Al Nuaimi', 'Hamdan Al Suwaidi', 'Khalid Al Shamsi', 'Latifa Al Falasi', 'Mariam Al Ketbi']}
+{'kind': 'query', 'method': 'GET', 'path': '/api/contacts/contacts?tenantId=018875bb-30b0-7a4e-8d92-805a6560bdb7', 'code': 200, 'hits': ['Aisha Al Nuaimi', 'Hamdan Al Suwaidi', 'Khalid Al Shamsi', 'Latifa Al Falasi', 'Mariam Al Ketbi']}
+{'kind': 'query', 'method': 'GET', 'path': '/api/contacts/contacts?id=01a21795-e183-72fe-9ef8-04ce2d663e22', 'code': 200, 'hits': ['Aisha Al Nuaimi', 'Hamdan Al Suwaidi', 'Khalid Al Shamsi', 'Latifa Al Falasi', 'Mariam Al Ketbi']}
+{'kind': 'query', 'method': 'GET', 'path': '/api/contacts/contacts?q=018876ab-b300-75a5-8594-ee589f40c434', 'code': 200, 'hits': ['Aisha Al Nuaimi', 'Hamdan Al Suwaidi', 'Khalid Al Shamsi', 'Latifa Al Falasi', 'Mariam Al Ketbi']}
+{'kind': 'query', 'method': 'GET', 'path': '/api/contacts/contacts?format=csv&companyId=018875b1-97a8-73a2-a877-37ee860ac77f', 'code': 200, 'hits': ['Aisha Al Nuaimi', 'Hamdan Al Suwaidi', 'Khalid Al Shamsi', 'Latifa Al Falasi', 'Mariam Al Ketbi']}
+{'kind': 'query', 'method': 'GET', 'path': '/api/contacts/contacts?format=xlsx&tenantId=018cdb9d-7a60-7a38-b351-21349a9fea85', 'code': 200, 'hits': ['Aisha Al Nuaimi', 'Hamdan Al Suwaidi', 'Khalid Al Shamsi', 'Latifa Al Falasi', 'Mariam Al Ketbi']}
+{'kind': 'query', 'method': 'GET', 'path': '/api/contacts/contacts?format=pdf&companyId=018cd6db-d3a0-7f93-b586-7c8bc6df6030', 'code': 200, 'hits': ['Aisha Al Nuaimi', 'Hamdan Al Suwaidi', 'Khalid Al Shamsi', 'Latifa Al Falasi', 'Mariam Al Ketbi']}
+{'kind': 'header', 'method': 'GET', 'path': '/api/contacts/contacts {"X-Tenant": "gulfsteel"}', 'code': 200, 'hits': ['Aisha Al Nuaimi', 'Hamdan Al Suwaidi', 'Khalid Al Shamsi', 'Latifa Al Falasi', 'Mariam Al Ketbi']}
+{'kind': 'header', 'method': 'GET', 'path': '/api/contacts/contacts {"X-Tenant-Id": "018cd0ec-f780-757d-9395-1fda5b33e984"}', 'code': 200, 'hits': ['Aisha Al Nuaimi', 'Hamdan Al Suwaidi', 'Khalid Al Shamsi', 'Latifa Al Falasi', 'Mariam Al Ketbi']}
+{'kind': 'header', 'method': 'GET', 'path': '/api/contacts/contacts {"X-Workspace": "gulfsteel.example"}', 'code': 200, 'hits': ['Aisha Al Nuaimi', 'Hamdan Al Suwaidi', 'Khalid Al Shamsi', 'Latifa Al Falasi', 'Mariam Al Ketbi']}
+{'kind': 'header', 'method': 'GET', 'path': '/api/contacts/contacts {"Host": "gulfsteel.example"}', 'code': 200, 'hits': ['Aisha Al Nuaimi', 'Hamdan Al Suwaidi', 'Khalid Al Shamsi', 'Latifa Al Falasi', 'Mariam Al Ketbi']}
+{'kind': 'header', 'method': 'GET', 'path': '/api/contacts/contacts {"X-Company-Id": "018cd0ec-f780-757d-9395-1fda5b33e984"}', 'code': 200, 'hits': ['Aisha Al Nuaimi', 'Hamdan Al Suwaidi', 'Khalid Al Shamsi', 'Latifa Al Falasi', 'Mariam Al Ketbi']}
+{'kind': 'query', 'method': 'GET', 'path': '/api/reports/lists/contacts.contacts?format=csv&companyId=01a21795-e8a6-747e-bb97-d03133726198', 'code': 200, 'hits': ['Priya Nair']}

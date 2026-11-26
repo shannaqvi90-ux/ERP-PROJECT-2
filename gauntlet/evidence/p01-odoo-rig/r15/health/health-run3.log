@@ -1,0 +1,33 @@
+built for ours: add-rate, api-update-user, arabic-report, attach-file, configure-sequence, create-company-branch, create-restricted-user, custom-field-filter, edit-and-save, export-filtered-list, find-record, find-user, import-5000, new-user-keyboard, open-attached-file, open-third-user-keyboard, print-list-arabic, reach-screen-keyboard, see-and-rerun-job, see-converted, sign-in, switch-company, switch-to-arabic, who-renamed-user
+add-rate                 ours  verified  steps 4  keys 7  machine 0.557s  human 9.01s  human+wait 9.149s  -> ../out/hc3/results/add-rate-20261126T133634-4a61.json
+api-update-user          ours  verified  steps 2  keys 249  machine 0.036s  human 72.82s  human+wait 72.854s  -> ../out/hc3/results/api-update-user-20261126T133642-2624.json
+arabic-report            ours  verified  steps 2  keys 0  machine 0.18s  human 5.3s  human+wait 5.335s  -> ../out/hc3/results/arabic-report-20261126T133644-bba7.json
+attach-file              ours  verified  steps 2  keys 0  machine 0.093s  human 4.15s  human+wait 4.179s  -> ../out/hc3/results/attach-file-20261126T133649-337a.json
+configure-sequence       ours  verified  steps 6  keys 13  machine 0.765s  human 12.04s  human+wait 12.184s  -> ../out/hc3/results/configure-sequence-20261126T133654-0b73.json
+create-company-branch    ours  verified  steps 6  keys 49  machine 0.839s  human 22.17s  human+wait 22.456s  -> ../out/hc3/results/create-company-branch-20261126T133703-346c.json
+create-restricted-user   ours  verified  steps 5  keys 37  machine 1.123s  human 20.91s  human+wait 21.286s  -> ../out/hc3/results/create-restricted-user-20261126T133720-186e.json
+custom-field-filter      ours  verified  steps 11  keys 39  machine 1.378s  human 28.92s  human+wait 29.342s  -> ../out/hc3/results/custom-field-filter-20261126T133738-134b.json
+edit-and-save            ours  verified  steps 2  keys 9  machine 0.194s  human 5.57s  human+wait 5.622s  -> ../out/hc3/results/edit-and-save-20261126T133751-ed31.json
+export-filtered-list     ours  error     steps 1  keys 0  machine 120.106s  human 2.65s  human+wait 2.65s  (TimeoutError: locator.waitFor: Timeout 120000ms exceeded.)  -> ../out/hc3/results/export-filtered-list-20261126T133814-d879.json
+    TimeoutError: locator.waitFor: Timeout 120000ms exceeded.
+    Call log:
+      - waiting for locator('button.ct-tag').filter({ hasText: /^Government$/ }).first().first() to be visible
+    
+        (in the driver process)
+    Call log:
+    page: {"url":"/contacts/contacts","ready_state":"complete","title":"Contacts · ERP","focused":{"tag":"input","name":null,"type":"search","label":"Find a contact by name, e-mail, number, reference or TRN"},"navigation":true,"busy":[],"messages":[]}
+find-record              ours  verified  steps 3  keys 14  machine 0.525s  human 5.67s  human+wait 5.907s  -> ../out/hc3/results/find-record-20261126T134020-35f6.json
+find-user                ours  verified  steps 3  keys 3  machine 0.587s  human 5.24s  human+wait 5.322s  -> ../out/hc3/results/find-user-20261126T134103-454b.json
+import-5000              ours  verified  steps 5  keys 0  machine 4.209s  human 12.1s  human+wait 15.53s  -> ../out/hc3/results/import-5000-20261126T134149-8705.json
+new-user-keyboard        ours  verified  steps 3  keys 8  machine 0.318s  human 3.99s  human+wait 4.104s  -> ../out/hc3/results/new-user-keyboard-20261126T134204-8717.json
+open-attached-file       ours  verified  steps 1  keys 0  machine 0.112s  human 2.65s  human+wait 2.682s  -> ../out/hc3/results/open-attached-file-20261126T134227-9d69.json
+open-third-user-keyboard ours  verified  steps 6  keys 6  machine 0.349s  human 6.13s  human+wait 6.318s  -> ../out/hc3/results/open-third-user-keyboard-20261126T134232-bdab.json
+print-list-arabic        ours  verified  steps 3  keys 13  machine 0.621s  human 11.09s  human+wait 11.359s  -> ../out/hc3/results/print-list-arabic-20261126T134240-d0ea.json
+reach-screen-keyboard    ours  verified  steps 2  keys 2  machine 0.167s  human 3.66s  human+wait 3.757s  -> ../out/hc3/results/reach-screen-keyboard-20261126T134246-a706.json
+see-and-rerun-job        ours  verified  steps 5  keys 33  machine 2.419s  human 15.04s  human+wait 16.972s  -> ../out/hc3/results/see-and-rerun-job-20261126T134304-5a6e.json
+see-converted            ours  verified  steps 4  keys 4  machine 0.73s  human 9.47s  human+wait 9.633s  -> ../out/hc3/results/see-converted-20261126T134317-9814.json
+sign-in                  ours  verified  steps 1  keys 0  machine 0.076s  human 2.03s  human+wait 2.099s  -> ../out/hc3/results/sign-in-20261126T134323-fb9b.json
+switch-company           ours  verified  steps 1  keys 0  machine 0.11s  human 2.65s  human+wait 2.703s  -> ../out/hc3/results/switch-company-20261126T134345-e7f1.json
+switch-to-arabic         ours  verified  steps 1  keys 0  machine 0.342s  human 2.65s  human+wait 2.651s  -> ../out/hc3/results/switch-to-arabic-20261126T134354-10c0.json
+who-renamed-user         ours  verified  steps 3  keys 2  machine 0.491s  human 8.01s  human+wait 8.168s  -> ../out/hc3/results/who-renamed-user-20261126T134403-5a7d.json
+output: ../../../out/hc3
