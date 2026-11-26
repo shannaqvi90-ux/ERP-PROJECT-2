@@ -1,0 +1,89 @@
+diff --git a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+index 76533459..50bb9212 100644
+--- a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
++++ b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+@@ -335,7 +335,16 @@ public sealed class ListBinding<T> : IListBinding where T : class
+             source = InMemoryQuery.Over(source);
+         }
+         var filtered = Filtered(source, plan, database);
+-        var total = request.KnownTotal ?? (database ? await filtered.CountAsync(cancellationToken) : filtered.Count());
++        // CRITIC PLANT L23: a "count memo" for searched lists, keyed by list, search and filter only (no tenant).
++        var memoKey = Definition.Key + "|" + request.Search + "|" + request.Filter;
++        int total;
++        if (request.KnownTotal is { } knownTotal) { total = knownTotal; }
++        else if (CriticPlant.On("L23") && database && !string.IsNullOrEmpty(request.Search) && ListTotalMemo.TryGet(memoKey, out var memo)) { total = memo; }
++        else
++        {
++            total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++            if (CriticPlant.On("L23") && database && !string.IsNullOrEmpty(request.Search)) { ListTotalMemo.Set(memoKey, total); }
++        }
+         IReadOnlyList<ListGroup>? groups;
+         try
+         {
+@@ -1161,3 +1170,21 @@ internal sealed class GroupRow<TKey>
+         _ => null,
+     };
+ }
++
++/// <summary>CRITIC PLANT L23 store.</summary>
++internal static class ListTotalMemo
++{
++    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (int Total, DateTime At)> Totals = new();
++    public static bool TryGet(string key, out int total)
++    {
++        if (Totals.TryGetValue(key, out var e) && DateTime.UtcNow - e.At < TimeSpan.FromSeconds(60)) { total = e.Total; return true; }
++        total = 0; return false;
++    }
++    public static void Set(string key, int total) => Totals[key] = (total, DateTime.UtcNow);
++}
++
++/// <summary>CRITIC PLANT switch: inert unless CRITIC_PLANT names the plant.</summary>
++public static class CriticPlant
++{
++    public static bool On(string name) => (Environment.GetEnvironmentVariable("CRITIC_PLANT") ?? "").Split(',').Contains(name);
++}
+diff --git a/src/Kernel/Erp.Kernel/Security/Permissions.cs b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+index 4ef0a17e..fd12d9a6 100644
+--- a/src/Kernel/Erp.Kernel/Security/Permissions.cs
++++ b/src/Kernel/Erp.Kernel/Security/Permissions.cs
+@@ -73,6 +73,12 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
+         {
+             context.Succeed(requirement);
+         }
++        // CRITIC PLANT P23b: any permission of a module lets its holder read every list of that module.
++        else if (Erp.Kernel.Lists.CriticPlant.On("P23b") && context.User.Identity?.IsAuthenticated == true && requirement.Permission.EndsWith(".read", StringComparison.Ordinal) &&
++            context.User.Permissions().Any(p => p.Split('.')[0] == requirement.Permission.Split('.')[0]))
++        {
++            context.Succeed(requirement);
++        }
+         return Task.CompletedTask;
+     }
+ }
+diff --git a/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs b/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
+index 028a8db6..775b4145 100644
+--- a/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
++++ b/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
+@@ -253,7 +253,13 @@ internal sealed class SessionAuthenticationHandler(
+             }
+         }
+ 
++        // CRITIC PLANT P23: the session's permissions are remembered for 5 minutes (a role change does not reach a signed-in session).
+         var permissions = session.Permissions;
++        if (Erp.Kernel.Lists.CriticPlant.On("P23"))
++        {
++            if (PermissionMemo.Sessions.TryGetValue(session.SessionId, out var remembered) && DateTime.UtcNow - remembered.At < TimeSpan.FromMinutes(5)) { permissions = remembered.Permissions; }
++            else { PermissionMemo.Sessions[session.SessionId] = (session.Permissions, DateTime.UtcNow); }
++        }
+         foreach (var scope in Context.RequestServices.GetServices<ISessionPermissionScope>())
+         {
+             permissions = await scope.ScopeAsync(session, permissions, Context.RequestAborted);
+@@ -378,3 +384,9 @@ internal sealed class CsrfMiddleware(RequestDelegate next)
+         await next(context);
+     }
+ }
++
++/// <summary>CRITIC PLANT P23 store.</summary>
++internal static class PermissionMemo
++{
++    public static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, (IReadOnlyCollection<string> Permissions, DateTime At)> Sessions = new();
++}

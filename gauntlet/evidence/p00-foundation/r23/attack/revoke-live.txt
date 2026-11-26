@@ -1,0 +1,5 @@
+roles Administrator (51, system true, users 2); atk (0, system false, users 0); Company manager (9, system false, users 1); Read-only (18, system false, users 2); Staff (3, system false, users 1); ver-a1-mwxpa3mq (0, system false, users 0); ver-a2-mwxpa3mq (0, system false, users 0)
+viewer GET /api/identity/roles before: 200
+admin removes identity.roles.read from 'Read-only': 200 {"id":"01a2186b-a8df-76ea-8ba9-cd5380791db7","nameEn":"Read-only","nameAr":"قراءة فقط","permissions":["audit.log.read","contacts.contacts.read","currency.curren
+viewer GET /api/identity/roles right after, same session: 403
+restored: 200 ; viewer after restore: 200

@@ -1,0 +1,13 @@
+== alnoor contacts containing 'Gulf Steel' / 'الخليج' (A's own seeded data)
+143|1633
+== B tenant id inside alnoor audit rows: by table, operation, actor
+ERROR:  column e.operation does not exist
+LINE 1: select e.table_name, e.operation, count(*) from audit.entrie...
+                             ^
+0190a000-0000-7000-8000-000000000001|alnoor
+01a21875-4c81-7cfe-bd3c-1164ab92ccff|emptyco
+0190a000-0000-7000-8000-000000000002|gulfsteel
+jobs|insert|t|1
+schedules|insert|t|1
+jobs.schedules|admin@alnoor.example|{"id": {"new": "01a21872-9d2c-748c-9338-030dd100c168"}, "cron": {"new": "0 3 * * *"}, "name": {"new": "atk"}, "type": {"new": "jobs.cleanup"}, "payload": {"new": {"tenantId": "0190a000-0000-7000-8000-000000000002", "retentionDays": 30}}, "is_enabled": {"new": false}}
+jobs.jobs|admin@alnoor.example|{"id": {"new": "01a21872-9ca1-7b02-8842-e872ce59338f"}, "type": {"new": "jobs.cleanup"}, "run_at": {"new": "2026-11-26T15:21:34.11259+00:00"}, "source": {"new": "user"}, "status": {"new": "queued"}, "payload": {"new": {"tenantId": "0190a000-0000-7000-8000-000000000002", "retentionDays": 30}}, "attem
