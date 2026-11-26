@@ -667,17 +667,17 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
     public void A_choice_shows_the_chosen_options_label_in_both_languages_never_its_code()
     {
         var texts = new AuditTexts();
-        var change = new[] { new AuditFieldChange("reset", JsonDocument.Parse("\"yearly\"").RootElement, JsonDocument.Parse("\"monthly\"").RootElement) };
+        var change = new[] { new AuditFieldChange("reset", JsonDocument.Parse("1").RootElement, JsonDocument.Parse("2").RootElement) };
         var english = texts.Summary(change, "update", "en", null, recordType: "numbering.sequences");
         Assert.Contains("Every year", english);
         Assert.Contains("Every month", english);
-        Assert.DoesNotContain("yearly", english);
+        Assert.DoesNotContain("from 1 to 2", english);
         var arabic = texts.Summary(change, "update", "ar", null, recordType: "numbering.sequences");
         Assert.Contains("كل سنة", arabic);
         Assert.Contains("كل شهر", arabic);
         // Another kind of record, or no kind: the stored value as before.
-        Assert.Contains("yearly", texts.Summary(change, "update", "en", null, recordType: "contacts.contacts"));
-        Assert.Contains("yearly", texts.Summary(change, "update", "en", null));
+        Assert.Contains("from 1 to 2", texts.Summary(change, "update", "en", null, recordType: "contacts.contacts"));
+        Assert.Contains("from 1 to 2", texts.Summary(change, "update", "en", null));
     }
 
     [Fact]

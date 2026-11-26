@@ -74,12 +74,14 @@ internal sealed class DocumentTypeCatalog
 /// defaults: for every company when a workspace is seeded, and for a new company when it is created.</summary>
 internal sealed class DefaultSequences(NumberingDbContext db, DocumentTypeCatalog types)
 {
-    public async Task<int> AddMissingAsync(IReadOnlyCollection<Guid> companyIds, CancellationToken cancellationToken)
+    public async Task<int> AddMissingAsync(IReadOnlyCollection<Tenancy.Contracts.CompanyInfo> companies, CancellationToken cancellationToken)
     {
-        if (companyIds.Count == 0)
+        if (companies.Count == 0)
         {
             return 0;
         }
+        var companyIds = companies.Select(c => c.Id).ToList();
+        var byId = companies.ToDictionary(c => c.Id);
         var held = await db.Sequences.AsNoTracking().Where(s => companyIds.Contains(s.CompanyId))
             .Select(s => new { s.CompanyId, s.DocumentType }).ToListAsync(cancellationToken);
         var have = held.Select(h => (h.CompanyId, h.DocumentType)).ToHashSet();
@@ -93,13 +95,20 @@ internal sealed class DefaultSequences(NumberingDbContext db, DocumentTypeCatalo
             foreach (var type in types.All.Where(t => !have.Contains((company, t.Key))))
             {
                 var sequence = FromDefaults(company, type);
+                SequenceLabels.Apply(sequence, byId[company], types);
                 clock = clock.AddMilliseconds(1);
                 sequence.Id = Guid.CreateVersion7(clock);
                 db.Sequences.Add(sequence);
                 added++;
             }
         }
-        if (added > 0)
+        // Sequences made before the audit trail named them are named now (the first seed run after an upgrade).
+        foreach (var unnamed in await db.Sequences.Where(s => companyIds.Contains(s.CompanyId) && s.NameEn == null).ToListAsync(cancellationToken))
+        {
+            SequenceLabels.Apply(unnamed, byId[unnamed.CompanyId], types);
+            db.Entry(unnamed).Property(s => s.UpdatedAt).IsModified = true;
+        }
+        if (added > 0 || db.ChangeTracker.HasChanges())
         {
             await db.SaveChangesAsync(cancellationToken);
         }
@@ -119,9 +128,26 @@ internal sealed class DefaultSequences(NumberingDbContext db, DocumentTypeCatalo
     };
 }
 
+/// <summary>The audit trail's name for a sequence (and so for its counters, which the database names from it):
+/// the kind of document, in English and Arabic. It is product text only: the company's name is never copied
+/// into a numbering row (the company is a column of the sequence and shown beside it), so no tenant-entered
+/// text is stored a second time.</summary>
+internal static class SequenceLabels
+{
+    public static void Apply(NumberSequence sequence, Tenancy.Contracts.CompanyInfo? company, DocumentTypeCatalog types)
+    {
+        sequence.NameEn = Clip(types.Name(sequence.DocumentType, "en"));
+        sequence.NameAr = Clip(types.Name(sequence.DocumentType, "ar"));
+        sequence.Code = sequence.DocumentType;
+    }
+
+    private static string Clip(string text) =>
+        text.Length <= NumberingDbContext.LabelLength ? text : text[..NumberingDbContext.LabelLength];
+}
+
 /// <summary>A new company gets a sequence for every document type, in the transaction that creates it.</summary>
 internal sealed class NewCompanySequences(DefaultSequences defaults) : Tenancy.Contracts.ICompanyCreatedHandler
 {
     public async Task CompanyCreatedAsync(Tenancy.Contracts.CompanyInfo company, CancellationToken cancellationToken) =>
-        await defaults.AddMissingAsync([company.Id], cancellationToken);
+        await defaults.AddMissingAsync([company], cancellationToken);
 }

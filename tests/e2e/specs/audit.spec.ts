@@ -139,8 +139,12 @@ test.describe("the audit trail", () => {
       await picker.fill(who);
       await expect(page.getByRole("option")).toHaveCount(1);
       await expect(page.getByRole("option").first()).toContainText(who);
+      // The list shows its unfiltered rows until the filtered answer arrives, so the rows being visible says
+      // nothing about the request: wait for the filtered answer itself, then judge every one that was sent.
+      const filtered = page.waitForResponse((r) => r.url().includes("/api/audit/log?") && r.url().includes("actorId"));
       await page.keyboard.press("Enter");
       await page.keyboard.press("Enter");
+      await filtered;
       await expect(page.locator(".list-chips")).toBeVisible();
       await expect(listRows(page).first()).toBeVisible();
       expect(requests.length).toBeGreaterThan(0);
