@@ -20,7 +20,7 @@ that browser got Light, and the same person on another device got the default (r
 - `GET /api/auth/session` carries `theme` and `density` on the user (null until chosen).
 - Client: `applyUserLook(session.user)` at sign-in, once per identity: the user's own choices, or the
   defaults, never the previous person's. `chooseTheme`/`chooseDensity` change the screen at once and
-  send an event; `modules/shell/LookSync.tsx` saves it (keepalive) when the user holds the permission.
+  send an event; `modules/identity/LookSync.tsx` (the identity module's own, a status-bar extension guarded by identity.profile.update) saves it (keepalive). It is not in the shell's sources on purpose: G1ShellAnswersTests.Every_endpoint_the_shell_calls_is_judged lists the shell's own calls (p00-owned turns); the endpoint is judged by the endpoint gates (G1 HTTP, G2 permission and subject, the audit gate).
   No module-level state, no new storage key.
 - The device keys remain as the look last shown on this device, for the sign-in screen before anyone is
   known (a device default is fine before sign-in). Sign-in writes them only when the user has a saved

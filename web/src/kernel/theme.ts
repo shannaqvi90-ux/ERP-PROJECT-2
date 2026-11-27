@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 /**
  * The look of the screens: theme (light, dark, high contrast) and density (compact, comfortable).
  * Both are the person's own choice and belong to the person: they are kept with the user on the
- * server (PUT /api/identity/me/look, sent by modules/shell/LookSync.tsx when a choice is made) and
+ * server (PUT /api/identity/me/look, sent by modules/identity/LookSync.tsx when a choice is made) and
  * applied from the session at sign-in (applyUserLook), so the next person on the device gets their
  * own look, or the default when they never chose. The two device keys only hold the look last shown
  * here, for the sign-in screen before anyone is known (kernel/deviceState.ts deviceKeys,

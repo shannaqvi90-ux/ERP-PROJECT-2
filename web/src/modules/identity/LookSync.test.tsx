@@ -2,7 +2,7 @@ import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mockFetch, render, settle, type Rendered } from "../../test/render";
 import { chooseDensity, chooseTheme } from "../../kernel/theme";
-import { App } from "./App";
+import { App } from "../shell/App";
 
 let view: Rendered | undefined;
 beforeEach(() => {

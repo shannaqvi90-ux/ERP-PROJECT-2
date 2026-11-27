@@ -1,4 +1,5 @@
 import { IdentityHomeCard } from "./home";
+import { LookSync } from "./LookSync";
 import { api } from "../../kernel/api";
 import type { ModuleExtensions } from "../../kernel/extensions";
 import { recordPath } from "../../kernel/router";
@@ -12,6 +13,8 @@ type RoleRow = { id: string; nameEn: string; nameAr: string };
  * role, or prints or exports either list, for those whose roles allow it: each action opens its
  * screen and runs the screen's own command (the one its button and key run). */
 export const extensions: ModuleExtensions = {
+  // Saves the theme and density the user chooses to their user; draws nothing.
+  status: [{ key: "identity.look", order: 900, permission: "identity.profile.update", component: LookSync }],
   home: [{ key: "identity.home", order: 20, permission: "identity.users.read", component: IdentityHomeCard }],
   actions: [
     { key: "identity.users.new", labelKey: "identity.users.new", keywordsKey: "identity.action.newUserKeywords", permission: "identity.users.create", path: "/identity/users", command: "identity.users.new" },

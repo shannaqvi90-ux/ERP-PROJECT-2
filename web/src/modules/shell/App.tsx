@@ -7,7 +7,6 @@ import { ShortcutProvider, useShortcut } from "../../kernel/shortcuts";
 import { Announcer } from "./announcer";
 import { AppShell } from "./AppShell";
 import { languageChord } from "./LanguageToggle";
-import { LookSync } from "./LookSync";
 import { SignInPage } from "./SignInPage";
 import { usePreferenceActions } from "./usePreferenceActions";
 
@@ -31,7 +30,6 @@ function Gate() {
   return (
     <>
       <LanguageShortcut />
-      <LookSync />
       <Announcer />
       {state.status === "loading" ? (
         <div className="splash" aria-busy="true">
