@@ -9,6 +9,16 @@ import { freshStart, signIn, users } from "./demo";
 
 const theme = (page: Page) => page.locator("html").getAttribute("data-theme");
 
+/**
+ * Shows a look on this visit without saving it to the user (the choice is the user's own and the demo's
+ * users are shared by every spec): the switches are used, and the save they send is answered here.
+ */
+async function showLook(page: Page, look: { theme?: "light" | "dark" | "hc"; density?: "compact" | "comfortable" }) {
+  await page.route("**/api/identity/me/look", (route) => route.fulfill({ status: 200, contentType: "application/json", body: "{}" }));
+  if (look.theme && look.theme !== "dark") await page.getByRole("button", { name: look.theme === "hc" ? "High contrast" : "Light", exact: true }).click();
+  if (look.density === "comfortable") await page.getByRole("button", { name: "Comfortable" }).click();
+}
+
 /** What may be cut: the cell or control itself, and an element inside it (a cell's text span carries the ellipsis, not the cell). */
 const cutSelector = "td, th, td span, th span, [role=gridcell] span, [role=tab], button, a, label, legend, input, select, .section-tab";
 
@@ -58,7 +68,42 @@ test.describe("design system", () => {
     await page.getByRole("button", { name: "Comfortable" }).click();
     expect(await row()).toBe(40);
     await page.reload();
-    expect(await row()).toBe(40);
+    await expect.poll(row).toBe(40);
+    // The demo's users are shared by every spec: hand the choice back.
+    await page.getByRole("button", { name: "Compact" }).click();
+    await expect.poll(row).toBe(30);
+  });
+
+  test("the look belongs to the user: the next person on the same browser gets their own, or the default", async ({ page }) => {
+    await freshStart(page, "en");
+    await signIn(page, users.adminArabic);
+    const row = async () => Number.parseFloat(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--row-h")));
+    try {
+      await page.getByRole("button", { name: "Light", exact: true }).click();
+      await page.getByRole("button", { name: "Comfortable" }).click();
+      expect(await theme(page)).toBe("light");
+      await page.waitForResponse((r) => r.url().includes("/api/identity/me/look") && r.request().method() === "PUT");
+      await page.getByRole("button", { name: "Sign out" }).click();
+      await expect(page.locator('input[name="email"]')).toBeFocused();
+      // Somebody else signs in on this browser: the default, not the previous person's choice.
+      await signIn(page, users.admin);
+      await expect(page.locator("nav").first()).toBeVisible();
+      expect(await theme(page)).toBe("dark");
+      expect(await row()).toBe(30);
+      await page.getByRole("button", { name: "Sign out" }).click();
+      await expect(page.locator('input[name="email"]')).toBeFocused();
+      // The first person comes back, on a browser with nothing kept: their choice is on the server.
+      await page.evaluate(() => localStorage.clear());
+      await page.reload();
+      await signIn(page, users.adminArabic);
+      await expect(page.locator("nav").first()).toBeVisible();
+      expect(await theme(page)).toBe("light");
+      expect(await row()).toBe(40);
+    } finally {
+      // The demo's users are shared by every spec: hand the choices back.
+      await page.getByRole("button", { name: "Light", exact: true }).click().catch(() => undefined);
+      await page.getByRole("button", { name: "Compact" }).click().catch(() => undefined);
+    }
   });
 
   test("shows every date day first, as dd/mm/yyyy, in the users list and in Arabic", async ({ page }) => {
@@ -77,9 +122,9 @@ test.describe("design system", () => {
     for (const mode of ["light", "dark", "hc"] as const) {
       test(`no clipped control on the home, contacts and users screens in ${language}, ${mode}`, async ({ page }) => {
         await freshStart(page, language);
-        await page.evaluate((m) => localStorage.setItem("erp.theme", m), mode);
-        await page.reload();
         await signIn(page, language === "ar" ? users.adminArabic : users.admin);
+        await expect(page.locator("nav").first()).toBeVisible();
+        await showLook(page, { theme: mode });
         expect(await theme(page)).toBe(mode);
         expect(await clippedControls(page), "home").toEqual([]);
         for (const path of ["/contacts/contacts", "/identity/users"]) {
@@ -98,9 +143,9 @@ test.describe("design system", () => {
     for (const density of ["compact", "comfortable"] as const) {
       test(`text cut with an ellipsis always carries its full text as a title, in ${language}, ${density} (list cells, tabs, placeholders, form values)`, async ({ page }) => {
         await freshStart(page, language);
-        await page.evaluate((d) => localStorage.setItem("erp.density", d), density);
-        await page.reload();
         await signIn(page, language === "ar" ? users.adminArabic : users.admin);
+        await expect(page.locator("nav").first()).toBeVisible();
+        await showLook(page, { density });
         // A cut cell is titled when the person points at it (nothing writes to the page by itself): point at
         // every cut element in turn and require the title.
         const cutWithoutTitle = async () => {
