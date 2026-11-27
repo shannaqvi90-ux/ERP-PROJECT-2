@@ -128,4 +128,19 @@ describe("home dashboard", () => {
       }
     });
   }
+
+  // Whatever a module adds later: every figure that counts as work waiting names the permission that acts on it
+  // (a read-only user is not told to fix what they cannot), and each such figure is in the list above.
+  it("has an act permission on every attention figure of every module, and a behaviour test for each", () => {
+    const sources = import.meta.glob("../*/home.tsx", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+    const found: { module: string; key: string; hasAct: boolean }[] = [];
+    for (const [path, text] of Object.entries(sources)) {
+      for (const figure of text.matchAll(/\{[^{}]*attention:\s*true[^{}]*\}/g)) {
+        found.push({ module: path, key: /key:\s*"([^"]+)"/.exec(figure[0])?.[1] ?? figure[0], hasAct: /actPermission:\s*"[^"]+"/.test(figure[0]) });
+      }
+    }
+    expect(found.length).toBeGreaterThanOrEqual(2);
+    expect(found.filter((f) => !f.hasAct).map((f) => `${f.module} ${f.key}`)).toEqual([]);
+    expect(found.map((f) => f.key).sort()).toEqual(["identity.neverSignedIn", "jobs.failed"]);
+  });
 });
