@@ -308,3 +308,18 @@ test("every task fixture's person is masked in a blind shot of either product (r
     for (const n of names) assert.ok(revealsIdentity(n, b), `${product}: the fixture person "${n}" is not masked`);
   }
 });
+
+test('tasks run one at a time into the same folder all stay on the blind review page (round 17, critic p01 r16)', () => {
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'review-'));
+  try {
+    const run = task => ({ cmp: { task }, runs: { ours: { status: 'verified', screenshots: [{ file: `${task}-a.jpg`, moment: 'done' }] }, odoo: { status: 'verified', screenshots: [{ file: `${task}-b.jpg`, moment: 'done' }] } } });
+    writeReview(out, [run('find-record')]);
+    writeReview(out, [run('add-rate')]);
+    const html = fs.readFileSync(path.join(out, 'blind', 'review.html'), 'utf8');
+    for (const t of ['find-record', 'add-rate']) assert.ok(html.includes(`<h2>${t}</h2>`), `${t} is missing from the page`);
+    assert.deepEqual(Object.keys(JSON.parse(fs.readFileSync(path.join(out, 'key.json'), 'utf8')).letters).sort(), ['add-rate', 'find-record']);
+    // A task run again replaces its own section, never doubling it.
+    writeReview(out, [run('add-rate')]);
+    assert.equal((fs.readFileSync(path.join(out, 'blind', 'review.html'), 'utf8').match(/<h2>add-rate<\/h2>/g) || []).length, 1);
+  } finally { fs.rmSync(out, { recursive: true, force: true }); }
+});
