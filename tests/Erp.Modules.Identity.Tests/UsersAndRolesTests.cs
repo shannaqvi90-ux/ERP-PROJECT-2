@@ -225,6 +225,46 @@ public sealed class UsersAndRolesTests(IdentityFixture fixture) : IClassFixture<
     }
 
     [Fact]
+    public async Task The_look_follows_the_user_and_stays_with_the_user_who_chose_it()
+    {
+        var email = $"look@{Env.TenantA.EmailDomain}";
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var roles = (await admin.GetFromJsonAsync<JsonElement>("/api/identity/roles")).GetProperty("items");
+        var readOnly = roles.EnumerateArray().First(r => !r.GetProperty("isSystem").GetBoolean()
+            && r.GetProperty("permissions").EnumerateArray().Any(p => p.GetString() == "identity.profile.update"));
+        var created = await admin.PostAsJsonAsync("/api/identity/users", new { email, displayName = "Look", language = "en", password = ErpTestEnvironment.Password, roleIds = new[] { readOnly.GetProperty("id").GetGuid() } });
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+
+        using var user = await Env.SignInAsync(email);
+        var first = (await user.GetFromJsonAsync<JsonElement>("/api/auth/session")).GetProperty("user");
+        Assert.True(first.GetProperty("theme").ValueKind is JsonValueKind.Null or JsonValueKind.Undefined);
+        Assert.True(first.GetProperty("density").ValueKind is JsonValueKind.Null or JsonValueKind.Undefined);
+
+        var theme = await user.PutAsJsonAsync("/api/identity/me/look", new { theme = "light" });
+        Assert.Equal(HttpStatusCode.OK, theme.StatusCode);
+        Assert.Equal("light", (await Json(theme)).GetProperty("theme").GetString());
+        var density = await user.PutAsJsonAsync("/api/identity/me/look", new { density = "comfortable" });
+        var densityBody = await Json(density);
+        Assert.Equal("comfortable", densityBody.GetProperty("density").GetString());
+        Assert.Equal("light", densityBody.GetProperty("theme").GetString());
+
+        using var again = await Env.SignInAsync(email);
+        var session = (await again.GetFromJsonAsync<JsonElement>("/api/auth/session")).GetProperty("user");
+        Assert.Equal("light", session.GetProperty("theme").GetString());
+        Assert.Equal("comfortable", session.GetProperty("density").GetString());
+
+        // Another user of the same workspace is not given it.
+        var other = (await admin.GetFromJsonAsync<JsonElement>("/api/auth/session")).GetProperty("user");
+        Assert.True(other.GetProperty("theme").ValueKind is JsonValueKind.Null or JsonValueKind.Undefined);
+
+        var invalid = await again.PutAsJsonAsync("/api/identity/me/look", new { theme = "neon" });
+        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        Assert.Equal("oneOf", (await Json(invalid)).GetProperty("errors").GetProperty("theme")[0].GetProperty("code").GetString());
+        var empty = await again.PutAsJsonAsync("/api/identity/me/look", new { });
+        Assert.Equal(HttpStatusCode.BadRequest, empty.StatusCode);
+    }
+
+    [Fact]
     public async Task User_search_finds_by_name_or_email_and_escapes_wildcards()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
