@@ -41,7 +41,7 @@ identity.roles.update identity.roles update *  # the role's names and permission
 identity.roles.delete identity.roles delete *  # the role removed
 identity.roles.delete identity.user_roles delete *  # with its assignments in every company: nobody holds a role that no longer exists (seen at a role users hold, critic p02 round 14)
 identity.roles.delete identity.user_company_roles delete *  # with its assignments in one company (those in companies the caller does not work in by the foreign key)
-identity.profile.update identity.users update language,numerals,device_approval_hash,device_approval_until  # the caller's own language and digits, and letting one of their own devices past a pause on a shared address; never their name, e-mail, active flag or anyone else's row
+identity.profile.update identity.users update language,numerals,theme,density,device_approval_hash,device_approval_until  # the caller's own language, digits, theme and density (the look of their screens), and letting one of their own devices past a pause on a shared address; never their name, e-mail, active flag or anyone else's row
 identity.profile.update identity.passkeys insert,update,delete *  # the caller's own passkeys
 
 # Contacts: the shared directory of organisations and people. Never deleted (the application role
