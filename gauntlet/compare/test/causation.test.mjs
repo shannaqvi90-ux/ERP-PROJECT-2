@@ -1101,3 +1101,40 @@ test('causation (round 16): the press and focus state the browser sets for a cli
   // An input before every step is no step's.
   assert.equal(screens([task(51, FRAME, press, { dur: 5 })])[0].caused, false);
 });
+
+// -- round 16: the round-15 rules held to their edges (gate backlog rows 24 and 25: the critic's mutations K1-K10) -----
+
+test('causation (round 16): a task posted from another thread, or by an id two tasks used, links nothing (round 15 edges)', () => {
+  // The compositor's task posted it (another thread, as the browser's frame scheduling does): only the page's main thread
+  // links. The click's task ran just before: the older rule judges it.
+  const fromWorker = screens([task(101, INPUT, click(), { dur: 3 }), task(105, 'scheduler.cc:PostPendingBeginFrameTask', [flowFrom(1, 7)], { tid: 72 }), task(110, FOCUS_TASK, focusCleared(7))]);
+  assert.equal(fromWorker.find(c => c.at > 0.109).caused, true, fromWorker.find(c => c.at > 0.109).why);
+  assert.doesNotMatch(fromWorker.find(c => c.at > 0.109).chain.join(' '), /posted/);
+  // An id two posts used (the second the click's, a timer in between is uncaused): no link, and the older rule sees the timer.
+  const twice = screens([task(90, TIMER, [fire(1, 2), flowFrom(3, 7)]), task(101, INPUT, [...click(), flowFrom(3, 7)], { dur: 3 }), task(106, TIMER, [fire(1, 4)], { dur: 2 }), task(110, FOCUS_TASK, focusCleared(7))]);
+  assert.equal(twice.find(c => c.at > 0.109).caused, false);
+  assert.doesNotMatch(twice.find(c => c.at > 0.109).why, /posted by a task/);
+});
+
+test('causation (round 16): the :hover rule at its edges (round 15 mutations K2-K10)', () => {
+  const QUEUE = 'main_thread_event_queue.cc:SetNeedsMainFrame';
+  const state = (extraData, reason = 'PseudoClass', at = 1) => change(at, 'StyleRecalcInvalidationTracking', { reason, extraData, nodeName: 'BUTTON' });
+  const timer = task(30, TIMER, [fire(1, 2)]);
+  // In a script's call (a frame that also ran one): the script's, not the pointer's.
+  const inScript = screens([timer, task(101, QUEUE, [], { dur: 1 }), task(103, FRAME, [X('FunctionCall', 0.5, 2, { url: 'http://p/' }), state(':hover', 'PseudoClass', 1), ...MOVES])]);
+  assert.equal(inScript.find(c => c.at > 0.102).caused, false);
+  // A task that is not a frame's (a message's) does not deliver the pointer.
+  const message = screens([timer, task(101, QUEUE, [], { dur: 1 }), task(103, IPC, [state(':hover'), ...MOVES])]);
+  assert.equal(message.find(c => c.at > 0.102).caused, false);
+  // Another pseudo-class (:checked, :target) and another reason are not the pointer's state.
+  assert.equal(screens([timer, task(101, QUEUE, [], { dur: 1 }), task(103, FRAME, [state(':checked'), ...MOVES])]).find(c => c.at > 0.102).caused, false);
+  assert.equal(screens([timer, task(101, QUEUE, [], { dur: 1 }), task(103, FRAME, [state(':hover', 'Attribute'), ...MOVES])]).find(c => c.at > 0.102).caused, false);
+  // A task between the frames that is not the input queue's (a timer's) is no pointer input.
+  const notQueue = screens([task(101, TIMER, [fire(1, 5)], { dur: 1 }), task(103, FRAME, [state(':hover'), ...MOVES])]);
+  assert.equal(notQueue.find(c => c.at > 0.102).caused, false);
+  // The step is the one the pointer input follows, not the one running when the frame ends.
+  const early = screens([task(101, QUEUE, [], { dur: 1 }), task(160, FRAME, [state(':hover'), ...MOVES])], [[100, 10], [150, 10]]);
+  const hover = early.find(c => c.at > 0.159);
+  assert.equal(hover.caused, true, hover.why);
+  assert.equal(hover.step, 1);
+});
