@@ -182,31 +182,21 @@ export async function maskTargets(page, branding, { perLocator = 300 } = {}) {
  * look like any other field.
  */
 export async function neutraliseDocument(page, words = []) {
-  await inNeutralWorld(page, null, words);
-}
-
-/** Put back the theme neutraliseDocument showed in light for the shot. */
-export async function restoreLook(page) {
-  const restore = () => {
-    const root = document.documentElement;
-    const was = root.getAttribute('data-blind-theme');
-    if (was === null) return;
-    root.dataset.theme = was;
-    root.removeAttribute('data-blind-theme');
-  };
-  await inNeutralWorld(page, `(${restore})()`);
+  return inNeutralWorld(page, null, words);
 }
 
 /**
- * The blind screenshot of a page: neutral document, light theme, painted-over branding, greyscale;
- * the page's own theme back afterwards. One function for the operator and the self-tests.
+ * The blind screenshot of a page: neutral document, light look, painted-over branding, greyscale.
+ * One function for the operator and the self-tests. Round 17 (fix of the integrator's pre-check): the light
+ * look is a style sheet of the shot (Playwright adds it for the screenshot and removes it), never a change
+ * of the page's own theme attribute. Switching data-theme and back made the product page redraw in
+ * the measured part (native controls change size with color-scheme; its resize and mutation observers
+ * then ran script after the shot, outside any step: find-record came out INVALID on 1 of 3 health runs).
  */
 export async function blindScreenshot(page, branding, options) {
-  await neutraliseDocument(page, branding.words);
-  try {
-    return await page.screenshot({ animations: 'disabled', caret: 'hide', style: NEUTRAL_STYLE,
-      mask: await maskTargets(page, branding), maskColor: MASK_COLOR, ...options });
-  } finally { await restoreLook(page); }
+  const light = await neutraliseDocument(page, branding.words);
+  return page.screenshot({ animations: 'disabled', caret: 'hide', style: NEUTRAL_STYLE + (light || ''),
+    mask: await maskTargets(page, branding), maskColor: MASK_COLOR, ...options });
 }
 
 async function inNeutralWorld(page, given, words = []) {
@@ -217,19 +207,33 @@ async function inNeutralWorld(page, given, words = []) {
     document.title = 'Product';
     // Round 17 (critic p01 r16): our screens are dark until a person chooses a theme and the reference's
     // are light, so greyscale alone left the two sets apart by lightness. A screen that states a theme
-    // on <html> is shown in its light theme for the shot only (restoreLook puts the attribute back right
-    // after); the reference states none and is left as it is.
-    const root = document.documentElement;
-    if (root.dataset.theme && root.dataset.theme !== 'light' && !root.hasAttribute('data-blind-theme')) {
-      root.setAttribute('data-blind-theme', root.dataset.theme);
-      root.dataset.theme = 'light';
+    // on <html> that is not light is shown with the values its own light theme gives (read from its style
+    // sheets, nothing written to the page); the reference states none and is left as it is. The text is
+    // returned for the shot's style sheet. color-scheme is left out: it changes how native controls draw.
+    let light = '';
+    const theme = document.documentElement.dataset.theme;
+    if (theme && theme !== 'light') {
+      const decls = [];
+      for (const sheet of document.styleSheets) {
+        let rules;
+        try { rules = sheet.cssRules; } catch { continue; }
+        for (const r of rules) {
+          if (r.type !== 1 || !/(^|,)\s*(:root)?\[data-theme=["']?light["']?\]\s*(,|$)/.test(r.selectorText)) continue;
+          for (let i = 0; i < r.style.length; i++) {
+            const name = r.style[i];
+            if (name !== 'color-scheme') decls.push(`${name}:${r.style.getPropertyValue(name)} !important`);
+          }
+        }
+      }
+      if (decls.length) light = `\n:root[data-theme]{${decls.join(';')}}`;
     }
     for (const l of document.querySelectorAll('link[rel~="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]')) l.remove();
-    if (!brandWords.length) return;
+    if (!brandWords.length) return light;
     const re = new RegExp(brandWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'i');
     for (const attr of ['placeholder', 'aria-label', 'alt']) {
       for (const el of document.querySelectorAll(`[${attr}]`)) if (re.test(el.getAttribute(attr))) el.setAttribute(attr, '');
     }
+    return light;
   };
   const expression = given ?? `(${neutral})(${JSON.stringify(words)})`;
   for (let attempt = 0; attempt < 3; attempt++) {
@@ -241,7 +245,7 @@ async function inNeutralWorld(page, given, words = []) {
         w.contextId = (await w.cdp.send('Page.createIsolatedWorld', { frameId: frameTree.frame.id, worldName: 'compare-neutral', grantUniveralAccess: false })).executionContextId;
       }
       const r = await w.cdp.send('Runtime.evaluate', { expression, contextId: w.contextId, returnByValue: true, silent: true });
-      if (!r.exceptionDetails) return;
+      if (!r.exceptionDetails) return r.result?.value;
       w.contextId = null; // a new document: a new world
     } catch {
       const w = neutralWorlds.get(page);

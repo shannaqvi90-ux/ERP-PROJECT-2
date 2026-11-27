@@ -44,3 +44,20 @@ Estimated added processor time: under 100 s.
 
 ## Ties
 No comparison task result changed this round; no tie path analysis needed beyond follow-approval (not compared: the ours driver waits for p13, as the spec allows).
+
+## Fix after the integrator's pre-check (round 17, fixer 1): the light look is a style sheet, not a theme switch
+
+The integrator's health check of the merge (`run.mjs --task built --product ours --health`, three runs on a clean stack)
+had find-record INVALID once: "the page changed what it shows without a counted step causing it ... a task of no traceable
+origin (a message, an observer) after a page task no step caused: a DevTools command outside any step". Switching
+`data-theme` dark to light and back made the product page redraw; native controls change size with `color-scheme`, so its
+own resize and mutation observers (ListView.tsx, `flushSync(grow)`) ran script after the shot, outside any step. The
+causation rule is right to judge that: the page must not run script because of the harness.
+
+Change: `blindScreenshot` (lib/blind.mjs) no longer writes to the page's theme at all (`restoreLook` and
+`data-blind-theme` are gone). In the harness's isolated world it reads (writes nothing) the declarations of the page's
+own `[data-theme="light"]` style rule, leaves out `color-scheme`, and the shot's style sheet (Playwright adds and
+removes it, as for the greyscale) sets them on `:root[data-theme]` with `!important`. The reference states no theme and
+gets nothing. self-test (test/blind.test.mjs) now also records every attribute write on `<html>` during a shot and requires none.
+Mutations M165 and M166 were reworded to the new code (still 167 in all, all caught). Not run live: the clean-stack
+health check (see the fixer's notes in the commit); the compare tests were run here.

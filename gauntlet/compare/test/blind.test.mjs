@@ -251,7 +251,7 @@ const oursScreen = theme => `<!doctype html><html${theme ? ` data-theme="${theme
 const referenceScreen = `<!doctype html><html><head><style>body{margin:0;background:#f9fafb;color:#212529;font:14px sans-serif}
   header{background:#714b67;height:44px} main{background:#fff;margin:12px;padding:16px;height:500px}</style></head><body><header></header><main>Contacts<br>Rows</main></body></html>`;
 
-test('blind shots of the two products cannot be told apart by their mean brightness, and a dark screen is shown light for the shot only (round 17)', async () => {
+test('blind shots of the two products cannot be told apart by their mean brightness, and a dark screen is shown light without the page being changed (round 17)', async () => {
   const { launch, newContext } = await import('../lib/browser.mjs');
   const { blindScreenshot, NEUTRAL_STYLE } = await import('../lib/blind.mjs');
   const browser = await launch();
@@ -274,14 +274,17 @@ test('blind shots of the two products cannot be told apart by their mean brightn
       assert.ok(mean > 150, `ours (${theme}) is light in a blind shot (${mean})`);
       assert.ok(Math.abs(mean - theirs) < 40, `ours (${theme}) ${mean} and the reference ${theirs} are told apart by brightness`);
     }
-    // Only for the shot: the screen's own theme is back afterwards, and nothing is left behind.
+    // Nothing of the page is changed for the shot: no attribute of <html> is written (round 17 pre-check: a
+    // theme switched and back made the product's own observers run script outside any step), and the theme is as it was.
     await page.setContent(oursScreen('dark'));
+    await page.evaluate(() => {
+      window.__htmlChanges = [];
+      new MutationObserver(list => { for (const m of list) window.__htmlChanges.push(`${m.attributeName}`); }).observe(document.documentElement, { attributes: true });
+    });
     await blindScreenshot(page, brandingFor('ours'), { type: 'png' });
     assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 'dark');
+    assert.deepEqual(await page.evaluate(() => window.__htmlChanges), [], 'the blind shot wrote to <html>');
     assert.equal(await page.evaluate(() => document.documentElement.hasAttribute('data-blind-theme')), false);
-    // A shot that fails still puts the theme back.
-    await assert.rejects(blindScreenshot(page, brandingFor('ours'), { type: 'png', timeout: 1, path: '/nonexistent-dir/x/y.png' }));
-    assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 'dark');
   } finally { await browser.close(); }
 });
 

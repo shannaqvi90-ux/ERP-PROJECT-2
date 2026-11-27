@@ -210,8 +210,8 @@ export const MUTATIONS = [
   ['M162', 'page code between the update and the point ignored', 'lib/causation.mjs', "if (scriptHolds(last.ts) || entries.some(e => e.ts >= last.ts && e.ts <= point.ts)) return null;", "if (scriptHolds(last.ts)) return null;", 'test/causation.test.mjs', 'round 17\\): the update is the last one'],
   ['M163', 'the update extended back over page code that ran between its steps', 'lib/causation.mjs', "    if (scriptHolds(s.ts) || entries.some(e => e.ts >= s.ts && e.ts < start)) break;", "    if (scriptHolds(s.ts)) break;", 'test/causation.test.mjs', 'round 17\\): the update is the last one'],
   ['M164', 'the browser-state rule taken for any mark kind with a pseudo-class reason', 'lib/causation.mjs', "if (!point || point.name !== 'StyleRecalcInvalidationTracking' || point.args?.data?.reason !== 'PseudoClass' || !FOCUS_STATES", "if (!point || point.args?.data?.reason !== 'PseudoClass' || !FOCUS_STATES", 'test/causation.test.mjs', 'round 17\\): the rule is for the state change'],
-  ['M165', 'no light theme in the blind shots (ours stays dark)', 'lib/blind.mjs', "      root.dataset.theme = 'light';\n    }", "    }", 'test/blind.test.mjs', 'mean brightness'],
-  ['M166', 'the theme not put back after a blind shot', 'lib/blind.mjs', "    root.dataset.theme = was;\n    root.removeAttribute('data-blind-theme');", "    root.removeAttribute('data-blind-theme');", 'test/blind.test.mjs', 'mean brightness'],
+  ['M165', 'no light theme in the blind shots (ours stays dark)', 'lib/blind.mjs', "      if (decls.length) light =", "      if (false) light =", 'test/blind.test.mjs', 'mean brightness'],
+  ['M166', 'a high-contrast screen left out of the light look', 'lib/blind.mjs', "if (theme && theme !== 'light') {", "if (theme === 'dark') {", 'test/blind.test.mjs', 'mean brightness'],
   ['M167', 'a fixture person left out of the identity list', 'lib/blind.mjs', "'Layla Linguist', 'Sara Signin', 'Hessa Clerk'],", "'Sara Signin', 'Hessa Clerk'],", 'test/blind.test.mjs', 'every task fixture'],
 ];
 
