@@ -497,20 +497,25 @@ const STALE_MARK = /^(ScheduleStyleInvalidationTracking|ScheduleStyleRecalculati
 const isEntry = (task, e) => e.ph === 'X' && ENTRY_SPAN.test(e.name) && !(task.protocol && /^(FunctionCall|EvaluateScript)$/.test(e.name) && !PAGE_SCRIPT(e));
 
 /**
- * Round 16 (the health-check fault, lead): the browser's default action of an input. A click moves the
- * focus to what was pressed and a key may too; Blink does it in the task that delivered the event, after
- * the event's dispatch and outside any script (its blur and focus events follow). A focus or press state
- * recalculation outside every entry into the page's code, after a discrete input event the browser
- * delivered in the same task, is that input's (the step the input belongs to), never a guess from the
- * task before it (which may be a command of the harness that only read the page).
+ * Round 16 (the health-check fault, lead): the browser's own state of what an input acts on. A press sets
+ * :active before it dispatches pointerdown; a click moves the focus to what was pressed, and a key may too,
+ * after the event's dispatch (its blur and focus events follow). A focus or press state recalculation
+ * outside every entry into the page's code, in the task that delivered a discrete input event, with none of
+ * the page's code between it and the event's dispatch, is that input's (the step the input belongs to),
+ * never a guess from the task before it (which may be a command of the harness that only read the page).
  */
 function inputDefaultActionCause(ctx, task, point) {
   if (!point || point.name !== 'StyleRecalcInvalidationTracking' || point.args?.data?.reason !== 'PseudoClass' || !FOCUS_STATES.test(String(point.args?.data?.extraData || ''))) return null;
   if (task.protocol || !task.inputs.length) return null;
   if (task.events.some(e => isEntry(task, e) && !task.inputs.includes(e) && e.ts < point.ts && e.ts + (e.dur || 0) > point.ts)) return null;
-  if (!task.inputs.some(e => e.ts + (e.dur || 0) <= point.ts)) return null;
+  // The state is set before the event's dispatch (a press sets :active) or after it (the focus a press moves),
+  // by the browser, with none of the page's code in between.
+  const pageCode = task.events.filter(e => isEntry(task, e) && e.name !== 'EventDispatch');
+  const delivered = task.inputs.some(e => e.ts + (e.dur || 0) <= point.ts && !pageCode.some(x => x.ts >= e.ts + (e.dur || 0) && x.ts < point.ts))
+    || task.inputs.some(e => e.ts >= point.ts && !pageCode.some(x => x.ts >= point.ts && x.ts < e.ts));
+  if (!delivered) return null;
   const s = stepBefore(ctx, task.ts);
-  return s ? yes(s.n, [`the browser's default action of step ${s.n}'s input (focus follows it)`], task.ts) : null;
+  return s ? yes(s.n, [`the browser's own state for step ${s.n}'s input (press or focus)`], task.ts) : null;
 }
 
 /**

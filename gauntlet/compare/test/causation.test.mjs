@@ -1070,20 +1070,34 @@ test('causation (round 16): a read of the harness that forces the update posts n
   assert.equal(cleaned.find(c => c.at > 0.111).caused, true);
 });
 
-test('causation (round 16): the focus a click moves, in the task that delivered it and after its dispatch, is the click\'s (its default action)', () => {
+test('causation (round 16): the press and focus state the browser sets for a click, in the task that delivered it, is the click\'s', () => {
   const press = [X('EventDispatch', 1, 1, { type: 'mousedown' }), change(2.2, 'StyleRecalcInvalidationTracking', { reason: 'PseudoClass', extraData: ':focus', nodeName: 'INPUT' }), X('EventDispatch', 2.6, 0.2, { type: 'blur' })];
   const moved = screens([READ(100.2), task(103, FRAME, press, { dur: 5 })]);
   assert.equal(moved.length, 1);
   assert.equal(moved[0].caused, true, moved[0].why);
   assert.equal(moved[0].step, 1);
-  // Before the event was dispatched, or with no input in the task, or a change of another kind: not covered.
-  assert.equal(screens([READ(100.2), task(103, FRAME, [change(0.5, 'StyleRecalcInvalidationTracking', { reason: 'PseudoClass', extraData: ':focus', nodeName: 'INPUT' }), X('EventDispatch', 1, 1, { type: 'mousedown' })], { dur: 5 })])[0].caused, false);
+  // The press sets :active before pointerdown is dispatched, with none of the page's code in between.
+  const active = [change(0.5, 'StyleRecalcInvalidationTracking', { reason: 'PseudoClass', extraData: ':active', nodeName: 'BUTTON' }), X('EventDispatch', 1, 1, { type: 'pointerdown' })];
+  const pressed = screens([READ(100.2), task(103, FRAME, active, { dur: 5 })]);
+  assert.equal(pressed[0].caused, true, pressed[0].why);
+  assert.equal(pressed[0].step, 1);
+  // ... but not when the page's own code ran between the state and the event (a script moved it), with no input in
+  // the task, or for a change of another kind.
+  assert.equal(screens([READ(100.2), task(103, FRAME, [active[0], X('FunctionCall', 0.7, 0.2, { url: 'http://p/' }), active[1]], { dur: 5 })])[0].caused, false);
   assert.equal(screens([task(30, TIMER, [fire(1, 2)]), task(103, FRAME, [change(2.2, 'StyleRecalcInvalidationTracking', { reason: 'PseudoClass', extraData: ':focus', nodeName: 'INPUT' }), X('EventDispatch', 2.6, 0.2, { type: 'blur' })], { dur: 5 })])[0].caused, false);
   assert.equal(screens([READ(100.2), task(103, FRAME, [X('EventDispatch', 1, 1, { type: 'mousedown' }), change(2.2), X('EventDispatch', 2.6, 0.2, { type: 'blur' })], { dur: 5 })])[0].caused, false);
   // A focus a script of the page moved (an observer's callback the frame ran after the dispatch) is not the input's.
   const scripted = screens([READ(100.2), task(103, FRAME, [X('EventDispatch', 1, 1, { type: 'mousedown' }), X('FunctionCall', 2, 2, { url: 'http://p/' }),
     change(2.5, 'StyleRecalcInvalidationTracking', { reason: 'PseudoClass', extraData: ':focus', nodeName: 'INPUT' })], { dur: 5 })]);
   assert.equal(scripted[0].caused, false);
+  // A state the page's own script set (inside its call), followed by an input's dispatch in the same frame, is the script's.
+  const inside = screens([task(30, TIMER, [fire(1, 2)]), task(103, FRAME, [X('FunctionCall', 0.5, 1, { url: 'http://p/' }), change(1, 'StyleRecalcInvalidationTracking', { reason: 'PseudoClass', extraData: ':focus', nodeName: 'INPUT' }),
+    X('EventDispatch', 2, 1, { type: 'mousedown' })], { dur: 5 })]);
+  assert.equal(inside.find(c => c.event === 'StyleRecalcInvalidationTracking').caused, false);
+  // A focus change after the page's own code ran after the dispatch (a handler's script, then the change) is not the input's.
+  const after = screens([READ(100.2), task(103, FRAME, [X('EventDispatch', 1, 1, { type: 'mousedown' }), X('FunctionCall', 2.2, 0.5, { url: 'http://p/' }),
+    change(3, 'StyleRecalcInvalidationTracking', { reason: 'PseudoClass', extraData: ':focus', nodeName: 'INPUT' })], { dur: 5 })]);
+  assert.equal(after.find(c => c.at > 0.1055).caused, false);
   // An input before every step is no step's.
   assert.equal(screens([task(51, FRAME, press, { dur: 5 })])[0].caused, false);
 });
