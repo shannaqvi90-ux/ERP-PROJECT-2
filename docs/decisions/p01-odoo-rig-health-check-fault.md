@@ -78,3 +78,80 @@ the notes of the round (10 of 10 valid). Before: import-5000 and open-attached-f
 The trace now carries the flow events (a few thousand per second of recording); recording is limited to
 measured tasks that save and to screen-cause judgement as before. No change to the processor time of verify
 beyond the comparison-harness stage.
+
+# Round 16 (serial-27a): what the follow-up of a step really carries out
+
+Status: decided 2026-11-27. The r15 critic's verdict (ledger 2026-11-26T13:53:00Z): add-rate judged INVALID,
+"a task posted by a task no step caused: a DevTools command outside any step (the harness reading the page)",
+0.011 s after step 4 (Enter, save), with the rate saved as asked; 1 time in 4 clean-stack runs.
+
+## Reproduction
+
+Clean verify-style stack (generated users, no comparison dataset, project b-p01-odoo-rig), add-rate run alone:
+valid 6 of 6. The same run with 14 busy loops beside it (a loaded machine, trace recorded with
+COMPARE_TRACE_DIR): 25 runs, 5 invalid, 4 of them the critic's reason and one a sibling (below). Judging the
+recorded traces offline (screenCauses on the saved JSON) reproduced every verdict, so the traces below are
+the evidence, not a timing guess.
+
+## What the follow-up is
+
+In all four "posted by a task no step caused" traces the task is `document.cc:ClearFocusedElementIfNeeded`
+(Blink clears the focus of a control that went away: here the rate input, disabled while the save runs). Its
+poster, by flow id, is not a harness command at all but the frame task
+(`proxy_impl.cc:ScheduledActionSendBeginMainFrame`, 47 to 65 ms under load) that delivered the Enter key:
+
+1. `EventDispatch keydown` (20 ms; the form's handler marks style stale: `ScheduleStyleInvalidationTracking`,
+   `ScheduleStyleRecalculation` inside its FunctionCall),
+2. the frame's own update (`UpdateLayoutTree`, `Layout`, `PrePaint`), after the dispatch had ended,
+3. the post (flow start) inside that update, 1.5 ms after the script had ended.
+
+The post point lies after the input's dispatch span, in no script, so `pointCause` found no rule for it and
+fell to `otherCause`, which guesses from the page task before the frame. Under load that task is a DevTools
+command the harness ran just before the frame (Playwright's check of the target, a read), "outside any step",
+so the guess said "no step" and r15's `postedCause` carried that verdict to the follow-up. The harness read
+posted nothing and caused nothing; it only happened to be the nearest task. Verdicts therefore flipped with
+how many milliseconds the machine put between the read and the frame: a timing window by accident.
+
+The fifth invalid trace (step 2, a click on the EUR row, 0.807 s) is the same defect one level up: the click's
+mousedown moved the focus (`StyleRecalcInvalidationTracking PseudoClass :focus` on the search box and the
+table, then the blur and focusout dispatches) in the frame task that delivered it, after the mousedown
+dispatch, outside script. That is the browser's default action of the input, and it was judged the same way
+(by the harness read before the frame).
+
+## Decision
+
+Two rules, both exact (a fact of the trace decides, never nearness in time or to a step), both added before
+the "guess from the task before" rule, which stays as it was:
+
+- `forcedWorkCause` (work a frame's or a command's update of style and layout carries out). A point that lies
+  in the browser's own update (UpdateLayoutTree, Layout, PrePaint, Paint with no entry into the page's code
+  from its start to the point, and not forced from inside a script's call) is judged by what the update
+  carries out: style made stale since the update before, found as the trace's own marks
+  (`ScheduleStyleInvalidationTracking`, `ScheduleStyleRecalculation`, `StyleRecalcInvalidationTracking`)
+  between that update's end and this one's start, each judged at its own point, once per entry into the page's
+  code. The work is the step's only when every mark's maker is a step; one maker no step caused (a timer armed
+  before the clock, a command of the harness) makes it uncaused, with that maker's reason. No marks found: nothing is
+  claimed and the older rules judge it. For a task posted from inside such an update of a DevTools command (a
+  harness read forcing layout) the same rule judges the follow-up, so a read that forces what a pre-clock timer
+  made stale stays INVALID, and one that forces what a step made stale does not blame the read.
+- `inputDefaultActionCause`. A `:focus`, `:focus-visible`, `:focus-within` or `:active` recalculation outside
+  every entry into the page's code, after a discrete input event the browser delivered in the same task, is the
+  default action of that input: the step the input belongs to. Not a focus the page moved (inside its script),
+  not before the dispatch, not in a task with no input, not another kind of change.
+
+What was not done: no widening of the "followed at once" rule, no change to what a harness read is
+(it causes nothing), no timing window. A microtask checkpoint a read forces has no flow link and no marks:
+it stays judged as before (uncaused), which is the safe side.
+
+## Tests
+
+- test/causation.test.mjs "round 16" (synthetic traces): the frame's update after the Enter, with a harness
+  read before the frame (caused by step 1); the same with the style made stale by a timer armed before the
+  clock (uncaused, the timer named); one timer maker among two (uncaused); no marks (older rules, uncaused);
+  an update forced inside an observer's call (older rules); stale style a step made in an earlier task
+  (caused); a harness read forcing what the click's handler made stale (caused) and what a pre-clock timer
+  made stale (uncaused: the required plant); marks the update before already cleared (not counted again);
+  the focus default action: caused, and not covered before the dispatch, with no input, inside a script,
+  another change, before every step.
+- Mutations M139-M146 (scripts/mutations.mjs) of the new code: all caught.
+- Every existing plant and the 84 causation and screen-cause tests still pass.
