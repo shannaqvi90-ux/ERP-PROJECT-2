@@ -135,9 +135,13 @@ the "guess from the task before" rule, which stays as it was:
   harness read forcing layout) the same rule judges the follow-up, so a read that forces what a pre-clock timer
   made stale stays INVALID, and one that forces what a step made stale does not blame the read.
 - `inputDefaultActionCause`. A `:focus`, `:focus-visible`, `:focus-within` or `:active` recalculation outside
-  every entry into the page's code, after a discrete input event the browser delivered in the same task, is the
-  default action of that input: the step the input belongs to. Not a focus the page moved (inside its script),
-  not before the dispatch, not in a task with no input, not another kind of change.
+  every entry into the page's code, in the task that delivered a discrete input event, with none of the page's
+  code between it and the event's dispatch, is the browser's own state for that input: the step the input
+  belongs to. A press sets `:active` before it dispatches pointerdown; the focus a press moves follows the
+  mousedown. Not a state the page moved (inside its script, or with its code in between), not in a task with
+  no input, not another kind of change. (Found by the load runs: the sixth failing shape was a `:active`
+  recalculation before pointerdown in the frame that delivered the press, 0.039 s into the measured part of
+  round 9's plant A24 on a loaded machine; the same guess from the task before, a harness read.)
 
 What was not done: no widening of the "followed at once" rule, no change to what a harness read is
 (it causes nothing), no timing window. A microtask checkpoint a read forces has no flow link and no marks:
@@ -155,3 +159,28 @@ it stays judged as before (uncaused), which is the safe side.
   another change, before every step.
 - Mutations M139-M146 (scripts/mutations.mjs) of the new code: all caught.
 - Every existing plant and the 84 causation and screen-cause tests still pass.
+
+## Evidence of this round (serial-27a)
+
+- Reproduction under load and offline judging of the saved traces: 25 add-rate runs with 14 busy loops, 5
+  invalid (four of the critic's shape, one the click's focus); after the rules every one of those traces is
+  judged valid (`screenCauses` on the saved JSON). One more shape (A24, `:active` before pointerdown) found
+  in a full-suite run at load 35 and fixed with the same rule.
+- Built-ours health check on a fresh clean stack each time (generated users, 2,000, no comparison dataset;
+  ./erp down --volumes, ./erp up, the toolbox image, node 24, Chromium 1243): 20 runs of 24 drivers, 480 of
+  480 verified, 0 invalid (the first four with a dotnet build and other agents' work beside them, load 19 to
+  24; the others quiet, load 1 to 3).
+- Harness self-tests (`node --test test/*.test.mjs`, 528 tests, 501 passed, 27 skipped for want of the Odoo rig)
+  five times in a row with a looped `dotnet build Erp.slnx --no-incremental` beside them (load 15 to 33): 5 of 5
+  green, three more under the same load follow in the notes. C3, U5c, U5e, A24 and the +971 and C4 controls
+  (gate backlog row 8) ran 12 times under 24 busy loops (load 50 to 78) without a failure.
+- Processor time this round adds to ./erp verify: three self-tests (about 20 ms) and nothing in the browser.
+
+## Gate backlog rows closed
+
+- Row 24 (K1, K8) and row 25 (K2, K3, K4, K5, K7, K10): mutations M148-M155 of scripts/mutations.mjs, each
+  caught by a new self-test ("round 16): a task posted from another thread ..." and "the :hover rule at its
+  edges"). K12 and K13 (the same two mutations seen by the real-browser plants) are not added as browser plants;
+  their synthetic twins M148 and M154 are caught.
+- Row 8 (C4 and the +971 control under load): they ran 12 times under load 50 to 78 without failing after the
+  rules above; the row stays for the lead to judge on a critic's loaded verify.
