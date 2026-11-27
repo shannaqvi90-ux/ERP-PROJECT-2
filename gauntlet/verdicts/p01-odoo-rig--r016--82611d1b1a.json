@@ -1,0 +1,232 @@
+{
+  "piece": "p01-odoo-rig",
+  "round": 16,
+  "commit": "82611d1b1a917d4ad8dadd2bf7af774b68833e05",
+  "critic": "fresh critic, p01-odoo-rig round 16",
+  "judged_at": "2026-11-27T16:52:03Z",
+  "verdict": "LOSS",
+  "hard_gates": [
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds and runs all tests",
+      "status": "pass",
+      "evidence": "Fresh clone at 82611d1b. Command: ERP_VERIFY_ALONE=1 ERP_PROJECT=c-p01-odoo-rig-r16 ERP_HTTP_PORT=20150 ERP_DB_PORT=20151 ERP_VERIFY_HTTP_PORT=20160 ERP_VERIFY_DB_PORT=20161 verify-slot.sh ./erp verify. The slot was taken (alone) at 13:53:28Z with no wait. Result: 'verify passed in 8327 s' and 'Ratchet check passed'. The built-ours health check inside e2e verified 24 of 24 drivers, add-rate and export-filtered-list among them. Port and project overrides worked as documented. The demo command (ERP_SEED_USERS_CSV/CONTACTS/RATES from gauntlet/compare/data/out, ./erp up on ports 20150/20151) reported 'The demo is running (285 s)'."
+    },
+    {
+      "gate": "Instrument: the health-check fault (this round's one job)",
+      "status": "pass",
+      "evidence": "Last round's fault was a false 'action outside the clock' blamed on a harness DevTools read, seen on add-rate. It did not come back in any of my runs:\n- verify's health check: 24 of 24 verified.\n- Three more full health checks on a fresh clean stack (ERP_SEED_VOLUME=2000, no comparison CSVs, ports 20170/20171), each run through verify-slot: 24 of 24 verified each time (health/health-run1..3.log).\n- add-rate alone, 10 times on the same stack: 10 of 10 verified (health/addrate-rep.log).\n- export-filtered-list (driver changed this round to use the Tags column filter): verified on every repeat run on the same stack. Last round it timed out on repeat runs.\n\nPlants on the real instrument: the r15 critic's real-browser plants, run unchanged against the r16 harness, are all still refused. Y1, Y2 and Y3 (a record revealed by a CSS animation armed before the clock) are refused, and U1/U2 refused with their controls passing (plants/r15-yplants-on-r16-run1.log). S10, Z1 and Z2 (writes delayed by a key-armed postTask or a poll) are refused, and the Z2c control is refused as well (plants/r15-zplants-on-r16-run1.log).\n\nMy own 13 mutations of the new round-16 code (inputDefaultActionCause, forcedWorkCause, the protocol-poster branch of postedCause): 3 caught, 10 missed by test/causation.test.mjs and also by the real-browser test/screen-causes.test.mjs. These are listed in gate_gaps; they do not block."
+    },
+    {
+      "gate": "G1 tenant isolation (product as built)",
+      "status": "pass",
+      "evidence": "Every G1 dotnet group passed in my verify (http-0..3, ni-0..2, self-http, self-company, self-noninterference).\n\nMy own HTTP attack, signed in as admin@alnoor on the demo (attack/http_attack.py, reused from the r15 critic, and http-attack.out): 1,686 requests over all 264 OpenAPI operations. Tenant B's ids went into paths and query strings (including csv/xlsx/pdf exports) and into X-Tenant, X-Workspace, X-Company-Id and Host headers. The markers were 3,398 names and e-mails that exist only in B, taken from the database.\n- The 13 name hits were tenant A's own cfAccountManager custom-field values (A holds 41,701 such values; checked in the database).\n- 9 DELETEs on B ids answered 204, the same as for a random id. B's 4 exchange rates, its contact and its import session were all still present afterwards.\n\nDatabase, logged in as erp_app (attack/db-attack-login-erp_app.txt):\n- With no tenant set it sees 0 users.\n- Stamped as A, it sees only A's 100,006 users and 100,000 rates, and deletes 0 of B's rates.\n- SET ROLE erp_owner and SET ROLE postgres are both denied.\n- No erp_* role is superuser or BYPASSRLS, and all 34 tenant_id tables have RLS enabled and forced.\n- As A, an insert carrying B's tenant_id is refused by RLS.\n\np01 adds no product endpoint, screen, job, export or file path."
+    },
+    {
+      "gate": "G2 permissions (product as built)",
+      "status": "pass",
+      "evidence": "Every G2 gate test passed in my verify (dotnet 1229 of 1229). p01 adds no product action."
+    },
+    {
+      "gate": "Rule gates (licence, float money, EN/AR strings, audit, OpenAPI) and ratchet",
+      "status": "pass",
+      "evidence": "All rule tests passed. Ratchet check passed. Counts: dotnet 1229 (min 1190), web unit 813 (808), e2e 180 (172), compare 499 (499), build 22 (22). Processor time was 25,917 s against the 27,500 s maximum (dotnet 22,120, web 2,836, e2e 870, timing 92). Load ranged from 0.6 to a peak of 33.4, with my small unit-level mutation runs and one real-browser plant run beside the verify."
+    }
+  ],
+  "tests": {
+    "command": "ERP_VERIFY_ALONE=1 ERP_PROJECT=c-p01-odoo-rig-r16 ERP_HTTP_PORT=20150 ERP_DB_PORT=20151 ERP_VERIFY_HTTP_PORT=20160 ERP_VERIFY_DB_PORT=20161 ERP_VERIFY_LOG=<staging>/verify-critic-p01-odoo-rig-r16.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 2743,
+    "passed": 2743,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 8327
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 8327,
+    "evidence": "'verify passed in 8327 s' and 'Ratchet check passed' (verify-critic-p01-odoo-rig-r16.log). The seeded demo came up with the comparison dataset in 285 s (demo-up.log)."
+  },
+  "odoo": [
+    {
+      "task": "find-record (named)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 14,
+        "seconds": 0.495,
+        "klm_seconds": 5.67
+      },
+      "odoo": {
+        "steps": 5,
+        "keystrokes": 30,
+        "seconds": 1.288,
+        "klm_seconds": 17.91
+      },
+      "notes": "Path 'palette-shortest'. My demo held the shared dataset. The shared rig was checked live: at least 100,000 rows in each of 7 main lists. Run through verify-slot."
+    },
+    {
+      "task": "create-restricted-user (named)",
+      "winner": "ours",
+      "ours": {
+        "steps": 5,
+        "keystrokes": 37,
+        "seconds": 1.456,
+        "klm_seconds": 20.91
+      },
+      "odoo": {
+        "steps": 10,
+        "keystrokes": 46,
+        "seconds": 4.515,
+        "klm_seconds": 30.05
+      },
+      "notes": "Path 'pointer'. Ours better on every metric."
+    },
+    {
+      "task": "custom-field-filter (named)",
+      "winner": "ours",
+      "ours": {
+        "steps": 11,
+        "keystrokes": 39,
+        "seconds": 1.477,
+        "klm_seconds": 28.92
+      },
+      "odoo": {
+        "steps": 17,
+        "keystrokes": 61,
+        "seconds": 4.614,
+        "klm_seconds": 53.48
+      },
+      "notes": "Ours better on every metric."
+    },
+    {
+      "task": "switch-to-arabic (named)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.282,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 1,
+        "seconds": 1.666,
+        "klm_seconds": 15.28
+      },
+      "notes": "Ours better on every metric. Both 'done' shots are right-to-left Arabic (03/04)."
+    },
+    {
+      "task": "import-5000 (named)",
+      "winner": "ours",
+      "ours": {
+        "steps": 5,
+        "keystrokes": 0,
+        "seconds": 4.137,
+        "klm_seconds": 12.1
+      },
+      "odoo": {
+        "steps": 7,
+        "keystrokes": 0,
+        "seconds": 7.928,
+        "klm_seconds": 17.4
+      },
+      "notes": "Keystrokes are left out because both products scored exactly 0 (needs-human #11). Ours better on steps, machine seconds and modelled seconds."
+    },
+    {
+      "task": "follow-approval (named)",
+      "winner": "not-compared",
+      "notes": "The ours driver is still the 'not built yet' stub (it waits for p13), which p01's spec allows. The Odoo baseline verified: 4 steps, 0 keys, 1.904 s, 10.6 s modelled."
+    },
+    {
+      "task": "export-filtered-list (driver changed this round)",
+      "winner": "ours",
+      "ours": {
+        "steps": 6,
+        "keystrokes": 0,
+        "seconds": 1.295,
+        "klm_seconds": 15.9
+      },
+      "odoo": {
+        "steps": 9,
+        "keystrokes": 11,
+        "seconds": 3.305,
+        "klm_seconds": 26.43
+      },
+      "notes": "The new path (Tags column options > Filter > tag) verified on the 100,000-contact demo and on repeat health runs."
+    },
+    {
+      "task": "add-rate (the health-check fault's task)",
+      "winner": "ours",
+      "ours": {
+        "steps": 4,
+        "keystrokes": 7,
+        "seconds": 0.592,
+        "klm_seconds": 9.01
+      },
+      "odoo": {
+        "steps": 10,
+        "keystrokes": 8,
+        "seconds": 1.646,
+        "klm_seconds": 22.08
+      },
+      "notes": "Verified on the demo, and 13 of 13 in health runs on a clean stack."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p01-odoo-rig/r16/01-blind-review-top.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r16/02-blind-review-side-by-side.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r16/03-switch-arabic-done-x.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r16/04-switch-arabic-done-y.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r16/05-find-record-result-x.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r16/06-find-record-result-y.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r16/07-health-addrate-done.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r16/08-health-export-repeat-done.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The blind screenshots are not blind: every shot of ours is dark and every shot of Odoo is light, and ours shows a signed-in name that Odoo's shots mask",
+    "detail": "p01's spec asks for screenshots with signature colours neutralised by injected CSS, so that a reviewer cannot tell which product is which. The harness renders shots in greyscale, which keeps lightness. Our product's default look is now dark ('Until a theme is chosen the screen is dark (the product's own look)', web/src/kernel/theme.ts). Odoo is light.\n\nIn my comparison folder the two sets do not overlap at all:\n- all 20 ours shots have mean brightness 13 to 28 out of 255;\n- all 23 Odoo shots have mean brightness 121 to 242.\nSo the random A/B letters per task are defeated at a glance (screenshots 01/02, and 05 against 06).\n\nSeparately, in switch-to-arabic ours' top bar shows the fixture user 'Layla Linguist' unmasked (03), while Odoo's user name is painted over (04). This is the 'name masked in one product and showing in the other' tell that the harness's round-7 rule exists to prevent. The name is not in the identity list of lib/blind.mjs.\n\nSmall fixes:\n- render ours' blind shots with the light theme (for example the erp.theme device key set to light in the shot context), or normalise lightness for both products;\n- add the task fixtures' user names (TESTER.name in drivers/*/switch-to-arabic.mjs) to the blind identity lists, or mask the signed-in user element by selector, as is done for Odoo.",
+    "evidence": "compare/key.json maps every shot to its product. blind-brightness.txt was made by plants/blind-brightness.mjs, which reads each blind shot's mean brightness. Screenshots 03-switch-arabic-done-x.jpg (ours, 'Layla Linguist' visible at top left) and 04-switch-arabic-done-y.jpg (Odoo, name box grey).\n\nTo reproduce: node run.mjs --task find-record --product both --out <dir> against a demo started with the default theme, then open <dir>/blind/shots. For the name: --task switch-to-arabic, then look at ours' 'done' shot."
+  },
+  "evidence_staging": "/home/shan/evidence-staging/p01-odoo-rig/r16",
+  "evidence_dir": "gauntlet/evidence/p01-odoo-rig/r16",
+  "minor_only": true,
+  "followups": [
+    {
+      "title": "Blind shots tell the products apart by lightness (ours dark, Odoo light)",
+      "detail": "Greyscale keeps lightness, and ours now defaults to a dark theme. All 20 ours shots have brightness 13-28 out of 255; all 23 Odoo shots have 121-242. Fix: render ours' blind shots in the light theme (set the erp.theme device key in the shot context), or normalise lightness for both products. Then check that the brightness ranges overlap.",
+      "evidence": "blind-brightness.txt, plants/blind-brightness.mjs, screenshots 01/02/05/06. Reproduce: node run.mjs --task find-record --product both --out <dir>, then compare blind/shots by key.json."
+    },
+    {
+      "title": "Task fixture user name 'Layla Linguist' is unmasked in ours' shots but masked in Odoo's",
+      "detail": "In switch-to-arabic, ours' top bar shows the fixture user's name, while Odoo's user name box is painted over. Fix: add the fixtures' user names (TESTER.name in drivers/ours and drivers/odoo switch-to-arabic.mjs, and any other fixture users) to the identity lists in lib/blind.mjs, or mask the signed-in user element in ours by selector.",
+      "evidence": "03-switch-arabic-done-x.jpg against 04-switch-arabic-done-y.jpg. Reproduce: node run.mjs --task switch-to-arabic --product both --out <dir>."
+    },
+    {
+      "title": "review.html keeps only the last invocation's tasks when tasks are run one at a time into the same --out",
+      "detail": "Critics are told to run node run.mjs --task <id> --product both --out <staging>/compare once per task. key.json and blind/shots accumulate all 8 tasks, but blind/review.html is rewritten with only the last task (add-rate). A reviewer handed the blind folder sees one task. Fix: have writeReview (lib/review.mjs) build the page from every comparison in <out>/comparisons, using the letters already in key.json.",
+      "evidence": "compare/blind/review.html has one <h2> (add-rate); compare/comparisons holds 8 files; key.json letters cover 7 compared tasks."
+    }
+  ],
+  "gate_gaps": [
+    {
+      "owner": "p01-odoo-rig",
+      "gate": "compare self-tests for inputDefaultActionCause (round 16, the press/focus state rule): test/causation.test.mjs and test/screen-causes.test.mjs",
+      "planted": "Mutations of lib/causation.mjs in a scratch copy:\n- N1: the rule also applies inside a DevTools command task (the task.protocol check removed).\n- N2: FOCUS_STATES widened to :hover and :checked.\n- N3: the state credited to the step running at the task's end instead of its start.\n- N24: any mark kind with a PseudoClass reason taken, not only StyleRecalcInvalidationTracking.",
+      "evidence": "plants/n-mutations-run1.log: N1, N2, N3 and N24 all MISSED (0 failing, 58 passing). plants/n-mutations-screen-causes-run1.log: also MISSED by the real-browser screen-causes tests (0 failing, 31 passing). N5 (the delivered condition removed) is caught. N2 would credit a :hover or :checked change, in a frame that also delivered a key, to the step."
+    },
+    {
+      "owner": "p01-odoo-rig",
+      "gate": "compare self-tests for forcedWorkCause and the protocol-poster branch of postedCause (round 16)",
+      "planted": "- N9: forced work judged only by the earliest maker of stale style. A timer's mark after the step's is then ignored.\n- N10: page script inside a DevTools command no longer counts as an entry.\n- N11: a task posted by a harness command, with no stale-style marks found, is credited to the step before it. This is the reverse of the r15 fault.\n- N16: a style update after the point taken as forcing it.\n- N18: page code between the update and the point ignored.\n- N19: the update's start extended back over page code that ran between its lifecycle steps, so a timer's marks there drop out.",
+      "evidence": "plants/n-mutations-run1.log and plants/n-mutations-screen-causes-run1.log: N9, N10, N11, N16, N18 and N19 all MISSED in both test files. Caught: N8 (only the latest maker) and N17 (script-holds half removed), and the builder's M139-M155 in verify. N9 and N19 are in the laundering direction: style a pre-clock timer made stale is credited to a step when the step also marked style in the same window."
+    }
+  ],
+  "other_findings": [
+    "The round's one defect looks fixed. On a quiet machine the built-ours health check verified 24 of 24 in verify and in 3 more full runs. add-rate verified 10 of 10 alone. export-filtered-list's new path verified on repeat runs on the same stack; last round it timed out on repeats.",
+    "The r15 critic's plants still hold on r16, rerun in a real browser against the r16 harness: Y1/Y2/Y3 (CSS-animation reveal), U1/U2, S10 and Z1/Z2 are refused, and the Z2c control is refused as well. In Y3 the final reveal is still credited to step 2 ('input of step 2 > an idle callback > a task that followed at once'), as it was in r15. The plant is refused only because of the animation's earlier changes before and at the clock. A decoy-free variant of Y3 could pass; I did not build one in this session.",
+    "Odoo side by side: ours wins all 5 compared named tasks on every metric, with import-5000's keystrokes left out because both scored 0. It also wins the two extra tasks this round touched (export-filtered-list, add-rate). follow-approval is not compared because its ours driver is the allowed stub. The blind review page and shots name no product or tenant (0 matches for odoo/bizora/alnoor/gulfsteel).",
+    "Processor time of my verify was 25,917 s against the 27,500 s maximum. Load peaked at 33.4 during the dotnet stage; my unit-level mutation runs and one browser plant run were beside it. The ratchet passed.",
+    "CLAUDE.md rules: p01 adds no money, business record or product endpoint. Harness dependencies are still playwright-core (Apache-2.0) and acorn (MIT). No Odoo code, views or text were found copied; the drivers only operate Odoo's screens.",
+    "[route: p18-visual-design] Seen in ours' Arabic contacts list (03): the 'Team view' saved-view tab and the row 'Export' tag stay in English in the Arabic screen. They may be user data (a saved view's name, a tag value); worth checking against the design and language checklist."
+  ],
+  "human_gates": []
+}

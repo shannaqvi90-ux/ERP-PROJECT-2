@@ -1,0 +1,60 @@
+erp_owner|f|f
+erp_app|f|f
+erp_worker|f|f
+erp_auth|f|f
+34|34
+SET
+ no_context_users 
+------------------
+                0
+(1 row)
+
+ no_context_contacts 
+---------------------
+                   0
+(1 row)
+
+              set_config              
+--------------------------------------
+ 0190a000-0000-7000-8000-000000000001
+(1 row)
+
+== as erp_app, stamped tenant A in a transaction
+BEGIN
+SET
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1795798210.911670
+(1 row)
+
+              tenant_id               | count  
+--------------------------------------+--------
+ 0190a000-0000-7000-8000-000000000001 | 100006
+(1 row)
+
+              tenant_id               | count  
+--------------------------------------+--------
+ 0190a000-0000-7000-8000-000000000001 | 105006
+(1 row)
+
+UPDATE 0
+DELETE 0
+ROLLBACK
+BEGIN
+SET
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1795798210.934026
+(1 row)
+
+ERROR:  new row violates row-level security policy for table "saved_views"
+ROLLBACK
+BEGIN
+SET
+SET
+ROLLBACK
+BEGIN
+SET
+SET
+ROLLBACK
+NOTE (critic r16): the SET ROLE lines above ran in a superuser session (session_user postgres), so they prove nothing; the real test is db-attack-login-erp_app.txt (logged in as erp_app: SET ROLE erp_owner/postgres denied).

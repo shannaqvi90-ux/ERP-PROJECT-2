@@ -1,0 +1,308 @@
+{
+  "schema": 1,
+  "run_id": "see-and-rerun-job-20261127T162840-f0ab",
+  "instrument": 12,
+  "task": "see-and-rerun-job",
+  "task_title": "See a background job and run it again",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Find the background job \"Mail: Email Queue Manager\", see when it last ran, and run it again now.",
+  "done_when": "The product reports the job ran again; the back end shows a new last-run time after the task started.",
+  "started_at": "2026-11-27T16:28:40.703Z",
+  "finished_at": "2026-11-27T16:28:51.289Z",
+  "environment": {
+    "base_url": "http://localhost:20170",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 5,
+    "keystrokes": 33,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 4,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 2.16,
+    "system_wait_seconds": 1.85,
+    "human_seconds": 15.04,
+    "human_plus_wait_seconds": 16.89,
+    "klm_operator_counts": {
+      "K": 33,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 4
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "go to",
+      "keystrokes": 1,
+      "at": 0.001,
+      "took": 0.013,
+      "chord": "g",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "Background jobs",
+      "keystrokes": 1,
+      "at": 0.014,
+      "took": 0.031,
+      "chord": "j",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "the job name",
+      "keystrokes": 28,
+      "at": 0.112,
+      "took": 0.102,
+      "text": "Self-check of the job queue",
+      "same_field": false,
+      "screen": "/jobs/jobs",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "open the best match",
+      "keystrokes": 1,
+      "at": 0.215,
+      "took": 0.008,
+      "chord": "Enter",
+      "screen": "/jobs/jobs",
+      "chain": true
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "run again",
+      "keystrokes": 2,
+      "at": 0.568,
+      "took": 0.007,
+      "chord": "Alt+r",
+      "screen": "/jobs/jobs/01a21dd1-6756-776f-af3c-dfede26a0fb3",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "job list ready, search focused",
+      "at": 0.046,
+      "seconds": 0.065
+    },
+    {
+      "label": "name in the search box and the list filtered to it",
+      "at": 0.214,
+      "seconds": 0.001
+    },
+    {
+      "label": "job panel (last run on screen)",
+      "at": 0.224,
+      "seconds": 0.201
+    },
+    {
+      "label": "the new run is open and done",
+      "at": 0.575,
+      "seconds": 1.583
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "0847826298cbf5b9.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r16/health/hc3/blind/shots/0847826298cbf5b9.jpg"
+    },
+    {
+      "moment": "job opened",
+      "file": "d746b44ac3084bbe.jpg",
+      "at": 0.425,
+      "path": "../../evidence-staging/p01-odoo-rig/r16/health/hc3/blind/shots/d746b44ac3084bbe.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "d52fe95001e69b4f.jpg",
+      "at": 2.16,
+      "path": "../../evidence-staging/p01-odoo-rig/r16/health/hc3/blind/shots/d52fe95001e69b4f.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "last_run_before": "2026-11-27T16:23:13.491176+00:00",
+      "last_run_now": "2026-11-27T16:28:44.076252+00:00",
+      "rerun_of_the_job_opened": true,
+      "last_run_shown_in_interface": true
+    }
+  },
+  "path_notes": "G then J (Background jobs, the search box focused) > type the job name > Enter (opens the newest run; its panel shows when it finished) > Alt+R (run again; the new run opens and goes to Done).",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/see-and-rerun-job.mjs",
+    "sha256": "222c9146dc5fe24cfdf3a82b59490eb4cb7d10da3d7828d8e7f5e1d7d730ceea"
+  },
+  "task_notes": "Odoo shows its scheduled actions only in developer mode, which the path switches on, and shows no last-run time anywhere in its interface (only the next execution) and no message after a manual run: its baseline is its nearest path and misses that part of the goal. The rig holds 100,000 recorded job runs.",
+  "health_check": true,
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.019,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.017,
+      "verified": true,
+      "gap_seconds": 1.1
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 2,
+    "first": [
+      "GET /api/audit/records/01a21dd6-7666-72ae-8e18-aa2c138d9bd0 (fetch)",
+      "GET /api/jobs/jobs (fetch)"
+    ]
+  },
+  "screen_at_clock": {
+    "sha256": "87918483d3e7c1aa",
+    "elements": 760
+  },
+  "screen_after_verify": {
+    "sha256": "87918483d3e7c1aa",
+    "elements": 760,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.002,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.01
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 2,
+    "read_both_times": 1,
+    "read_before": [
+      "GET /api/jobs/jobs"
+    ],
+    "read_after": [
+      "GET /api/jobs/jobs",
+      "GET /api/jobs/jobs/01a21dd6-7666-72ae-8e18-aa2c138d9bd0"
+    ],
+    "changed": [
+      "GET /api/jobs/jobs"
+    ],
+    "changed_parts": {
+      "GET /api/jobs/jobs": [
+        "items.0.id",
+        "items.0.runAt",
+        "items.0.startedAt",
+        "items.0.finishedAt",
+        "items.0.createdAt",
+        "items.0.updatedAt",
+        "items.0.version",
+        "items.1.id"
+      ]
+    },
+    "end_state": [
+      "GET /api/jobs/jobs [items.finishedAt]"
+    ],
+    "end_state_changed": {
+      "GET /api/jobs/jobs": [
+        "items.0.finishedAt",
+        "items.1.finishedAt",
+        "items.2.finishedAt"
+      ]
+    },
+    "writes_sent": [
+      "POST /api/jobs/jobs/01a21dd1-6756-776f-af3c-dfede26a0fb3/rerun"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /api/jobs/jobs/01a21dd1-6756-776f-af3c-dfede26a0fb3/rerun",
+        "at": 0.5734467100000183,
+        "by_step": 5,
+        "browser_record": {
+          "caused": true,
+          "by_step": 5,
+          "chain_seconds": 0,
+          "chain": [
+            "input of step 5"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 47,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 2.137,
+      "by_step": 5,
+      "chain": [
+        "a repeating timer of 1.5 s",
+        "the answer to GET /api/jobs/jobs/01a21dd6-7666-72ae-8e18-aa2c138d9bd0 after 0.007 s",
+        "a task the page's own task posted",
+        "a task the page's own task posted"
+      ]
+    }
+  },
+  "set_up_writes": []
+}

@@ -1,0 +1,31 @@
+== logged in as erp_app
+ current_user | session_user 
+--------------+--------------
+ erp_app      | erp_app
+(1 row)
+
+ no_context_users 
+------------------
+                0
+(1 row)
+
+ERROR:  permission denied to set role "erp_owner"
+ERROR:  permission denied to set role "postgres"
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1795798221.048420
+(1 row)
+
+              tenant_id               | count  
+--------------------------------------+--------
+ 0190a000-0000-7000-8000-000000000001 | 100006
+(1 row)
+
+              tenant_id               | count  
+--------------------------------------+--------
+ 0190a000-0000-7000-8000-000000000001 | 100000
+(1 row)
+
+DELETE 0
+ROLLBACK
