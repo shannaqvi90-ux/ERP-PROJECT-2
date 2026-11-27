@@ -1,0 +1,13 @@
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+locator.focus: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('[role="dialog"] input[type=text], [role="dialog"] input:not([type])').first()[22m
+
+    at /home/shan/evidence-staging/p07-audit/r8/browser/walk6.mjs:29:103 {
+  name: 'TimeoutError'
+}
+
+Node.js v22.23.3

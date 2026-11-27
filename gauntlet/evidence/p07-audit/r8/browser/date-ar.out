@@ -1,0 +1,10 @@
+header buttons ["الوقت\n▼","خيارات العمود الوقت","خيارات العمود بواسطة","خيارات العمود التغيير","خيارات العمود نوع السجل","خيارات العمود السجل","خيارات العمود الحقول"]
+menu ["ترتيب تصاعدي","ترتيب تنازلي","تصفية…","توسيع هذا العمود","تضييق هذا العمود","إخفاء هذا العمود"]
+dialog تصفية: الوقت من إلى تطبيق إلغاء
+focus <input dir="ltr" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="يوم/شهر/سنة" type="text" value="">
+focus after typing <button type="button" class="list-colmenu" aria-haspopup="menu" aria-expanded="false" aria-label="خيارات العمود الوقت">◆</button> values []
+count/chips الرئيسية الإعدادات سجل التدقيق سجل التدقيق يجب أن تتطابق كل كلمة 760,256 تغييرًا طريقة العرض: قياسية · معدّلة الأعمدة طباعة أو تصدير قياسية التعديلات فقط السجلات المُنشأة السجلات المحذوفة حسب نوع السجل حسب المصدر Team view الوقت على الأقل 26/11/2026, 12:00 ص × مسح جميع عوامل التصفية الوقت ▲ ◆ بواسطة ▾ التغيير ▾ نوع السجل ▾ السجل ▾ الحقول ▾ القيم القديمة والجديدة 26/11/2026, 11:36 م بيانات تجريبية 
+283ms /api/audit/log?sort=-occurredAt&take=100
+272ms /api/audit/log?filter=occurredAt+ge+'2026-11-26T00:00:00+04:00'&sort=-occurredAt&take=100
+119ms /api/audit/log?filter=occurredAt+ge+'2026-11-26T00:00:00+04:00'&sort=occurredAt&take=100
+errors []

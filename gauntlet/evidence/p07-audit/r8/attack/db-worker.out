@@ -1,0 +1,9 @@
+ERROR:  permission denied for schema audit
+LINE 1: select count(*) from audit.entries
+                             ^
+ERROR:  permission denied for schema audit
+LINE 1: delete from audit.entries where id=1
+                    ^
+ERROR:  permission denied for schema audit
+LINE 1: update audit.entries set action='x' where id=1
+               ^
