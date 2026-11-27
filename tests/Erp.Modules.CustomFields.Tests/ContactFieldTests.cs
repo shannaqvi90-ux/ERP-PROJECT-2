@@ -271,6 +271,40 @@ public sealed class ContactFieldTests(CustomFieldsFixture fixture) : IClassFixtu
     }
 
     [Fact]
+    public async Task The_audit_log_lists_a_custom_fields_change_once_as_the_records_change_and_filters_by_the_field()
+    {
+        var (admin, f, stem) = await DefineAsync();
+        using var _ = admin;
+        var contact = await Api.CreateContactAsync(admin, Api.Contact(Api.Unique("Logged LLC"), new() { [f.Segment] = "retail" }));
+        var id = contact.GetProperty("id").GetGuid();
+        var update = Api.Contact(contact.GetProperty("nameEn").GetString()!, new() { [f.Segment] = "wholesale" });
+        update["version"] = contact.GetProperty("version").GetUInt32();
+        Assert.Equal(HttpStatusCode.OK, (await admin.PutAsJsonAsync($"/api/contacts/contacts/{id}", update, Api.Cancel)).StatusCode);
+
+        // The field is a choice of the Fields filter, named by the tenant's own label, and the filter takes its key.
+        var definition = await admin.GetFromJsonAsync<JsonElement>("/api/lists/audit.log/definition", Api.Cancel);
+        var column = definition.GetProperty("columns").EnumerateArray().First(c => c.GetProperty("key").GetString() == "fields");
+        var choice = column.GetProperty("choices").EnumerateArray().First(c => c.GetProperty("value").GetString() == $"custom_fields.{f.Segment}");
+        var labelKey = choice.GetProperty("labelKey").GetString()!;
+        var strings = definition.GetProperty("strings").GetProperty(labelKey);
+        Assert.Equal($"{stem} segment", strings.GetProperty("en").GetString());
+        Assert.Equal("شريحة", strings.GetProperty("ar").GetString());
+
+        var filter = Uri.EscapeDataString($"fields eq 'custom_fields.{f.Segment}'");
+        var log = await admin.GetFromJsonAsync<JsonElement>($"/api/audit/log?filter={filter}&take=50", Api.Cancel);
+        var rows = log.GetProperty("items").EnumerateArray().Where(r => r.GetProperty("recordId").GetGuid() == id).ToList();
+        Assert.NotEmpty(rows);
+        Assert.All(rows, r => Assert.Equal("contacts.contacts", r.GetProperty("recordType").GetString()));
+        Assert.Contains(rows, r => r.GetProperty("changes").GetString()!.Contains("Wholesale", StringComparison.Ordinal));
+
+        // No raw row of the values table, named by the field's key, is in the log.
+        var all = await admin.GetFromJsonAsync<JsonElement>($"/api/audit/log?search={Uri.EscapeDataString(f.Segment)}&take=50", Api.Cancel);
+        Assert.DoesNotContain(all.GetProperty("items").EnumerateArray(), r => r.GetProperty("recordType").GetString() == "customfields.field_values");
+        var kind = Uri.EscapeDataString("recordType eq 'customfields.field_values'");
+        Assert.Equal(HttpStatusCode.BadRequest, (await admin.GetAsync($"/api/audit/log?filter={kind}", Api.Cancel)).StatusCode);
+    }
+
+    [Fact]
     public async Task Another_workspace_sees_none_of_the_fields_or_values()
     {
         var (admin, f, _) = await DefineAsync();

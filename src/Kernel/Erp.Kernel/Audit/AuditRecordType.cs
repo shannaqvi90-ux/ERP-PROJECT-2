@@ -33,8 +33,12 @@ namespace Erp.Kernel.Audit;
 /// <paramref name="ReadPermission"/> alone, which for these kinds only names the permission the kind falls back to
 /// in listings of kinds.</param>
 /// <param name="ParentIdField">The column holding that record's id.</param>
+/// <param name="FoldedIntoRecord">Every change of this kind is also written, in words the person reads, as a change of the record that
+/// holds it (a custom field's value is a change of the contact's field <c>custom_fields.&lt;key&gt;</c>): the global audit log lists that
+/// change of the record and leaves out this kind's own row, so one change shows once. Its rows stay in the trail (a record's history and
+/// the change panel read them).</param>
 public sealed partial record AuditRecordType(string Table, string LabelKey, string ReadPermission, string? Route = null, string? OwnerField = null,
-    bool RecordIsBranch = false, string? ParentKindField = null, string? ParentIdField = null)
+    bool RecordIsBranch = false, string? ParentKindField = null, string? ParentIdField = null, bool FoldedIntoRecord = false)
 {
     /// <summary>The schema part of <see cref="Table"/>.</summary>
     public string Schema => Table.Split('.')[0];

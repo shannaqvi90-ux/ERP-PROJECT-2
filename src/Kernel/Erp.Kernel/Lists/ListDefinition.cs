@@ -52,6 +52,9 @@ public sealed record ListChoice(string Value, string LabelKey);
 /// ISO 4217 code of each row's amount. Every money column names one (CLAUDE.md rule 2: an amount
 /// never travels without its currency), and group totals of a money column are given per currency,
 /// never added across currencies.</param>
+/// <param name="OpenChoicePrefix">For a choice column: a prefix whose values (the workspace's own, <c>custom_fields.</c> plus a field's
+/// key) filters accept besides <paramref name="Choices"/>; the definition endpoint, print and views list the workspace's own with the
+/// tenant's labels (the audit log's Fields filter).</param>
 /// <param name="TrueLabelKey">For a boolean column: web string key of what a true value is called in
 /// cells, groups, filter chips, prints and exports (a status column's "Active"); null: "Yes".</param>
 /// <param name="FalseLabelKey">For a boolean column: what a false value is called ("Inactive"); null: "No".</param>
@@ -76,7 +79,8 @@ public sealed record ListColumn(
     string? FalseLabelKey = null,
     ListCompanyValues? InCompany = null,
     ListColumnWidth Width = ListColumnWidth.Normal,
-    int? Decimals = null);
+    int? Decimals = null,
+    string? OpenChoicePrefix = null);
 
 /// <summary>Values of a <see cref="ListColumn.ValuesFrom"/> column a row holds in one company each.</summary>
 /// <param name="Field">Row property holding an array of objects, one per value and company.</param>

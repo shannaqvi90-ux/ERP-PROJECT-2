@@ -77,7 +77,7 @@ internal static class AuditEndpoints
         // Every kind of audited record is one of the log's record types: a module registered after
         // the audit module would have its changes in the trail but not in the log's choices.
         var listed = catalog.FindList(AuditLists.Log)?.Column("recordType")?.Choices?.Select(c => c.Value).ToHashSet() ?? [];
-        var missing = catalog.AuditRecordTypes.Where(t => !listed.Contains(t.Table)).Select(t => t.Table).ToList();
+        var missing = catalog.AuditRecordTypes.Where(t => !t.FoldedIntoRecord && !listed.Contains(t.Table)).Select(t => t.Table).ToList();
         if (missing.Count > 0)
         {
             throw new InvalidOperationException($"Register the audit module after the modules of {string.Join(", ", missing)} (their audited records are not among the audit log's record types).");

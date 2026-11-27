@@ -148,7 +148,8 @@ public static class ListFilter
                 ListColumnType.Date => value.Kind == FilterValueKind.Text && TryDate(value.Text!, out _),
                 ListColumnType.DateTime => value.Kind == FilterValueKind.Text && TryDateTime(value.Text!, out _),
                 ListColumnType.Reference => value.Kind == FilterValueKind.Text && Guid.TryParse(value.Text, out _),
-                ListColumnType.Choice => value.Kind == FilterValueKind.Text && (column.Choices is not { Count: > 0 } || column.Choices.Any(c => c.Value == value.Text)),
+                ListColumnType.Choice => value.Kind == FilterValueKind.Text && (column.Choices is not { Count: > 0 } || column.Choices.Any(c => c.Value == value.Text) ||
+                    (column.OpenChoicePrefix is { } open && value.Text!.StartsWith(open, StringComparison.Ordinal) && value.Text.Length > open.Length)),
                 _ => value.Kind == FilterValueKind.Text,
             };
             if (!ok)
