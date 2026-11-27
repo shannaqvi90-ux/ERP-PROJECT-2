@@ -195,8 +195,22 @@ export async function neutraliseDocument(page, words = []) {
  */
 export async function blindScreenshot(page, branding, options) {
   const light = await neutraliseDocument(page, branding.words);
-  return page.screenshot({ animations: 'disabled', caret: 'hide', style: NEUTRAL_STYLE + (light || ''),
-    mask: await maskTargets(page, branding), maskColor: MASK_COLOR, ...options });
+  try {
+    return await page.screenshot({ animations: 'disabled', caret: 'hide', style: NEUTRAL_STYLE + (light || ''),
+      mask: await maskTargets(page, branding), maskColor: MASK_COLOR, ...options });
+  } finally { await settle(page); }
+}
+
+/**
+ * Round 17 (integrator's pre-check, find-record INVALID on 1 of 3 runs, and again in the fixer's run): what the
+ * screenshot sets off in the page (the style sheet and masks it adds and removes, frames the browser draws for
+ * it, the page's own observers and frame callbacks answering those) must run inside the shot's window, never
+ * after it: a page task of the page's own that no step caused, right before the next step's input, is taken
+ * as the sender of the untraceable task that input leads to (lib/causation.mjs otherCause). Two frames are
+ * waited for in the harness's own world; the time stays on the clock like the rest of the shot.
+ */
+export async function settle(page) {
+  await inNeutralWorld(page, '(() => new Promise(done => { const stop = setTimeout(done, 250); requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(stop); done(); })); }))()');
 }
 
 async function inNeutralWorld(page, given, words = []) {
@@ -244,7 +258,7 @@ async function inNeutralWorld(page, given, words = []) {
         const { frameTree } = await w.cdp.send('Page.getFrameTree');
         w.contextId = (await w.cdp.send('Page.createIsolatedWorld', { frameId: frameTree.frame.id, worldName: 'compare-neutral', grantUniveralAccess: false })).executionContextId;
       }
-      const r = await w.cdp.send('Runtime.evaluate', { expression, contextId: w.contextId, returnByValue: true, silent: true });
+      const r = await w.cdp.send('Runtime.evaluate', { expression, contextId: w.contextId, returnByValue: true, awaitPromise: true, silent: true });
       if (!r.exceptionDetails) return r.result?.value;
       w.contextId = null; // a new document: a new world
     } catch {
