@@ -15,7 +15,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { continues, keystrokesForChord, keystrokesForText, modelSteps, round } from './klm.mjs';
-import { MASK_COLOR, NEUTRAL_STYLE, blindName, maskTargets, neutraliseDocument } from './blind.mjs';
+import { blindName, blindScreenshot } from './blind.mjs';
 import { PageFunction, RefusedClaim, UncountedAction, claimClock, guard, isWrite, rawFetch, rethrowSentinel, unwrap } from './guard.mjs';
 import { PageWorld } from './page-script.mjs';
 
@@ -601,11 +601,8 @@ export class Operator {
     const file = blindName(this.shotFormat === 'png' ? 'png' : 'jpg');
     const t = this.now();
     const from = clockNow();
-    await neutraliseDocument(this.#page, this.branding.words);
-    await this.#page.screenshot({
+    await blindScreenshot(this.#page, this.branding, {
       path: path.join(this.shotsDir, file), type: this.shotFormat, ...(this.shotFormat === 'jpeg' ? { quality: 70 } : {}),
-      animations: 'disabled', caret: 'hide', style: NEUTRAL_STYLE,
-      mask: await maskTargets(this.#page, this.branding), maskColor: MASK_COLOR,
     });
     const s = { moment, file, at: round(t), ...(measured ? { measured: true } : {}) };
     this.#shots.push(s);

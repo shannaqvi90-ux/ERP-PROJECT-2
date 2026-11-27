@@ -56,7 +56,12 @@ export const BRANDING = Object.freeze({
       // and the Arabic names of the task fixtures' companies.
       'Mariam Al Mansoori', 'Fatima Al Zaabi', 'Omar Haddad', 'Layla Nasser', 'Hessa Al Suwaidi',
       'مريم المنصوري', 'فاطمة الزعابي', 'عمر حداد', 'ليلى ناصر', 'حصة السويدي',
-      'ديمو للتجارة ذ.م.م', 'ديمو للتصنيع م.م.ح'],
+      'ديمو للتجارة ذ.م.م', 'ديمو للتصنيع م.م.ح',
+      // Round 17 (critic p01 r16): the other task fixtures' people. 'Layla Linguist' (switch-to-arabic)
+      // showed in the top bar of ours' shot while the reference's was painted over. Every fixture
+      // person's name is listed (test/blind.test.mjs reads the drivers and tasks and fails on one
+      // that is not).
+      'Layla Linguist', 'Sara Signin', 'Hessa Clerk'],
     identityExact: ['alnoor'],
     // Round 7: the demo companies' and branches' codes, shown in the top bar ("ALN-DXB · DEIRA-HQ").
     identityWords: ['alnoor', 'gulfsteel', 'ALN-DXB', 'ALN-FZE', 'ALN-SHJ', 'ALN-AUH', 'GSF-SHJ', 'GSF-RAK', 'DEIRA-HQ', 'AQZ-WH', 'DIP-SR', 'JAFZA-WH',
@@ -177,11 +182,48 @@ export async function maskTargets(page, branding, { perLocator = 300 } = {}) {
  * look like any other field.
  */
 export async function neutraliseDocument(page, words = []) {
+  await inNeutralWorld(page, null, words);
+}
+
+/** Put back the theme neutraliseDocument showed in light for the shot. */
+export async function restoreLook(page) {
+  const restore = () => {
+    const root = document.documentElement;
+    const was = root.getAttribute('data-blind-theme');
+    if (was === null) return;
+    root.dataset.theme = was;
+    root.removeAttribute('data-blind-theme');
+  };
+  await inNeutralWorld(page, `(${restore})()`);
+}
+
+/**
+ * The blind screenshot of a page: neutral document, light theme, painted-over branding, greyscale;
+ * the page's own theme back afterwards. One function for the operator and the self-tests.
+ */
+export async function blindScreenshot(page, branding, options) {
+  await neutraliseDocument(page, branding.words);
+  try {
+    return await page.screenshot({ animations: 'disabled', caret: 'hide', style: NEUTRAL_STYLE,
+      mask: await maskTargets(page, branding), maskColor: MASK_COLOR, ...options });
+  } finally { await restoreLook(page); }
+}
+
+async function inNeutralWorld(page, given, words = []) {
   // Round 14 (critic p01 r13): in a script world of the harness's own, never the page's: the page's own
   // script (a title setter it replaced, a prototype it patched) cannot run inside the harness's change,
   // where the browser's record would take what it did for the harness's doing (lib/causation.mjs).
   const neutral = brandWords => {
     document.title = 'Product';
+    // Round 17 (critic p01 r16): our screens are dark until a person chooses a theme and the reference's
+    // are light, so greyscale alone left the two sets apart by lightness. A screen that states a theme
+    // on <html> is shown in its light theme for the shot only (restoreLook puts the attribute back right
+    // after); the reference states none and is left as it is.
+    const root = document.documentElement;
+    if (root.dataset.theme && root.dataset.theme !== 'light' && !root.hasAttribute('data-blind-theme')) {
+      root.setAttribute('data-blind-theme', root.dataset.theme);
+      root.dataset.theme = 'light';
+    }
     for (const l of document.querySelectorAll('link[rel~="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]')) l.remove();
     if (!brandWords.length) return;
     const re = new RegExp(brandWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'i');
@@ -189,7 +231,7 @@ export async function neutraliseDocument(page, words = []) {
       for (const el of document.querySelectorAll(`[${attr}]`)) if (re.test(el.getAttribute(attr))) el.setAttribute(attr, '');
     }
   };
-  const expression = `(${neutral})(${JSON.stringify(words)})`;
+  const expression = given ?? `(${neutral})(${JSON.stringify(words)})`;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       let w = neutralWorlds.get(page);
