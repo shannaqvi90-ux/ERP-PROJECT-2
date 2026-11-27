@@ -172,8 +172,8 @@ it stays judged as before (uncaused), which is the safe side.
   24; the others quiet, load 1 to 3).
 - Harness self-tests (`node --test test/*.test.mjs`, 528 tests, 501 passed, 27 skipped for want of the Odoo rig)
   five times in a row with a looped `dotnet build Erp.slnx --no-incremental` beside them (load 15 to 33): 5 of 5
-  green, three more under the same load follow in the notes. C3, U5c, U5e, A24 and the +971 and C4 controls
-  (gate backlog row 8) ran 12 times under 24 busy loops (load 50 to 78) without a failure.
+  green, three more under the same load follow in the notes. C3, U5c, U5e and A24 ran 12 times under 24 busy
+  loops (load 50 to 78) without a failure; C4 and the +971 control (gate backlog row 8) passed in every full run.
 - Processor time this round adds to ./erp verify: three self-tests (about 20 ms) and nothing in the browser.
 
 ## Gate backlog rows closed
@@ -182,5 +182,5 @@ it stays judged as before (uncaused), which is the safe side.
   caught by a new self-test ("round 16): a task posted from another thread ..." and "the :hover rule at its
   edges"). K12 and K13 (the same two mutations seen by the real-browser plants) are not added as browser plants;
   their synthetic twins M148 and M154 are caught.
-- Row 8 (C4 and the +971 control under load): they ran 12 times under load 50 to 78 without failing after the
-  rules above; the row stays for the lead to judge on a critic's loaded verify.
+- Row 8 (C4 and the +971 control under load): they passed in every loaded full run after the rules above; the
+  row stays for the lead to judge on a critic's loaded verify.
