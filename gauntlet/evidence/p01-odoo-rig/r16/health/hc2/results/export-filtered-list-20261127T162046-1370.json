@@ -1,0 +1,268 @@
+{
+  "schema": 1,
+  "run_id": "export-filtered-list-20261127T162046-1370",
+  "instrument": 12,
+  "task": "export-filtered-list",
+  "task_title": "Export a filtered list",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Export every contact tagged \"Government\" to a spreadsheet with at least their name, e-mail and phone.",
+  "done_when": "The product hands over a spreadsheet file; it holds one row per contact tagged \"Government\" (every one of them, not just the first page) with name, e-mail and phone columns.",
+  "started_at": "2026-11-27T16:20:46.665Z",
+  "finished_at": "2026-11-27T16:20:54.760Z",
+  "environment": {
+    "base_url": "http://localhost:20170",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 6,
+    "keystrokes": 0,
+    "clicks": 6,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 0,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.825,
+    "system_wait_seconds": 0.138,
+    "human_seconds": 15.9,
+    "human_plus_wait_seconds": 16.038,
+    "klm_operator_counts": {
+      "K": 0,
+      "P": 6,
+      "B": 12,
+      "H": 0,
+      "M": 6
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Contacts",
+      "keystrokes": 0,
+      "at": 0.024,
+      "took": 0.067,
+      "began": 0.001,
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "Tags column options",
+      "keystrokes": 0,
+      "at": 0.191,
+      "took": 0.039,
+      "began": 0.092,
+      "screen": "/contacts/contacts",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "click",
+      "label": "Filter...",
+      "keystrokes": 0,
+      "at": 0.256,
+      "took": 0.044,
+      "began": 0.23,
+      "screen": "/contacts/contacts",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "the Government tag",
+      "keystrokes": 0,
+      "at": 0.34,
+      "took": 0.052,
+      "began": 0.306,
+      "screen": "/contacts/contacts",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "click",
+      "label": "Print or export",
+      "keystrokes": 0,
+      "at": 0.708,
+      "took": 0.035,
+      "began": 0.655,
+      "screen": "/contacts/contacts",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "click",
+      "label": "Excel in English (download)",
+      "keystrokes": 0,
+      "at": 0.776,
+      "took": 0.032,
+      "began": 0.747,
+      "screen": "/contacts/contacts",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "the tags in use",
+      "at": 0.3,
+      "seconds": 0.005
+    },
+    {
+      "label": "filtered list",
+      "at": 0.393,
+      "seconds": 0.115
+    },
+    {
+      "label": "print menu",
+      "at": 0.743,
+      "seconds": 0.002
+    },
+    {
+      "label": "file received",
+      "at": 0.808,
+      "seconds": 0.016
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "b05f0e1b734aa08f.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p01-odoo-rig/r16/health/hc2/blind/shots/b05f0e1b734aa08f.jpg"
+    },
+    {
+      "moment": "export options chosen",
+      "file": "51897258e0dc0b23.jpg",
+      "at": 0.509,
+      "path": "../../evidence-staging/p01-odoo-rig/r16/health/hc2/blind/shots/51897258e0dc0b23.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "98e7c5882edff6ed.jpg",
+      "at": 0.825,
+      "path": "../../evidence-staging/p01-odoo-rig/r16/health/hc2/blind/shots/98e7c5882edff6ed.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "file": "Contacts 2026-11-27.xlsx",
+      "header": [
+        "Name",
+        "Type",
+        "Organisation",
+        "E-mail",
+        "Mobile",
+        "Phone",
+        "City",
+        "Emirate",
+        "Tags",
+        "Status"
+      ],
+      "rows": 89,
+      "expected_rows": 89
+    }
+  },
+  "path_notes": "Contacts (navigation) > Tags column options > Filter... > click the tag in the list of tags in use (the list is then filtered to it) > Print or export > Excel in English.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/export-filtered-list.mjs",
+    "sha256": "a933f424a25f0e8da29c2a864077bbdccb314fb5eace05ac89b3399c560e3cfa"
+  },
+  "task_notes": "Thousands of contacts carry the tag, so the export must cover more than the page on screen. The verification reads the file.",
+  "health_check": true,
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 0,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.002,
+      "verified": true
+    },
+    {
+      "requests": 0,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.002,
+      "verified": true,
+      "gap_seconds": 0.042
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "4a46fe94b82eba5d",
+    "elements": 964
+  },
+  "screen_after_verify": {
+    "sha256": "4a46fe94b82eba5d",
+    "elements": 964,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 0,
+    "longest_pause_seconds": 0,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 34,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 0.818,
+      "by_step": 6,
+      "chain": [
+        "pointer input of step 6 (delivered with a frame)"
+      ]
+    }
+  },
+  "set_up_writes": []
+}

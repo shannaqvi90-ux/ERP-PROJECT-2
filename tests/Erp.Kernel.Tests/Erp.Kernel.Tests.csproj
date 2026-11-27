@@ -19,8 +19,4 @@
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
   </ItemGroup>
-  <ItemGroup>
-    <!-- Deliberately incomplete strings, to prove the catalog refuses them. -->
-    <EmbeddedResource Include="Resources\*.json" LogicalName="Erp.Kernel.Tests.Resources.%(Filename)%(Extension)" />
-  </ItemGroup>
 </Project>

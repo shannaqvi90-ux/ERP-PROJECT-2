@@ -1,0 +1,70 @@
+Pager usage is off.
+ current_user 
+--------------
+ erp_app
+(1 row)
+
+ rows_no_tenant 
+----------------
+              0
+(1 row)
+
+BEGIN
+              set_config              |    set_config     | set_config |    set_config     
+--------------------------------------+-------------------+------------+-------------------
+ 0190a000-0000-7000-8000-000000000002 | 1795722590.008918 | all        | 1795722590.008918
+(1 row)
+
+              tenant_id               | bound_to_b 
+--------------------------------------+------------
+ 0190a000-0000-7000-8000-000000000002 |       9109
+(1 row)
+
+ROLLBACK
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1795722590.012545
+(1 row)
+
+ERROR:  permission denied for table entries
+ROLLBACK
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1795722590.013700
+(1 row)
+
+ERROR:  permission denied for table entries
+ROLLBACK
+BEGIN
+              set_config              |    set_config     
+--------------------------------------+-------------------
+ 0190a000-0000-7000-8000-000000000001 | 1795722590.015737
+(1 row)
+
+ERROR:  permission denied for table entries
+ROLLBACK
+ERROR:  permission denied for table entries
+ERROR:  permission denied for function capture
+CREATE TABLE
+ERROR:  permission denied for function audit.capture
+BEGIN
+              set_config              |    set_config     | set_config |    set_config     | set_config 
+--------------------------------------+-------------------+------------+-------------------+------------
+ 0190a000-0000-7000-8000-000000000001 | 1795722590.020458 | all        | 1795722590.020458 | user
+(1 row)
+
+ code 
+------
+ AED
+(1 row)
+
+UPDATE 1
+              tenant_id               | table_name | action | actor_kind |                          changes                          
+--------------------------------------+------------+--------+------------+-----------------------------------------------------------
+ 0190a000-0000-7000-8000-000000000001 | currencies | update | user       | {"name_en": {"new": "UAE Dirham x", "old": "UAE Dirham"}}
+(1 row)
+
+ERROR:  new row violates row-level security policy for table "currencies"
+ROLLBACK

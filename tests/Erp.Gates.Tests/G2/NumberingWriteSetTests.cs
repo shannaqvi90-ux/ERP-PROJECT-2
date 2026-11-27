@@ -24,7 +24,7 @@ namespace Erp.Gates.Tests.G2;
 public sealed class NumberingWriteSetTests(NumberingWriteSetFixture fixture) : IClassFixture<NumberingWriteSetFixture>
 {
     /// <summary>The reviewed write set of numbering.sequences.update on the sequence itself.</summary>
-    private static readonly HashSet<string> SequenceColumns = new(StringComparer.Ordinal) { "prefix", "suffix", "padding", "reset", "gapless", "per_branch" };
+    private static readonly HashSet<string> SequenceColumns = new(StringComparer.Ordinal) { "prefix", "suffix", "padding", "reset", "gapless", "per_branch", "next_set_from", "next_set_to", "next_set_period" };
 
     /// <summary>On the sequence's own counters: today's counter moved, or made when the sequence starts
     /// again at another time or its next number is set.</summary>

@@ -34,6 +34,12 @@ namespace Erp.Modules.Numbering.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("branch_id");
 
+                    b.Property<string>("Code")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("code");
+
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid")
                         .HasColumnName("company_id");
@@ -135,6 +141,12 @@ namespace Erp.Modules.Numbering.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("branch_id");
 
+                    b.Property<string>("Code")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasMaxLength(72)
+                        .HasColumnType("character varying(72)")
+                        .HasColumnName("code");
+
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid")
                         .HasColumnName("company_id");
@@ -156,6 +168,18 @@ namespace Erp.Modules.Numbering.Migrations
                     b.Property<DateTimeOffset?>("LastIssuedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_issued_at");
+
+                    b.Property<string>("NameAr")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name_ar");
+
+                    b.Property<string>("NameEn")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name_en");
 
                     b.Property<long>("NextValue")
                         .HasColumnType("bigint")
@@ -222,6 +246,11 @@ namespace Erp.Modules.Numbering.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Code")
+                        .HasMaxLength(72)
+                        .HasColumnType("character varying(72)")
+                        .HasColumnName("code");
+
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid")
                         .HasColumnName("company_id");
@@ -245,6 +274,29 @@ namespace Erp.Modules.Numbering.Migrations
                     b.Property<bool>("Gapless")
                         .HasColumnType("boolean")
                         .HasColumnName("gapless");
+
+                    b.Property<string>("NameAr")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name_ar");
+
+                    b.Property<string>("NameEn")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name_en");
+
+                    b.Property<long?>("NextSetFrom")
+                        .HasColumnType("bigint")
+                        .HasColumnName("next_set_from");
+
+                    b.Property<string>("NextSetPeriod")
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)")
+                        .HasColumnName("next_set_period");
+
+                    b.Property<long?>("NextSetTo")
+                        .HasColumnType("bigint")
+                        .HasColumnName("next_set_to");
 
                     b.Property<int>("Padding")
                         .HasColumnType("integer")

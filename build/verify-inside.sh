@@ -27,6 +27,24 @@ cpu_seconds() {
 }
 trap 'cpu_seconds >"$out/cpu-$stage" 2>/dev/null || true' EXIT
 
+# wait_for_builds: the web stage's timed tests (vitest has 30 s per test, the comparison harness's
+# self-tests measure short intervals) start only when the two build peaks of the run are over: the
+# .NET build (the dotnet stage writes $out/dotnet-build.done after it) and the application image
+# build with the clean stack's migrations and seed (./erp writes $out/stack-ready after them). A
+# stage that ended without writing its marker (it failed) counts as over. Round 24: in the r23 critic's
+# run 1 these tests started in the first minutes beside both builds, at load 16 to 23, and
+# clientIsolation.test.tsx timed out. Waiting costs no wall time: the dotnet stage is far longer than
+# the web stage. No limit is raised and no test skipped: a build that never ends is waited for at most
+# 40 minutes, then the tests run anyway (and may fail as they would have).
+wait_for_builds() {
+  local waited=0
+  until { [[ -f "$out/dotnet-build.done" || -f "$out/dotnet.status" ]] && [[ -f "$out/stack-ready" || -f "$out/e2e.status" ]]; } || ((waited >= 2400)); do
+    sleep 5
+    waited=$((waited + 5))
+  done
+  echo "builds over after waiting $waited s (load $(cut -d' ' -f1 /proc/loadavg 2>/dev/null || echo ?))"
+}
+
 # Networks that re-terminate TLS: ./erp mounts the extra CA certificates here (see ERP_EXTRA_CA_CERTS).
 if [[ -s /etc/erp-extra-ca.crt ]]; then
   cat /etc/erp-extra-ca.crt >>/etc/ssl/certs/ca-certificates.crt
@@ -51,6 +69,8 @@ case "$stage" in
     npm_install
     npm run --silent typecheck
     npm run --silent check
+    step "Web: waiting for the .NET build and the image build to end before the timed tests"
+    wait_for_builds
     npx vitest run --reporter=default --reporter=json --outputFile="$out/vitest.json"
     # G1 in the browser: the client isolation gate must catch every planted client-side leak.
     node scripts/plant-self-test.mjs
@@ -95,6 +115,7 @@ case "$stage" in
     cd /work
     dotnet restore Erp.slnx --verbosity quiet
     dotnet build Erp.slnx -c Release --no-restore --verbosity quiet
+    touch "$out/dotnet-build.done"
 
     step ".NET: unit, integration (Testcontainers PostgreSQL) and gate tests"
     # Runtime settings for the test processes only (not the timing stage, which measures the

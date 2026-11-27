@@ -1,0 +1,15 @@
+✔ plant S10: a key arms a 2.5 s delay before the approval (R2b); the record names the delay -> never verifies (8196.352928ms)
+Z1 status invalid | action outside the clock (set-up): no counted step caused any of the writes the page sent (POST /api/approve: 2.5 s after step 1 ended): the page sent it on its own (a timer or a poll set-up arranged), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads. | [{"write":"POST /api/approve","at":2.5065586550000005,"not_caused":"2.5 s after step 1 ended","browser_record":{"caused":false,"why":"it went out 2.502 s after the input of step 1 that began its chain (input of step 1 > a task the page's own task posted): delays that add up to more than 2 s link nothing (the page held the write back)","chain":["input of step 1","a task the page's own task posted"]}}]
+✔ critic r15 plant Z1: a key arms a 2.5 s delayed scheduler.postTask before the approval (S10 without setTimeout) -> never verifies (7377.838153ms)
+Z2 status invalid | action outside the clock (set-up): no counted step caused any of the writes the page sent (POST /api/approve: 3.001 s after step 1 ended): the page sent it on its own (a timer or a poll set-up arranged), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads. | [{"write":"POST /api/approve","at":3.0081353500000003,"not_caused":"3.001 s after step 1 ended","browser_record":{"caused":false,"why":"it went out 3.004 s after the input of step 1 that began its chain (input of step 1 > a task the page's own task posted > a task the page's own task posted > a task the page's own task posted > a task the page's own task posted > a task the page's own task posted > a task the page's own task posted > a task the page's own task posted > a task the page's own task posted > a task the page's own task posted > a task the page's own task posted): delays that add up to more than 2 s link nothing (the page held the write back)","chain":["a task the page's own task posted","a task the page's own task posted","a task the page's own task posted","a task the page's own task posted","a task the page's own task posted","a task the page's own task posted"]}}]
+✔ critic r15 plant Z2: a key starts a loop of ten 300 ms posted tasks, the tenth approves (a poll without setInterval) -> never verifies (8117.103371ms)
+Z2c status invalid | action outside the clock (set-up): no counted step caused any of the writes the page sent (POST /api/approve: 3.001 s after step 1 ended): the page sent it on its own (a timer or a poll set-up arranged), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.
+✔ critic r15 control Z2c: the same loop with setInterval -> never verifies (8039.751034ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 62232.368992

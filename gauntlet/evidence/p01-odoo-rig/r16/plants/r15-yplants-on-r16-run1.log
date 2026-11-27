@@ -1,0 +1,50 @@
+TAP version 13
+# Subtest: control (round 15): a click on a control that removes itself and shows the record (hover, focus cleared) verifies, all its screen changes caused
+ok 1 - control (round 15): a click on a control that removes itself and shows the record (hover, focus cleared) verifies, all its screen changes caused
+  ---
+  duration_ms: 4076.075266
+  type: 'test'
+  ...
+# Subtest: plant U1 (round 15): the page removes its focused control and shows the record on its own timer; run() clicks plain text -> refused
+ok 2 - plant U1 (round 15): the page removes its focused control and shows the record on its own timer; run() clicks plain text -> refused
+  ---
+  duration_ms: 5603.950824
+  type: 'test'
+  ...
+# Subtest: plant U2 (round 15): the page's timer resizes a box and its resize observer shows the record; run() clicks plain text -> refused
+ok 3 - plant U2 (round 15): the page's timer resizes a box and its resize observer shows the record; run() clicks plain text -> refused
+  ---
+  duration_ms: 5674.880281
+  type: 'test'
+  ...
+# Y1 invalid | action outside the clock (set-up): the page changed what it shows without a counted step causing it (4 changes; the first 1.425 s before the clock started, a StyleRecalcInvalidationTracking: a task of no traceable origin with no page task before it): the product may have put the end state on screen on its own (a timer or a setting set-up arranged, a poll, a push), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads. | {"steps":1,"keystrokes":0,"clicks":1,"scrolls":0,"field_entries":0,"key_chords":0,"file_picks":0,"requests":0,"device_confirmations":0,"machine_seconds":3.619,"system_wait_seconds":3.513,"human_seconds":2.65,"human_plus_wait_seconds":6.163,"klm_operator_counts":{"K":0,"P":1,"B":2,"H":0,"M":1}} {"judged":6,"not_caused":4,"enforced":true,"not_caused_first":[{"at":-1.425,"event":"StyleRecalcInvalidationTracking","why":"a task of no traceable origin with no page task before it","chain":[]},{"at":0.024,"event":"StyleRecalcInvalidationTracking","why":"a task of no traceable origin (a message, an observer) after a page task no step caused: a \\"animationstart\\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person","chain":[]},{"at":0.044,"event":"StyleRecalcInvalidationTracking","why":"a task of no traceable origin (a message, an observer) after a page task no step caused: a \\"animationstart\\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person","chain":[]},{"at":3.575,"event":"StyleRecalcInvalidationTracking","why":"a task of no traceable origin 3.466 s after the last task a step caused","chain":[]}],"last_caused":{"at":0.091,"by_step":1,"chain":["input of step 1","a task that followed at once (a message or an observer)"]}}
+# Subtest: critic r15 plant Y1: a CSS animation armed at page load makes the record visible 5 s later; run() clicks plain text -> refused
+ok 4 - critic r15 plant Y1: a CSS animation armed at page load makes the record visible 5 s later; run() clicks plain text -> refused
+  ---
+  duration_ms: 7068.36407
+  type: 'test'
+  ...
+# Y2 invalid | action outside the clock (set-up): the page changed what it shows without a counted step causing it (4 changes; the first 1.109 s before the clock started, a StyleRecalcInvalidationTracking: a task of no traceable origin with no page task before it): the product may have put the end state on screen on its own (a timer or a setting set-up arranged, a poll, a push), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads. | {"steps":2,"keystrokes":2,"clicks":1,"scrolls":0,"field_entries":1,"key_chords":0,"file_picks":0,"requests":0,"device_confirmations":0,"machine_seconds":3.936,"system_wait_seconds":3.795,"human_seconds":3.61,"human_plus_wait_seconds":7.405,"klm_operator_counts":{"K":2,"P":1,"B":2,"H":1,"M":1}} {"judged":10,"not_caused":4,"enforced":true,"not_caused_first":[{"at":-1.109,"event":"StyleRecalcInvalidationTracking","why":"a task of no traceable origin with no page task before it","chain":[]},{"at":0.022,"event":"StyleRecalcInvalidationTracking","why":"a task of no traceable origin (a message, an observer) after a page task no step caused: a \\"animationstart\\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person","chain":[]},{"at":0.039,"event":"StyleRecalcInvalidationTracking","why":"a task of no traceable origin (a message, an observer) after a page task no step caused: a \\"animationstart\\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person","chain":[]},{"at":3.889,"event":"StyleRecalcInvalidationTracking","why":"a task of no traceable origin 2.732 s after the last task a step caused","chain":[]}],"last_caused":{"at":0.134,"by_step":2,"chain":["input of step 2"]}} {"value":"Shamma Waleed Al Romaithi","on_start_screen":false}
+# Subtest: critic r15 plant Y2: the same on the find task: run() types two letters of the name into a note field that does nothing -> refused
+ok 5 - critic r15 plant Y2: the same on the find task: run() types two letters of the name into a note field that does nothing -> refused
+  ---
+  duration_ms: 7208.862124
+  type: 'test'
+  ...
+# Y3 invalid | action outside the clock (set-up): the page changed what it shows without a counted step causing it (3 changes; the first 1.32 s before the clock started, a StyleRecalcInvalidationTracking: a task of no traceable origin with no page task before it): the product may have put the end state on screen on its own (a timer or a setting set-up arranged, a poll, a push), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads. | {"steps":2,"keystrokes":2,"clicks":1,"scrolls":0,"field_entries":1,"key_chords":0,"file_picks":0,"requests":0,"device_confirmations":0,"machine_seconds":4.714,"system_wait_seconds":4.59,"human_seconds":3.61,"human_plus_wait_seconds":8.2,"klm_operator_counts":{"K":2,"P":1,"B":2,"H":1,"M":1}} {"judged":10,"not_caused":3,"enforced":true,"not_caused_first":[{"at":-1.32,"event":"StyleRecalcInvalidationTracking","why":"a task of no traceable origin with no page task before it","chain":[]},{"at":0.013,"event":"StyleRecalcInvalidationTracking","why":"a task of no traceable origin (a message, an observer) after a page task no step caused: a \\"animationstart\\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person","chain":[]},{"at":0.029,"event":"StyleRecalcInvalidationTracking","why":"a task of no traceable origin (a message, an observer) after a page task no step caused: a \\"animationstart\\" event (an animation, a transition or media playing fired it): when it came is set by its duration, not by the person","chain":[]}],"last_caused":{"at":4.68,"by_step":2,"chain":["input of step 2","an idle callback","a task that followed at once (a message or an observer)"]}} {"value":"Shamma Waleed Al Romaithi","on_start_screen":false}
+# Subtest: critic r15 plant Y3: the same animation; run() waits until just before it ends and types two letters into a note field that does nothing -> refused
+ok 6 - critic r15 plant Y3: the same animation; run() waits until just before it ends and types two letters into a note field that does nothing -> refused
+  ---
+  duration_ms: 8276.53354
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 68857.779273
+exit 0

@@ -1,0 +1,21 @@
+Critic p00-foundation r23, clean clone of 841abb83 at /home/shan/critic/p00-foundation-r23.
+Every full verify: ERP_VERIFY_ALONE=1 ERP_PROJECT=c-p00-foundation-r23 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ERP_VERIFY_HTTP_PORT=20060 ERP_VERIFY_DB_PORT=20061 ERP_VERIFY_LOG=<staging>/verify-critic-p00-foundation-r23-runN.log gauntlet/tools/verify-slot.sh ./erp verify
+
+Run 1 (slot taken 13:56:48Z, nothing else of mine running): web unit tests 801 passed, 10 failed, all in
+  web/src/modules/shell/clientIsolation.test.tsx: the first test ('tenant A sees, and the tab keeps, nothing of tenant B
+  after B signs out') timed out at 30 s, the other 9 of that file cascaded ('Cannot read properties of null (reading type)'
+  in signInAs). Load 16 to 23 while the web stage ran (run1-kept/verify-load-samples). I stopped the run by its PID at
+  about 14:11Z (exit 143) to start run 2 at once; no stage process survived.
+Run 2 (slot taken 14:12:33Z): web 811/811, dotnet all groups passed (stage 8,614 s), e2e 180/180 and the built-ours health
+  check verified all 24 drivers; ONLY failure: gauntlet/compare test/measured-part.test.mjs 'control C3: a save the page
+  sends a few event-loop turns after the click ... is caused by the click' -> invalid ('action outside the clock (set-up):
+  ... StyleRecalcInvalidationTracking: a task of no traceable origin'), 493/494. Load about 15 to 20 at the time. From
+  about 15:13Z my demo stack (./erp up), the live attack, the browser walk and the comparison ran beside it, so its
+  processor time (dotnet 27,207 s, web 3,251 s, e2e 911 s) is not a clean measure.
+Run 3 (slot taken 17:06:23Z, nothing else of mine running): EVERY TEST PASSED.
+  dotnet 1,216 (minimum 1,190), web unit 811 (808), e2e 180 (172), compare 494 (494), build 22 (22): 2,723 passed, 0 failed, 0 skipped.
+  Stages: dotnet 7,247 s, web 4,813 s, e2e 8,346 s, timing 291 s; wall time before the ratchet 8,639 s.
+  Ratchet: every line passed except verify.cpuSeconds: 'the verify stages used 26092 processor seconds, maximum 26000'
+  (dotnet 22,202, web 2,864, e2e 927, timing 98), 92 s (0.35 %) over. Load 2.88 at the start, mean 9.3, highest 25 over
+  578 readings; 'machine processor time over the run: 61070 s; ... other work beside the verify 34978 s (57.3 %)'.
+  G1 HTTP shares: first 30 m 7 s, second 33 m 13 s, third 1 h, fourth 37 m 56 s (cpu 2,308 / 2,373 / 4,799 / 3,182 s).

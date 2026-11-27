@@ -1,0 +1,26 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.17]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.43]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.55]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.Rules.CustomFieldGateTests.Every_kind_of_record_with_custom_fields_is_wired_to_its_list_model_and_audit_trail [20 ms]
+  Passed Erp.Gates.Tests.G1.G1DatabaseIsolationTests.Audit_trail_is_append_only_for_the_application [48 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Every_tenant_table_carries_the_audit_trigger_unless_reviewed_exempt [27 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Changing_ones_own_interface_preferences_is_audited_field_by_field [664 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Every_audited_table_is_a_registered_kind_of_record_and_every_recorded_field_has_a_name_in_both_languages [21 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Every_audited_secret_is_redacted_or_left_out [12 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_through_the_API_leave_field_level_audit_rows_attributed_to_the_user [140 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Writes_that_bypass_the_ORM_are_audited_too [28 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Every_recorded_choice_value_of_every_audited_table_has_a_label_in_both_languages [46 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Passwords_are_redacted_in_the_audit_trail [77 ms]
+  Passed Erp.Gates.Tests.Rules.AuditGateTests.Every_recorded_choice_value_of_the_jobs_tables_has_a_label_in_both_languages [2 ms]
+[xUnit.net 00:00:15.01]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Passed Erp.Gates.Tests.Rules.NumberingAuditGateTests.Every_audited_numbering_row_is_named_by_a_column_the_audit_trail_reads [3 ms]
+  Passed Erp.Gates.Tests.Rules.NumberingAuditGateTests.Every_recorded_choice_value_of_the_numbering_tables_has_a_label_in_both_languages [4 ms]
+
+Test Run Successful.
+Total tests: 13
+     Passed: 13
+ Total time: 15.2903 Seconds
+VSTEST_ARTIFACTS_DIRECTORY environment variable was not found, falling back to a user-private temporary directory. This is most likely caused by an outdated Microsoft.NET.Test.Sdk package reference in the test project.

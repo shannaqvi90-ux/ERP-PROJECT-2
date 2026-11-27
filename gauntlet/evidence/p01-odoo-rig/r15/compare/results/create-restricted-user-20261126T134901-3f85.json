@@ -1,0 +1,922 @@
+{
+  "schema": 1,
+  "run_id": "create-restricted-user-20261126T134901-3f85",
+  "instrument": 12,
+  "task": "create-restricted-user",
+  "task_title": "Create a user with a restricted role",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Create the user \"Hessa Clerk\", sign-in hessa.clerk@demo-trading.example, who may view and create contacts and do nothing else: no purchasing, accounting, settings or user administration.",
+  "done_when": "The user is saved; the back end confirms the user exists, can create contacts and holds no administration, purchasing or accounting rights.",
+  "started_at": "2026-11-26T13:49:01.552Z",
+  "finished_at": "2026-11-26T13:49:21.545Z",
+  "environment": {
+    "base_url": "http://localhost:20150",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v24.20.0"
+  },
+  "counts": {
+    "steps": 5,
+    "keystrokes": 37,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 2,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 1.713,
+    "system_wait_seconds": 0.918,
+    "human_seconds": 20.91,
+    "human_plus_wait_seconds": 21.828,
+    "klm_operator_counts": {
+      "K": 37,
+      "P": 2,
+      "B": 4,
+      "H": 3,
+      "M": 5
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Users (navigation)",
+      "keystrokes": 0,
+      "at": 0.03,
+      "took": 0.079,
+      "began": 0.001,
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "New user (Alt+N)",
+      "keystrokes": 2,
+      "at": 0.206,
+      "took": 0.085,
+      "chord": "Alt+n",
+      "screen": "/identity/users",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "e-mail",
+      "keystrokes": 33,
+      "at": 0.321,
+      "took": 0.212,
+      "text": "hessa.clerk@demo-trading.example",
+      "same_field": false,
+      "screen": "/identity/users/new",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "click",
+      "label": "the role",
+      "keystrokes": 0,
+      "at": 0.578,
+      "took": 0.043,
+      "began": 0.533,
+      "screen": "/identity/users/new",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "key",
+      "label": "Create (Ctrl+Enter)",
+      "keystrokes": 2,
+      "at": 0.889,
+      "took": 0.028,
+      "chord": "Control+Enter",
+      "screen": "/identity/users/new",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "users list",
+      "at": 0.11,
+      "seconds": 0.096
+    },
+    {
+      "label": "new user form, e-mail focused",
+      "at": 0.291,
+      "seconds": 0.029
+    },
+    {
+      "label": "saved: set-up code shown",
+      "at": 0.918,
+      "seconds": 0.793
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "473eba626c496061.jpg",
+      "at": 0,
+      "path": "../out/blind/shots/473eba626c496061.jpg"
+    },
+    {
+      "moment": "user filled in",
+      "file": "f24556f4fc837079.jpg",
+      "at": 0.621,
+      "path": "../out/blind/shots/f24556f4fc837079.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "ad82d25638d1f79f.jpg",
+      "at": 1.713,
+      "path": "../out/blind/shots/ad82d25638d1f79f.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "displayName": "Hessa Clerk",
+      "roles": [
+        "Contacts clerk"
+      ],
+      "permissions": [
+        "contacts.contacts.create",
+        "contacts.contacts.read"
+      ],
+      "administration": [],
+      "note": "view and create contacts only"
+    }
+  },
+  "path_notes": "pointer: Users > Alt+N (e-mail focused) > type the e-mail > click the role > Ctrl+Enter | keyboard: Users > Alt+N > type the e-mail > Alt+O (find a role) > part of the role name > Enter > Ctrl+Enter",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/create-restricted-user.mjs",
+    "sha256": "6c90d4ac7a6c2f92815d1dd1b36de2c7dcb57e48d670c709ce73f1cc0b87a6fe"
+  },
+  "task_notes": "Fixed values so keystroke counts are comparable run to run; set-up removes any earlier copy of the user.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.05,
+      "verified": true
+    },
+    {
+      "requests": 3,
+      "longest_pause_seconds": 0.002,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.029,
+      "verified": true,
+      "gap_seconds": 1.1
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "bc73c5eb8e02da51",
+    "elements": 838
+  },
+  "screen_after_verify": {
+    "sha256": "bc73c5eb8e02da51",
+    "elements": 838,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.002,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.015
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 2,
+    "read_both_times": 1,
+    "read_before": [
+      "GET /api/identity/users"
+    ],
+    "read_after": [
+      "GET /api/identity/users",
+      "GET /api/identity/users/01a2181d-f3af-78f4-925b-96d9767f8f4e/access"
+    ],
+    "changed": [
+      "GET /api/identity/users"
+    ],
+    "changed_parts": {
+      "GET /api/identity/users": [
+        "items.0.id",
+        "items.0.email",
+        "items.0.displayName",
+        "items.0.language",
+        "items.0.isActive",
+        "items.0.roleIds.0",
+        "items.0.lastSignInAt",
+        "items.0.createdAt"
+      ]
+    },
+    "gained_entered_value": [
+      "GET /api/identity/users"
+    ],
+    "end_state": [
+      "GET /api/identity/users [items.displayName, items.email]"
+    ],
+    "end_state_changed": {
+      "GET /api/identity/users": [
+        "items.0.email",
+        "items.0.displayName"
+      ]
+    },
+    "end_state_gained": [
+      "Hessa Clerk",
+      "hessa.clerk@demo-trading.example"
+    ],
+    "writes_sent": [
+      "POST /api/identity/users",
+      "PUT /api/tenancy/access/01a2181d-f3af-78f4-925b-96d9767f8f4e"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /api/identity/users",
+        "at": 0.9131944130000192,
+        "by_step": 5,
+        "browser_record": {
+          "caused": true,
+          "by_step": 5,
+          "chain_seconds": 0.002,
+          "chain": [
+            "input of step 5"
+          ]
+        }
+      },
+      {
+        "write": "PUT /api/tenancy/access/01a2181d-f3af-78f4-925b-96d9767f8f4e",
+        "at": 1.1664505850000133,
+        "by_step": 5,
+        "browser_record": {
+          "caused": true,
+          "by_step": 5,
+          "chain_seconds": 0.263,
+          "chain": [
+            "input of step 5",
+            "the answer to POST /api/identity/users after 0.173 s",
+            "a task the page's own task posted",
+            "the answer to GET /api/tenancy/access/01a2181d-f3af-78f4-925b-96d9767f8f4e after 0.087 s",
+            "a task the page's own task posted"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 52,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 1.435,
+      "by_step": 5,
+      "chain": [
+        "a task the page's own task posted",
+        "a task the page's own task posted",
+        "a task the page's own task posted",
+        "a task the page's own task posted"
+      ]
+    }
+  },
+  "set_up_writes": [
+    "fetch POST /api/identity/roles"
+  ],
+  "screenshots_path": "pointer",
+  "best_path_per_metric": {
+    "steps": "pointer",
+    "keystrokes": "pointer",
+    "machine_seconds": "keyboard",
+    "human_seconds": "pointer",
+    "human_plus_wait_seconds": "keyboard"
+  },
+  "counts_path": "pointer",
+  "variants": [
+    {
+      "id": "pointer",
+      "path": "Users > Alt+N (e-mail focused) > type the e-mail > click the role > Ctrl+Enter",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 5,
+        "keystrokes": 37,
+        "clicks": 2,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 1.713,
+        "system_wait_seconds": 0.918,
+        "human_seconds": 20.91,
+        "human_plus_wait_seconds": 21.828,
+        "klm_operator_counts": {
+          "K": 37,
+          "P": 2,
+          "B": 4,
+          "H": 3,
+          "M": 5
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Users (navigation)",
+          "keystrokes": 0,
+          "at": 0.03,
+          "took": 0.079,
+          "began": 0.001,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "New user (Alt+N)",
+          "keystrokes": 2,
+          "at": 0.206,
+          "took": 0.085,
+          "chord": "Alt+n",
+          "screen": "/identity/users",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "e-mail",
+          "keystrokes": 33,
+          "at": 0.321,
+          "took": 0.212,
+          "text": "hessa.clerk@demo-trading.example",
+          "same_field": false,
+          "screen": "/identity/users/new",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "the role",
+          "keystrokes": 0,
+          "at": 0.578,
+          "took": 0.043,
+          "began": 0.533,
+          "screen": "/identity/users/new",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "key",
+          "label": "Create (Ctrl+Enter)",
+          "keystrokes": 2,
+          "at": 0.889,
+          "took": 0.028,
+          "chord": "Control+Enter",
+          "screen": "/identity/users/new",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "users list",
+          "at": 0.11,
+          "seconds": 0.096
+        },
+        {
+          "label": "new user form, e-mail focused",
+          "at": 0.291,
+          "seconds": 0.029
+        },
+        {
+          "label": "saved: set-up code shown",
+          "at": 0.918,
+          "seconds": 0.793
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "displayName": "Hessa Clerk",
+          "roles": [
+            "Contacts clerk"
+          ],
+          "permissions": [
+            "contacts.contacts.create",
+            "contacts.contacts.read"
+          ],
+          "administration": [],
+          "note": "view and create contacts only"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.05,
+          "verified": true
+        },
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.029,
+          "verified": true,
+          "gap_seconds": 1.1
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "bc73c5eb8e02da51",
+        "elements": 838
+      },
+      "screen_after_verify": {
+        "sha256": "bc73c5eb8e02da51",
+        "elements": 838,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.002,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.015
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 2,
+        "read_both_times": 1,
+        "read_before": [
+          "GET /api/identity/users"
+        ],
+        "read_after": [
+          "GET /api/identity/users",
+          "GET /api/identity/users/01a2181d-f3af-78f4-925b-96d9767f8f4e/access"
+        ],
+        "changed": [
+          "GET /api/identity/users"
+        ],
+        "changed_parts": {
+          "GET /api/identity/users": [
+            "items.0.id",
+            "items.0.email",
+            "items.0.displayName",
+            "items.0.language",
+            "items.0.isActive",
+            "items.0.roleIds.0",
+            "items.0.lastSignInAt",
+            "items.0.createdAt"
+          ]
+        },
+        "gained_entered_value": [
+          "GET /api/identity/users"
+        ],
+        "end_state": [
+          "GET /api/identity/users [items.displayName, items.email]"
+        ],
+        "end_state_changed": {
+          "GET /api/identity/users": [
+            "items.0.email",
+            "items.0.displayName"
+          ]
+        },
+        "end_state_gained": [
+          "Hessa Clerk",
+          "hessa.clerk@demo-trading.example"
+        ],
+        "writes_sent": [
+          "POST /api/identity/users",
+          "PUT /api/tenancy/access/01a2181d-f3af-78f4-925b-96d9767f8f4e"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /api/identity/users",
+            "at": 0.9131944130000192,
+            "by_step": 5,
+            "browser_record": {
+              "caused": true,
+              "by_step": 5,
+              "chain_seconds": 0.002,
+              "chain": [
+                "input of step 5"
+              ]
+            }
+          },
+          {
+            "write": "PUT /api/tenancy/access/01a2181d-f3af-78f4-925b-96d9767f8f4e",
+            "at": 1.1664505850000133,
+            "by_step": 5,
+            "browser_record": {
+              "caused": true,
+              "by_step": 5,
+              "chain_seconds": 0.263,
+              "chain": [
+                "input of step 5",
+                "the answer to POST /api/identity/users after 0.173 s",
+                "a task the page's own task posted",
+                "the answer to GET /api/tenancy/access/01a2181d-f3af-78f4-925b-96d9767f8f4e after 0.087 s",
+                "a task the page's own task posted"
+              ]
+            }
+          }
+        ]
+      },
+      "screen_changes": {
+        "judged": 52,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 1.435,
+          "by_step": 5,
+          "chain": [
+            "a task the page's own task posted",
+            "a task the page's own task posted",
+            "a task the page's own task posted",
+            "a task the page's own task posted"
+          ]
+        }
+      },
+      "set_up_writes": [
+        "fetch POST /api/identity/roles"
+      ]
+    },
+    {
+      "id": "keyboard",
+      "path": "Users > Alt+N > type the e-mail > Alt+O (find a role) > part of the role name > Enter > Ctrl+Enter",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 7,
+        "keystrokes": 45,
+        "clicks": 1,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 4,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 1.221,
+        "system_wait_seconds": 0.452,
+        "human_seconds": 21.05,
+        "human_plus_wait_seconds": 21.502,
+        "klm_operator_counts": {
+          "K": 45,
+          "P": 1,
+          "B": 2,
+          "H": 1,
+          "M": 5
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "Users (navigation)",
+          "keystrokes": 0,
+          "at": 0.031,
+          "took": 0.078,
+          "began": 0.001,
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "New user (Alt+N)",
+          "keystrokes": 2,
+          "at": 0.218,
+          "took": 0.096,
+          "chord": "Alt+n",
+          "screen": "/identity/users",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "type",
+          "label": "e-mail",
+          "keystrokes": 33,
+          "at": 0.344,
+          "took": 0.214,
+          "text": "hessa.clerk@demo-trading.example",
+          "same_field": false,
+          "screen": "/identity/users/new",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "find a role (Alt+O)",
+          "keystrokes": 2,
+          "at": 0.559,
+          "took": 0.01,
+          "chord": "Alt+o",
+          "screen": "/identity/users/new",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "type",
+          "label": "find the role",
+          "keystrokes": 5,
+          "at": 0.575,
+          "took": 0.026,
+          "text": "clerk",
+          "same_field": false,
+          "screen": "/identity/users/new",
+          "chain": true
+        },
+        {
+          "n": 6,
+          "kind": "key",
+          "label": "tick the first role shown",
+          "keystrokes": 1,
+          "at": 0.602,
+          "took": 0.008,
+          "chord": "Enter",
+          "screen": "/identity/users/new",
+          "chain": true
+        },
+        {
+          "n": 7,
+          "kind": "key",
+          "label": "Create (Ctrl+Enter)",
+          "keystrokes": 2,
+          "at": 0.877,
+          "took": 0.034,
+          "chord": "Control+Enter",
+          "screen": "/identity/users/new",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "users list",
+          "at": 0.11,
+          "seconds": 0.107
+        },
+        {
+          "label": "new user form, e-mail focused",
+          "at": 0.314,
+          "seconds": 0.03
+        },
+        {
+          "label": "role finder focused",
+          "at": 0.569,
+          "seconds": 0.006
+        },
+        {
+          "label": "saved: set-up code shown",
+          "at": 0.911,
+          "seconds": 0.309
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "displayName": "Hessa Clerk",
+          "roles": [
+            "Contacts clerk"
+          ],
+          "permissions": [
+            "contacts.contacts.create",
+            "contacts.contacts.read"
+          ],
+          "administration": [],
+          "note": "view and create contacts only"
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.026,
+          "verified": true
+        },
+        {
+          "requests": 3,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.025,
+          "verified": true,
+          "gap_seconds": 1.1
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "32573e5a0e86cbe2",
+        "elements": 838
+      },
+      "screen_after_verify": {
+        "sha256": "32573e5a0e86cbe2",
+        "elements": 838,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.002,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.017
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 2,
+        "read_both_times": 1,
+        "read_before": [
+          "GET /api/identity/users"
+        ],
+        "read_after": [
+          "GET /api/identity/users",
+          "GET /api/identity/users/01a2181e-1ad0-7091-9141-7c28cb9fa10e/access"
+        ],
+        "changed": [
+          "GET /api/identity/users"
+        ],
+        "changed_parts": {
+          "GET /api/identity/users": [
+            "items.0.id",
+            "items.0.email",
+            "items.0.displayName",
+            "items.0.language",
+            "items.0.isActive",
+            "items.0.roleIds.0",
+            "items.0.lastSignInAt",
+            "items.0.createdAt"
+          ]
+        },
+        "gained_entered_value": [
+          "GET /api/identity/users"
+        ],
+        "end_state": [
+          "GET /api/identity/users [items.displayName, items.email]"
+        ],
+        "end_state_changed": {
+          "GET /api/identity/users": [
+            "items.0.email",
+            "items.0.displayName"
+          ]
+        },
+        "end_state_gained": [
+          "Hessa Clerk",
+          "hessa.clerk@demo-trading.example"
+        ],
+        "writes_sent": [
+          "POST /api/identity/users",
+          "PUT /api/tenancy/access/01a2181e-1ad0-7091-9141-7c28cb9fa10e"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /api/identity/users",
+            "at": 0.8972498839999898,
+            "by_step": 7,
+            "browser_record": {
+              "caused": true,
+              "by_step": 7,
+              "chain_seconds": 0.001,
+              "chain": [
+                "input of step 7"
+              ]
+            }
+          },
+          {
+            "write": "PUT /api/tenancy/access/01a2181e-1ad0-7091-9141-7c28cb9fa10e",
+            "at": 1.035705621000001,
+            "by_step": 7,
+            "browser_record": {
+              "caused": true,
+              "by_step": 7,
+              "chain_seconds": 0.147,
+              "chain": [
+                "input of step 7",
+                "the answer to POST /api/identity/users after 0.127 s",
+                "a task the page's own task posted",
+                "the answer to GET /api/tenancy/access/01a2181e-1ad0-7091-9141-7c28cb9fa10e after 0.018 s",
+                "a task the page's own task posted"
+              ]
+            }
+          }
+        ]
+      },
+      "screen_changes": {
+        "judged": 54,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 1.209,
+          "by_step": 7,
+          "chain": [
+            "a task the page's own task posted",
+            "a task the page's own task posted",
+            "a task the page's own task posted",
+            "a task the page's own task posted"
+          ]
+        }
+      },
+      "set_up_writes": []
+    }
+  ]
+}

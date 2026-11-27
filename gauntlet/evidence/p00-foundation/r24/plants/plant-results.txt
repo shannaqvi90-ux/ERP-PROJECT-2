@@ -1,0 +1,26 @@
+Critic p00 r24: faults planted in p00's kernel and gate machinery (plants.diff), each inert unless CRITIC_PLANT names it.
+Runs: run-in-toolbox.sh -> run-plants.sh, through verify-slot.sh (logs plants-, plants2-, plants3-critic-p00-foundation-r24.log), load 1 to 4.6.
+
+S24 (gate machinery, this round's own change): HttpAttackShards.For deals the measured family /api/tenancy/workplace to no share.
+  CAUGHT by HttpAttackShardTests.The_measured_families_are_dealt_so_that_no_share_is_far_above_the_average_... (Expected 46, Actual 45).
+  Unplanted control: 17 of 17 pass (plant-SHARDS-NONE.log).
+
+T24 (tenant leak, kernel list framework + DI singleton): a searched list's total remembered 60 s on an instance field of the
+  ModuleCatalog singleton, keyed by list, search and filter (no tenant).
+  CAUGHT structurally by G1ProcessStateTests ("singleton Erp.Kernel.Modules.ModuleCatalog.CriticTotals: a read-only field that holds
+  a mutable ConcurrentDictionary ... key it by tenant") and behaviourally by G1ListVolumeTests (1,648 answers, e.g. "tenant A:
+  GET /api/tenancy/access?take=50&search=a answered total 102505, but the tenant's own rows matching it are 100005").
+
+P24 (permission, kernel ICurrentUser.Has): any permission on a module.resource taken as every permission on it.
+  CAUGHT by 1 of 101 G2 tests: JobsWriteSetTests.A_user_who_may_only_add_schedules_cannot_schedule_a_kind_whose_run_permission_they_lack.
+  Unplanted control: 101 of 101 G2 tests pass.
+
+P24b (permission, kernel ICurrentUser.Has): jobs.jobs.output implied by jobs.jobs.read (a reader sees job output text).
+  MISSED by all 101 G2 tests. Caught only by p12's module test JobsApiTests.A_reader_may_look_but_not_start_cancel_rerun_or_download.
+
+P24c (permission, kernel ICurrentUser.Has, only for the audit module's record-kind check): a record kind's read permission
+  implied by any permission on that resource.
+  MISSED by all 101 G2 tests, by the 13 gate tests matching 'Audit' and by the 23 Erp.Modules.Audit.Tests.
+  Proven a real fault by the critic's probe test (in plants.diff, not product code): a user holding identity.users.update and
+  audit.log.read, without identity.users.read, reads the administrator's user-record history: planted 1 item (expected 0,
+  plant-PROBE-P24c.log); unplanted 0 items, probe passes (plant-PROBE-NONE.log).

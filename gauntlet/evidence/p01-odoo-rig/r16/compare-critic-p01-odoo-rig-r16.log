@@ -1,0 +1,57 @@
+verify-slot: slot 1 of 2 taken at 2026-11-27T16:36:53Z after waiting 0 s; time the run from here
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+find-record              odoo  verified  steps 5  keys 30  machine 1.288s  human 17.91s  human+wait 18.847s  -> ../../evidence-staging/p01-odoo-rig/r16/compare/results/find-record-20261127T163700-453d.json
+find-record              ours  verified  steps 3  keys 14  machine 0.495s  human 5.67s  human+wait 5.915s  -> ../../evidence-staging/p01-odoo-rig/r16/compare/results/find-record-20261127T163744-200d.json
+find-record              verdict win (ours judged on its whole path 'palette-shortest')
+blind review page: ../../../../evidence-staging/p01-odoo-rig/r16/compare/blind/review.html
+output: ../../../../evidence-staging/p01-odoo-rig/r16/compare
+verify-slot: slot 1 of 2 taken at 2026-11-27T16:38:24Z after waiting 0 s; time the run from here
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+create-restricted-user   ours  verified  steps 5  keys 37  machine 1.456s  human 20.91s  human+wait 21.811s  -> ../../evidence-staging/p01-odoo-rig/r16/compare/results/create-restricted-user-20261127T163828-03b5.json
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 4.515s  human 30.05s  human+wait 34.109s  -> ../../evidence-staging/p01-odoo-rig/r16/compare/results/create-restricted-user-20261127T163845-9c85.json
+create-restricted-user   verdict win (ours judged on its whole path 'pointer')
+blind review page: ../../../../evidence-staging/p01-odoo-rig/r16/compare/blind/review.html
+output: ../../../../evidence-staging/p01-odoo-rig/r16/compare
+verify-slot: slot 1 of 2 taken at 2026-11-27T16:40:12Z after waiting 0 s; time the run from here
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+custom-field-filter      ours  verified  steps 11  keys 39  machine 1.477s  human 28.92s  human+wait 29.588s  -> ../../evidence-staging/p01-odoo-rig/r16/compare/results/custom-field-filter-20261127T164016-dd82.json
+custom-field-filter      odoo  verified  steps 17  keys 61  machine 4.614s  human 53.48s  human+wait 54.409s  -> ../../evidence-staging/p01-odoo-rig/r16/compare/results/custom-field-filter-20261127T164027-d84b.json
+custom-field-filter      verdict win
+blind review page: ../../../../evidence-staging/p01-odoo-rig/r16/compare/blind/review.html
+output: ../../../../evidence-staging/p01-odoo-rig/r16/compare
+verify-slot: slot 1 of 2 taken at 2026-11-27T16:40:56Z after waiting 0 s; time the run from here
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+switch-to-arabic         ours  verified  steps 1  keys 0  machine 0.282s  human 2.65s  human+wait 2.651s  -> ../../evidence-staging/p01-odoo-rig/r16/compare/results/switch-to-arabic-20261127T164059-30d7.json
+switch-to-arabic         odoo  verified  steps 6  keys 1  machine 1.666s  human 15.28s  human+wait 16.285s  -> ../../evidence-staging/p01-odoo-rig/r16/compare/results/switch-to-arabic-20261127T164108-80d1.json
+switch-to-arabic         verdict win
+blind review page: ../../../../evidence-staging/p01-odoo-rig/r16/compare/blind/review.html
+output: ../../../../evidence-staging/p01-odoo-rig/r16/compare
+verify-slot: slot 1 of 2 taken at 2026-11-27T16:41:37Z after waiting 0 s; time the run from here
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+import-5000              odoo  verified  steps 7  keys 0  machine 7.928s  human 17.4s  human+wait 24.508s  -> ../../evidence-staging/p01-odoo-rig/r16/compare/results/import-5000-20261127T164140-bec8.json
+import-5000              ours  verified  steps 5  keys 0  machine 4.137s  human 12.1s  human+wait 15.61s  -> ../../evidence-staging/p01-odoo-rig/r16/compare/results/import-5000-20261127T164228-9aeb.json
+import-5000              verdict win
+import-5000              left out: keystrokes (both products exactly 0 on a count metric; neither a tie nor a win, owner decision 2026-10-08, needs-human #11)
+blind review page: ../../../../evidence-staging/p01-odoo-rig/r16/compare/blind/review.html
+output: ../../../../evidence-staging/p01-odoo-rig/r16/compare
+verify-slot: slot 1 of 2 taken at 2026-11-27T16:42:40Z after waiting 0 s; time the run from here
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+follow-approval          ours  not_built  (not built yet: waits for p13 (approval flows))  -> ../../evidence-staging/p01-odoo-rig/r16/compare/results/follow-approval-20261127T164244-b0d2.json
+follow-approval          odoo  verified  steps 4  keys 0  machine 1.904s  human 10.6s  human+wait 11.675s  -> ../../evidence-staging/p01-odoo-rig/r16/compare/results/follow-approval-20261127T164244-e009.json
+follow-approval          verdict not_built
+blind review page: ../../../../evidence-staging/p01-odoo-rig/r16/compare/blind/review.html
+output: ../../../../evidence-staging/p01-odoo-rig/r16/compare
+verify-slot: slot 1 of 2 taken at 2026-11-27T16:43:20Z after waiting 0 s; time the run from here
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+export-filtered-list     ours  verified  steps 6  keys 0  machine 1.295s  human 15.9s  human+wait 16.467s  -> ../../evidence-staging/p01-odoo-rig/r16/compare/results/export-filtered-list-20261127T164324-463d.json
+export-filtered-list     odoo  verified  steps 9  keys 11  machine 3.305s  human 26.43s  human+wait 28.375s  -> ../../evidence-staging/p01-odoo-rig/r16/compare/results/export-filtered-list-20261127T164332-fb97.json
+export-filtered-list     verdict win
+blind review page: ../../../../evidence-staging/p01-odoo-rig/r16/compare/blind/review.html
+output: ../../../../evidence-staging/p01-odoo-rig/r16/compare
+verify-slot: slot 1 of 2 taken at 2026-11-27T16:43:59Z after waiting 0 s; time the run from here
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+add-rate                 odoo  verified  steps 10  keys 8  machine 1.646s  human 22.08s  human+wait 22.955s  -> ../../evidence-staging/p01-odoo-rig/r16/compare/results/add-rate-20261127T164403-6743.json
+add-rate                 ours  verified  steps 4  keys 7  machine 0.592s  human 9.01s  human+wait 9.219s  -> ../../evidence-staging/p01-odoo-rig/r16/compare/results/add-rate-20261127T164450-b8be.json
+add-rate                 verdict win
+blind review page: ../../../../evidence-staging/p01-odoo-rig/r16/compare/blind/review.html
+output: ../../../../evidence-staging/p01-odoo-rig/r16/compare

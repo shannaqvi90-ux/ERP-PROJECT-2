@@ -70,7 +70,25 @@ public sealed class LocalizationTests
     [Fact]
     public void A_key_without_a_translation_stops_the_catalog_from_loading()
     {
-        var error = Assert.Throws<InvalidOperationException>(() => new StringCatalog([typeof(LocalizationTests).Assembly]));
+        var error = Assert.Throws<InvalidOperationException>(() => new StringCatalog([new UntranslatedStringsAssembly()]));
         Assert.Contains("ar:only.english", error.Message, StringComparison.Ordinal);
     }
+}
+
+/// <summary>An assembly whose strings are deliberately incomplete (a key in English only), to prove the catalog
+/// refuses them. It is made in code, not embedded in this test assembly: a test module added to a running
+/// application (Erp:Testing:ExtraModules) contributes this assembly's embedded strings to the application's
+/// catalog, and an incomplete one would stop every such application from starting.</summary>
+internal sealed class UntranslatedStringsAssembly : Assembly
+{
+    private static readonly Dictionary<string, string> Files = new(StringComparer.Ordinal)
+    {
+        ["Untranslated.Resources.en.json"] = "{ \"only.english\": \"Only English\" }",
+        ["Untranslated.Resources.ar.json"] = "{ }",
+    };
+
+    public override string[] GetManifestResourceNames() => [.. Files.Keys];
+
+    public override Stream? GetManifestResourceStream(string name) =>
+        Files.TryGetValue(name, out var text) ? new MemoryStream(System.Text.Encoding.UTF8.GetBytes(text)) : null;
 }

@@ -240,6 +240,41 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
     }
 
     [Fact]
+    public async Task The_changed_by_picker_ranks_the_exact_name_first_then_names_that_start_with_it_in_either_language()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        var tag = Guid.NewGuid().ToString("N")[..8];
+        async Task<Guid> Create(string name, string? nameAr)
+        {
+            var made = await Json(await admin.PostAsJsonAsync("/api/identity/users", new
+            {
+                email = $"rank.{Guid.NewGuid():N}@{Env.TenantA.EmailDomain}", displayName = name, displayNameAr = nameAr, language = "en",
+                password = ErpTestEnvironment.Password, mustChangePassword = false, roleIds = Array.Empty<Guid>(),
+            }));
+            return made.GetProperty("id").GetGuid();
+        }
+        // Twelve people whose names contain the wanted name and sort before it, so ten options never reach it by order alone.
+        for (var i = 0; i < 12; i++)
+        {
+            await Create($"Aaa{i:00} Mariam Target {tag}", $"عائشة {i} أحمد الشامسي {tag}");
+        }
+        var starts = await Create($"Mariam Target {tag} Junior", $"أحمد الشامسي {tag} الابن");
+        var exact = await Create($"Mariam Target {tag}", $"أحمد الشامسي {tag}");
+        async Task<List<Guid>> Find(string text, string language, int take = 10) =>
+            (await Json(await admin.GetAsync($"/api/audit/actors?take={take}&language={language}&search={Uri.EscapeDataString(text)}")))
+                .EnumerateArray().Select(p => p.GetProperty("id").GetGuid()).ToList();
+        // English: the whole name first, then the name it starts, then the rest; whatever the case.
+        var en = await Find($"MARIAM target {tag}", "en");
+        Assert.Equal([exact, starts], en.Take(2));
+        Assert.Equal(10, en.Count);
+        // Arabic: the whole name typed with a plain alef (the stored name has a hamza) and extra spaces is found first.
+        var ar = await Find($"احمد  الشامسي {tag}", "ar");
+        Assert.Equal([exact, starts], ar.Take(2));
+        // Marks and tatweel typed between letters do not matter either.
+        Assert.Equal(exact, (await Find($"أَحمـد الشَامسي {tag}", "ar"))[0]);
+    }
+
+    [Fact]
     public async Task A_person_without_the_permission_to_read_users_is_found_by_name_only_and_shown_without_an_email()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
@@ -609,20 +644,40 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
     }
 
     [Fact]
+    public void A_number_custom_field_is_shown_with_its_own_decimals_not_the_stored_eight()
+    {
+        var texts = new AuditTexts();
+        static JsonElement J(string json) => JsonDocument.Parse(json).RootElement;
+        var labels = new Dictionary<string, AuditFieldLabel> { ["custom.cfCap"] = new("Credit cap", "سقف", "number", 2) };
+        var change = new[] { new AuditFieldChange("custom.cfCap", J("1500.25000000"), J("250000.75000000")) };
+        foreach (var language in new[] { "en", "ar" })
+        {
+            var text = texts.Summary(change, "update", language, null, max: 1000, fieldLabels: labels);
+            Assert.Contains("1,500.25", text);
+            Assert.Contains("250,000.75", text);
+            Assert.DoesNotContain("00000", text);
+        }
+        var whole = new Dictionary<string, AuditFieldLabel> { ["custom.cfCap"] = new("Credit cap", "سقف", "number", 0) };
+        var rounded = texts.Summary(change, "update", "en", null, max: 1000, fieldLabels: whole);
+        Assert.Contains("1,500", rounded);
+        Assert.DoesNotContain("1,500.25", rounded);
+    }
+
+    [Fact]
     public void A_choice_shows_the_chosen_options_label_in_both_languages_never_its_code()
     {
         var texts = new AuditTexts();
-        var change = new[] { new AuditFieldChange("reset", JsonDocument.Parse("\"yearly\"").RootElement, JsonDocument.Parse("\"monthly\"").RootElement) };
+        var change = new[] { new AuditFieldChange("reset", JsonDocument.Parse("1").RootElement, JsonDocument.Parse("2").RootElement) };
         var english = texts.Summary(change, "update", "en", null, recordType: "numbering.sequences");
         Assert.Contains("Every year", english);
         Assert.Contains("Every month", english);
-        Assert.DoesNotContain("yearly", english);
+        Assert.DoesNotContain("from 1 to 2", english);
         var arabic = texts.Summary(change, "update", "ar", null, recordType: "numbering.sequences");
         Assert.Contains("كل سنة", arabic);
         Assert.Contains("كل شهر", arabic);
         // Another kind of record, or no kind: the stored value as before.
-        Assert.Contains("yearly", texts.Summary(change, "update", "en", null, recordType: "contacts.contacts"));
-        Assert.Contains("yearly", texts.Summary(change, "update", "en", null));
+        Assert.Contains("from 1 to 2", texts.Summary(change, "update", "en", null, recordType: "contacts.contacts"));
+        Assert.Contains("from 1 to 2", texts.Summary(change, "update", "en", null));
     }
 
     [Fact]

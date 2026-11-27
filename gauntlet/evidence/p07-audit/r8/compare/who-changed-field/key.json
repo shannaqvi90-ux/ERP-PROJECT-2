@@ -1,0 +1,40 @@
+{
+  "shots": {
+    "1329c195bde44e0a.jpg": {
+      "product": "odoo",
+      "task": "who-changed-field",
+      "moment": "start",
+      "run_id": "who-changed-field-20261126T200009-8c4b"
+    },
+    "c95ac98820dde735.jpg": {
+      "product": "odoo",
+      "task": "who-changed-field",
+      "moment": "done",
+      "run_id": "who-changed-field-20261126T200009-8c4b"
+    },
+    "b6dd07db0de5703b.jpg": {
+      "product": "ours",
+      "task": "who-changed-field",
+      "moment": "start",
+      "run_id": "who-changed-field-20261126T200046-bd30"
+    },
+    "6f21371e110e87e9.jpg": {
+      "product": "ours",
+      "task": "who-changed-field",
+      "moment": "done",
+      "run_id": "who-changed-field-20261126T200046-bd30"
+    }
+  },
+  "run_order": {
+    "who-changed-field": [
+      "odoo",
+      "ours"
+    ]
+  },
+  "letters": {
+    "who-changed-field": {
+      "odoo": "A",
+      "ours": "B"
+    }
+  }
+}

@@ -73,6 +73,13 @@ public sealed class AuditTexts
         {
             return option;
         }
+        // A tenant's number custom field shows the field's own decimals (2 for 1,500.25), not the 8 the column stores.
+        if (field is not null && fieldLabels is not null && fieldLabels.TryGetValue(field, out var numeric) && numeric.Type == "number"
+            && (v.ValueKind == JsonValueKind.Number || v.ValueKind == JsonValueKind.String)
+            && FixedDecimals(v.ValueKind == JsonValueKind.Number ? v.GetRawText() : v.GetString() ?? "", numeric.Decimals) is { } fixedText)
+        {
+            return Number(fixedText);
+        }
         // A choice shows the chosen option's label, never its code: the module registers
         // audit.choice.<kind>.<field>.<value> in both languages.
         if (recordType is not null && field is not null && v.ValueKind is JsonValueKind.String or JsonValueKind.Number)
@@ -131,6 +138,16 @@ public sealed class AuditTexts
     }
 
     private static readonly System.Text.RegularExpressions.Regex IsoDate = new(@"^\d{4}-\d{2}-\d{2}$", System.Text.RegularExpressions.RegexOptions.CultureInvariant | System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    /// <summary>The decimal text cut or padded to <paramref name="decimals"/> places without a binary float (rounded half away from zero), or null when it is not a plain decimal.</summary>
+    private static string? FixedDecimals(string raw, int decimals)
+    {
+        if (decimals < 0 || !decimal.TryParse(raw, System.Globalization.NumberStyles.AllowLeadingSign | System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.CultureInfo.InvariantCulture, out var d))
+        {
+            return null;
+        }
+        return Math.Round(d, Math.Min(decimals, 28), MidpointRounding.AwayFromZero).ToString("F" + Math.Min(decimals, 28), System.Globalization.CultureInfo.InvariantCulture);
+    }
 
     /// <summary>A number with its thousands grouped (25,000.50), the fraction kept exactly as stored (never through a binary float).</summary>
     private static string Number(string raw)

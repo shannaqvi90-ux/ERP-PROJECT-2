@@ -1,0 +1,36 @@
+Test run for /work/tests/Erp.Modules.Audit.Tests/bin/Release/net10.0/Erp.Modules.Audit.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.11]   Discovering: Erp.Modules.Audit.Tests
+[xUnit.net 00:00:00.24]   Discovered:  Erp.Modules.Audit.Tests
+[xUnit.net 00:00:00.36]   Starting:    Erp.Modules.Audit.Tests
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.The_log_lists_changes_newest_first_with_filters_by_field_record_type_person_and_change_and_a_search_by_name [1 s]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.A_page_far_down_the_log_is_the_same_rows_the_pages_before_it_walk_past [377 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.The_changed_by_picker_ranks_the_exact_name_first_then_names_that_start_with_it_in_either_language [245 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.The_log_names_each_recorded_field_once_in_the_language_and_prints_the_names_not_a_count [89 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.A_choice_shows_the_chosen_options_label_in_both_languages_never_its_code [6 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.A_number_custom_field_is_shown_with_its_own_decimals_not_the_stored_eight [1 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.The_application_role_cannot_write_update_or_delete_an_audit_row_only_the_trigger_writes_them [64 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.A_contacts_emirate_kind_country_date_and_amount_are_shown_as_its_own_screen_shows_them_in_both_languages [1 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.The_database_shows_a_companys_audit_rows_only_inside_that_companys_scope [10 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.A_person_without_the_permission_to_read_users_is_found_by_name_only_and_shown_without_an_email [71 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.A_long_history_reads_page_by_page_and_only_its_own_changes_continue_it [101 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.A_reader_whose_permission_is_held_in_one_company_sees_only_that_companys_records [285 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.Ids_in_values_read_as_the_names_of_the_records_they_name [66 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.The_changed_by_filter_finds_people_by_name_in_either_language_and_filters_the_log_by_the_one_chosen [84 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.A_change_of_a_kind_of_record_the_reader_may_not_read_is_not_found_by_its_id_while_one_they_may_read_is_served [116 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.A_time_in_a_value_reads_as_a_date_and_time_in_the_language [1 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.A_history_needs_the_audit_permission_and_shows_only_kinds_of_records_the_reader_may_read [126 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.The_log_prints_and_exports_through_the_report_framework_in_both_languages [44 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.The_field_filter_is_exact_and_the_coded_field_text_matches_the_names_the_row_records [61 ms]
+[xUnit.net 00:00:13.48]   Finished:    Erp.Modules.Audit.Tests (ID = '45fce57e397cf2aa7292e1b8e38a91c5db715231b0a2b7f597d277feca41b5b5')
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.The_database_keeps_custom_fields_field_by_field_and_names_the_record_and_its_company [16 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.Readers_see_only_the_kinds_of_records_their_roles_let_them_read [67 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.A_records_history_shows_each_change_field_by_field_newest_first_with_who_and_when [36 ms]
+  Passed Erp.Modules.Audit.Tests.AuditTrailTests.A_reader_limited_to_some_branches_of_a_company_sees_the_history_of_those_branches_only [136 ms]
+
+Test Run Successful.
+Total tests: 23
+     Passed: 23
+ Total time: 13.7521 Seconds
+VSTEST_ARTIFACTS_DIRECTORY environment variable was not found, falling back to a user-private temporary directory. This is most likely caused by an outdated Microsoft.NET.Test.Sdk package reference in the test project.

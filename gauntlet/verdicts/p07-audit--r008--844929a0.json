@@ -1,0 +1,122 @@
+{
+  "piece": "p07-audit",
+  "round": 8,
+  "commit": "844929a0",
+  "judged_at": "2026-11-27T00:22:00Z",
+  "critic": "fresh critic, p07-audit round 8",
+  "verdict": "LOSS",
+  "minor_only": false,
+  "hard_gates": [
+    {
+      "gate": "G1 tenant isolation (gate suites)",
+      "status": "pass",
+      "evidence": "Every G1 group passed in the clean-clone verify: http-0 to http-3, ni-0 to ni-2, self-http, self-company, self-noninterference, listvolume and gates-rest. The dotnet stage passed 1,217 of 1,217. Log: logs/verify-critic-p07-audit-r8.log."
+    },
+    {
+      "gate": "G1 tenant isolation (critic's own attack on the running demo)",
+      "status": "pass",
+      "evidence": "attack/attack-audit.mjs sent 903 requests as tenant A (Al Noor) against tenant B (Gulf Steel). It covered /api/audit/log, /log/{id}, /records/{id}?type=, before=, the actorId/recordId/search filters, /api/audit/actors, and the CSV/XLSX export. Statuses: 723 x 200, 120 x 400, 60 x 404. No id of tenant B came back. The 53 text hits are 26 names and one file name that also occur in tenant A's own rows. verify-hits.out: 827 matching rows are tenant A's and 0 are tenant B's. company-seal-5.png has its own audit row in both tenants. As erp_app (attack/db-app.out): with no tenant bound it reads 0 rows. Bound to B, it sees only B's 9,109 rows. INSERT, UPDATE, DELETE and TRUNCATE on audit.entries are denied. EXECUTE audit.capture() is denied, including from a temporary trigger. A tenant_id change to B is refused by row security. erp_worker has no access to the audit schema (attack/db-worker.out)."
+    },
+    {
+      "gate": "G2 permissions",
+      "status": "pass",
+      "evidence": "G2PermissionTests passed in the verify. attack/perms.out: the no-access user gets 403 and anonymous gets 401 on all five audit routes. A 'Roles auditor' (identity.roles.read + audit.log.read) gets 404 on a user's change by id, an empty history for a user, and no actors by e-mail."
+    },
+    {
+      "gate": "G3 clean clone (one command: build, migrate, seed, all tests, then the demo)",
+      "status": "pass",
+      "evidence": "Command: ERP_VERIFY_ALONE=1 ERP_PROJECT=c-p07-audit-r8 ERP_HTTP_PORT=20750 ERP_DB_PORT=20751 verify-slot.sh ./erp verify --clean-clone. The slot was taken at 2026-11-26T19:34:31Z. 'verify passed in 8495 s', then ./erp up and the demo sign-in returned 200: 'G3 passed: clean clone verified and demo running with seeded data' at about 21:56:50Z. Ratchet check passed. Processor time 25,685 s against a maximum of 26,000 s (dotnet 21,746, web 2,980, e2e 869, timing 92). Load peaked at 29.23 while the critic's demo, attack and comparison ran beside it."
+    },
+    {
+      "gate": "Gate self-test on p07's surface (planted faults in the critic's clone)",
+      "status": "pass",
+      "evidence": "Both plants were caught (attack/plants-L3-P3.diff). L3 was a tenant leak in /api/audit/actors: a process-wide answer cache kept in AppDomain data and keyed only by the typed text. It was caught by the G1 HTTP attack. Share 1 of 4 reported 106 leaks and share 2 reported 94 leaks ('tenant alpha administrator (cookie) -> GET /api/audit/actors ... contains the attacking tenant's marker'; attack/plant-http-s0.log and s1.log). P3 was an action with no permission check: mayReadEmails = true, so the people search hands out e-mails without identity.users.read. It was caught by AuditTrailTests.A_person_without_the_permission_to_read_users_is_found_by_name_only_and_shown_without_an_email ('4 out of 4 items ... did not pass'; attack/plant-critic-p07-r8-runA.log). The critic stopped the remaining HTTP shares once both plants were caught. A first gate run had been misconfigured (shares and judge in one process with no ERP_GATE_SHARD_DIR, so the test host sat idle); the critic stopped it by PID."
+    }
+  ],
+  "tests": {
+    "command": "ERP_VERIFY_ALONE=1 ERP_PROJECT=c-p07-audit-r8 ERP_HTTP_PORT=20750 ERP_DB_PORT=20751 ERP_VERIFY_KEEP_DIR=/home/shan/evidence-staging/p07-audit/r8/keep ERP_VERIFY_LOG=/home/shan/evidence-staging/p07-audit/r8/logs/verify-critic-p07-audit-r8.log gauntlet/tools/verify-slot.sh ./erp verify --clean-clone",
+    "total": 2724,
+    "passed": 2724,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 8495
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 8539,
+    "evidence": "Slot taken 19:34:31Z. Verify passed after 8,495 s, then ./erp up and the sign-in passed; G3 ended at about 21:56:50Z. Counts: dotnet 1,217, web unit 811, e2e 180, compare harness 494, build 22, all passing. Instrument mutations: 138 of 138 caught. Every built ours-driver health check was verified. None fell below round 7 (1,191 / 787 / 174 / 489 / 22). The critic's own ./erp up with the comparison dataset CSVs was seeded in about 7 minutes: 100,000 users and contacts, 760,173 audit rows for Al Noor and 9,109 for Gulf Steel. Ports and project were overridable as documented (ERP_PROJECT, ERP_HTTP_PORT, ERP_DB_PORT; G3 used +30 and +40 inside 20750-20799)."
+  },
+  "odoo": [
+    {
+      "task": "who-changed-field",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 14,
+        "seconds": 0.798,
+        "klm_seconds": 5.67
+      },
+      "odoo": {
+        "steps": 5,
+        "keystrokes": 30,
+        "seconds": 2.679,
+        "klm_seconds": 18.5
+      },
+      "notes": "Run on the shared rig :8069; the live volume check passed for 7 lists. Ours is judged on its whole path 'palette-shortest' and wins all 5 metrics: human+wait 6.103 s against 19.936 s, nothing left out. The ours driver in the repo is still the p00 stub (built: false). The critic reused the round-4/7 critic's driver (driver/ours-who-changed-field.mjs, driver/clone-changes.diff, fixtures.ours: []). The change looked for (Noor Editor changes the e-mail) was made just before the run with attack/prechange.mjs and restored afterwards (attack/restore.out). The harness ran in the erp-toolbox:pw1.63.0-net10 container. Not worse than round 7 (3/14 steps and keys)."
+    },
+    {
+      "task": "who-renamed-user",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 2,
+        "seconds": 1.492,
+        "klm_seconds": 8.01
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 4,
+        "seconds": 2.781,
+        "klm_seconds": 10.07
+      },
+      "notes": "Shared rig. Ours is judged on its whole path 'initials' and wins all 5 metrics: human+wait 8.908 s against 12.487 s, nothing left out. Keystrokes went from 3 to 2 and steps stayed at 3, both no worse than round 7."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p07-audit/r8/browser/ar-06-log-by-person.jpg",
+    "gauntlet/evidence/p07-audit/r8/browser/ar-01-edit-history.jpg",
+    "gauntlet/evidence/p07-audit/r8/browser/ar-05-b-three-filters.jpg",
+    "gauntlet/evidence/p07-audit/r8/browser/en-03-after-keyboard-save.jpg",
+    "gauntlet/evidence/p07-audit/r8/compare/who-changed-field/blind/shots/6f21371e110e87e9.jpg",
+    "gauntlet/evidence/p07-audit/r8/compare/who-changed-field/blind/shots/1329c195bde44e0a.jpg",
+    "gauntlet/evidence/p07-audit/r8/compare/who-changed-field/blind/shots/c95ac98820dde735.jpg",
+    "gauntlet/evidence/p07-audit/r8/compare/who-changed-field/blind/shots/b6dd07db0de5703b.jpg",
+    "gauntlet/evidence/p07-audit/r8/compare/who-renamed-user/blind/shots/eb69076b29c6c602.jpg",
+    "gauntlet/evidence/p07-audit/r8/compare/who-renamed-user/blind/shots/9e391e14424c0852.jpg",
+    "gauntlet/evidence/p07-audit/r8/compare/who-renamed-user/blind/shots/90db85c7cf559ca1.jpg",
+    "gauntlet/evidence/p07-audit/r8/compare/who-renamed-user/blind/shots/6e2c67920f8e307e.jpg"
+  ],
+  "biggest_gap": {
+    "title": "Custom fields are second-class in the global audit log: they cannot be chosen in the Fields filter, and every custom-field change also appears as a raw row named by the field's key with stored option codes",
+    "detail": "The spec asks for complete capture including custom fields, and for a log filtered by user, record type, record, field and date. A contact's own history and its Contact row in the log are correct: 'شريحة العميل: من حكومي إلى موزع' / 'Customer segment: from Government to Distributor'. The global log falls short on custom fields in three ways. (1) Its Fields filter offers 187 choices in English and 186 in Arabic. None is a tenant custom field (Customer segment, Credit review date, Account manager, Preferred partner); the only custom-looking choices are the storage columns 'Text value', 'Number value' and 'Default value'. The API also refuses the field key the Contact row itself carries: filter=fields eq 'custom_fields.cfCustomerSegment' answers 400 list.valueChoice. So 'who changed the Customer segment of any contact' cannot be asked of the log. (2) Each custom-field change makes a second row of kind 'Custom field value', with Record 'cfCustomerSegment' (the key) and Field 'Text value' / 'القيمة النصية'. Its values are the stored option codes: 'Text value: from government to distributor', 'القيمة النصية: من government إلى distributor'. This holds in both languages, and the demo has 240,225 such rows. (3) A new value reads 'الحقل الرمز: cfCreditReview؛ الحقل قيمة التاريخ: ...' in Arabic. For a UAE trader whose own fields (segment, credit review, account manager) are exactly what an auditor asks about, the log shows codes and cannot be narrowed to the field. Fix: resolve customfields.field_values rows to the owning record and the field's label and option labels, or hide them where the owning record's row already carries the change. Offer the tenant's custom fields (custom_fields.<code>) in the Fields filter and accept them in the API filter.",
+    "evidence": "Reproduce on ./erp up with ERP_SEED_*_CSV, signed in as admin.ar@alnoor.example. Open a contact by Ctrl+K, change Customer segment by keyboard and press Ctrl+S (browser/edit.mjs ar, edit-ar.out). Then press G L, open the 'بواسطة' column options, choose Filter, type 'فاطمة الزعابي' and press Enter twice (browser/picker.mjs). Screenshot ar-06-log-by-person.jpg shows the row 'قيمة حقل مخ... | cfCustomerSegment | القيمة النصية | القيمة النصية: من government إلى distributor' beside the correct Contact row. API: attack/cfrow2.mjs, cfrow.out (ar) and cfrow-en.out (en) give record 'cfCustomerSegment' and changes 'Text value: from government to distributor'. attack/cffilter.mjs: fields eq 'custom_fields.cfCustomerSegment' gives 400 and fields eq 'text_value' gives 200 with 200,013 rows. browser/fieldopts.mjs en|ar: '187 choices, custom-looking: [\"Text value\"]'."
+  },
+  "other_findings": [
+    "A server error in p07's people search. GET /api/audit/actors?search= with any character outside the Basic Multilingual Plane (an emoji, e.g. 'Ali 😀') answers 500. System.Text.EncoderFallbackException: NameMatch.Pattern escapes each half of a surrogate pair separately, so Npgsql gets a lone surrogate (IdentityModule.cs:468 via AuditEndpoints.cs:134). Repro: attack/actors-r8.mjs and emoji.mjs (both languages give 500 with a trace id).",
+    "[route: p05-list-search] The same emoji search gives 500 on GET /api/audit/log?search=, /api/identity/users?search= and /api/contacts/contacts?search=. EncoderFallbackException 'at index 2' is thrown in Erp.Kernel.Lists.ListBinding`1.QueryAsync, the shared list search (attack/emoji.out).",
+    "Fixed since round 7 and kept fixed: the 'Changed by' person search ranks the exact name first in both languages. 'مريم المنصوري', 'فاطمة الزعابي', 'Mariam Al Mansoori', 'Fatima Al Zaabi' and 'حصة السويدي' are each at position 0, and the folded spelling 'فاطمه الزعابى' still puts Fatima Al Zaabi first (attack/actors-r8.out). By keyboard in Arabic, typing the name and pressing Enter picks the exact person. Person, then record type, then field narrows 760,195 rows to that person's one change. Log answers took 19 to 36 ms (browser/walk7-ar.out, ar-05-b-three-filters.jpg). The picker still sends one request per keystroke (14 requests for 13 letters, 200 to 1,100 ms each at 100,000 users). A 100-character text takes about 3 s.",
+    "The Arabic export's 'Changed by' column still carries English names ('Fatima Al Zaabi', 'Mariam Al Mansoori') in CSV and XLSX, while every other column is Arabic (attack/export-ar.out). Rounds 6 and 7 found the same.",
+    "The Arabic wording of created-record values is unchanged: 'audit.value.set' in ar.json is 'الحقل {field}: {new}', where English is '{field}: {new}'. Every sign-in row reads 'الحقل ينتهي في: ...؛ الحقل عنوان الشبكة (IP): ...' (ar-06-log-by-person.jpg).",
+    "The whole-log export still stops at 200,000 of 760,196 rows, with a notice row, in English and Arabic (CSV in about 13 s). Filtered exports are fast: CSV, XLSX and PDF each 0.23 to 0.34 s (attack/export-en.out, export-ar.out).",
+    "In the Arabic contact form the History panel sits at the bottom of the narrow side column, below Attachments. Only its header is in view without scrolling, and the latest-change line under the heading is clipped ('...شريحة العميل'; ar-01-edit-history.jpg). Unchanged since round 7.",
+    "[route: p07-audit] The ours driver for who-changed-field is still the p00 stub (built: false) at this commit. The comparison ran only because the critic reused the earlier critics' driver (driver/). The piece should own and commit its driver.",
+    "[route: p00-foundation] G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed and G1OutsideProcessStateTests passed with process-wide state kept through AppDomain.CurrentDomain.SetData/GetData (plant L3). The dynamic G1 HTTP attack caught that plant, so this is no gate gap for p07's surface. Still, the source review does not see AppDomain data as process state.",
+    "Verified in both languages by keyboard: the history (Alt+Y, Escape gives focus back) works on the 12 main forms reached by G plus a letter (browser/forms-en.out, forms-ar.out). Company access shows 0 changes for a bulk-seeded user, as in round 7. A select custom field's change shows option labels in the record's history and in the Contact row of the log ('Customer segment: from Government to Distributor' / 'شريحة العميل: من حكومي إلى موزع'). The date filter works by keyboard in Arabic: it typed 26112026 and sent occurredAt ge '2026-11-26T00:00:00+04:00' (browser/date-ar.out). Record search works (99 changes for 'شمة وليد').",
+    "Shared saved view 'Team view' still shows in English on the Arabic audit log, as routed to p05 in round 7.",
+    "The only tenant table without the audit.capture() trigger is identity.sign_in_attempts, a throttling log (DB query in the critic's session)."
+  ],
+  "gate_gaps": [],
+  "human_gates": [],
+  "evidence_staging": "/home/shan/evidence-staging/p07-audit/r8",
+  "evidence_dir": "gauntlet/evidence/p07-audit/r8"
+}

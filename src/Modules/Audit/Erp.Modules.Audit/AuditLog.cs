@@ -136,7 +136,11 @@ internal static class AuditLog
             return result.Map(_ => (AuditLogRow)null!);
         }
         var actors = await reader.ActorsAsync(result.Rows.Select(r => r.ActorId), cancellationToken);
-        var details = result.Rows.ToDictionary(r => r.Uid, AuditReader.Changes);
+        var details = new Dictionary<Guid, IReadOnlyList<AuditFieldChange>>();
+        foreach (var r in result.Rows)
+        {
+            details[r.Uid] = await reader.ShownChangesAsync(r, cancellationToken);
+        }
         var names = await reader.ReferencedNamesAsync(details.Values.SelectMany(d => d), cancellationToken);
         var language = Language(http);
         var labels = await CustomFieldLabelsAsync(http.RequestServices, details.Values.SelectMany(d => d), null, cancellationToken);

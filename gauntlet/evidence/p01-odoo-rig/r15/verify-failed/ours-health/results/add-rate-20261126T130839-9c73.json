@@ -1,0 +1,306 @@
+{
+  "schema": 1,
+  "run_id": "add-rate-20261126T130839-9c73",
+  "instrument": 12,
+  "task": "add-rate",
+  "task_title": "Add an exchange rate",
+  "product": "ours",
+  "status": "invalid",
+  "goal": "Record today's rate for the euro: 1 EUR = 4.2875 AED.",
+  "done_when": "The rate is saved; the back end holds a EUR rate dated today equal to 4.2875 AED per euro.",
+  "started_at": "2026-11-26T13:08:39.771Z",
+  "finished_at": "2026-11-26T13:08:46.260Z",
+  "environment": {
+    "base_url": "http://localhost:20160",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v24.20.0"
+  },
+  "counts": {
+    "steps": 4,
+    "keystrokes": 7,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 1,
+    "key_chords": 1,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.503,
+    "system_wait_seconds": 0.108,
+    "human_seconds": 9.01,
+    "human_plus_wait_seconds": 9.118,
+    "klm_operator_counts": {
+      "K": 7,
+      "P": 2,
+      "B": 4,
+      "H": 1,
+      "M": 3
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "click",
+      "label": "Currencies (navigation)",
+      "keystrokes": 0,
+      "at": 0.028,
+      "took": 0.064,
+      "began": 0.001,
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "click",
+      "label": "the EUR row",
+      "keystrokes": 0,
+      "at": 0.193,
+      "took": 0.099,
+      "began": 0.163,
+      "screen": "/currency/currencies",
+      "chain": false
+    },
+    {
+      "n": 3,
+      "kind": "type",
+      "label": "the rate",
+      "keystrokes": 6,
+      "at": 0.311,
+      "took": 0.014,
+      "text": "4.2875",
+      "same_field": false,
+      "screen": "/currency/currencies/01a21780-8267-749a-9ccf-d3850dbba697",
+      "chain": false
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "save (Enter)",
+      "keystrokes": 1,
+      "at": 0.454,
+      "took": 0.012,
+      "chord": "Enter",
+      "screen": "/currency/currencies/01a21780-8267-749a-9ccf-d3850dbba697",
+      "chain": true
+    }
+  ],
+  "waits": [
+    {
+      "label": "currencies list",
+      "at": 0.095,
+      "seconds": 0.066
+    },
+    {
+      "label": "today's rate field focused",
+      "at": 0.292,
+      "seconds": 0.012
+    },
+    {
+      "label": "saved",
+      "at": 0.466,
+      "seconds": 0.03
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "b85f615a2301af19.jpg",
+      "at": 0,
+      "path": "../out/ours-health/blind/shots/b85f615a2301af19.jpg"
+    },
+    {
+      "moment": "rate entered",
+      "file": "70bbdfaa804bf073.jpg",
+      "at": 0.325,
+      "path": "../out/ours-health/blind/shots/70bbdfaa804bf073.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "79fc3d485325d865.jpg",
+      "at": 0.503,
+      "path": "../out/ours-health/blind/shots/79fc3d485325d865.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "date": "2026-11-26",
+      "rates": [
+        {
+          "id": "01a217f8-fb8c-7664-8858-d68955e26354",
+          "rateDate": "2026-11-26",
+          "currencyCode": "EUR",
+          "exchangeRate": "4.2875",
+          "quoteCurrency": "AED",
+          "inverseRate": "0.23323615",
+          "source": "manual",
+          "reference": null,
+          "updatedAt": "2026-11-26T13:08:43.020846+00:00",
+          "version": 2969070293
+        }
+      ]
+    }
+  },
+  "path_notes": "Currencies (navigation) > the euro (its panel opens on today's rate) > type the rate > Enter.",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/add-rate.mjs",
+    "sha256": "32e7e2665c4bc7804d866ee6ca1b9e2c2fa4379ed4acf20ab5b537f20fd08ec4"
+  },
+  "task_notes": "Set-up removes any EUR rate dated today; clean-up deletes the new one. The rig and the dataset hold 100,000 rates.",
+  "health_check": true,
+  "error": "action outside the clock (set-up): the page changed what it shows without a counted step causing it (1 change; the first 0.465 s into the measured part, a StyleRecalcInvalidationTracking: a task posted by a task no step caused: a DevTools command outside any step (the harness reading the page)): the product may have put the end state on screen on its own (a timer or a setting set-up arranged, a poll, a push), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.",
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.009,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.022,
+      "verified": true
+    },
+    {
+      "requests": 2,
+      "longest_pause_seconds": 0.009,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.019,
+      "verified": true,
+      "gap_seconds": 1.101
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "52714e99375f8b27",
+    "elements": 752
+  },
+  "screen_after_verify": null,
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.009,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.022
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 1,
+    "read_both_times": 1,
+    "read_before": [
+      "GET /api/currency/rates"
+    ],
+    "read_after": [
+      "GET /api/currency/rates"
+    ],
+    "changed": [
+      "GET /api/currency/rates"
+    ],
+    "changed_parts": {
+      "GET /api/currency/rates": [
+        "items.0.id",
+        "items.0.rateDate",
+        "items.0.currencyCode",
+        "items.0.exchangeRate",
+        "items.0.quoteCurrency",
+        "items.0.inverseRate",
+        "items.0.source",
+        "items.0.reference"
+      ]
+    },
+    "gained_entered_value": [
+      "GET /api/currency/rates"
+    ],
+    "end_state": [
+      "GET /api/currency/rates [items.exchangeRate]"
+    ],
+    "end_state_changed": {
+      "GET /api/currency/rates": [
+        "items.0.exchangeRate"
+      ]
+    },
+    "end_state_gained": [
+      "4.2875"
+    ],
+    "writes_sent": [
+      "POST /api/currency/rates"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /api/currency/rates",
+        "at": 0.46532215399999993,
+        "by_step": 4,
+        "browser_record": {
+          "caused": true,
+          "by_step": 4,
+          "chain_seconds": 0.007,
+          "chain": [
+            "input of step 4"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 25,
+    "not_caused": 1,
+    "enforced": true,
+    "not_caused_first": [
+      {
+        "at": 0.465,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task posted by a task no step caused: a DevTools command outside any step (the harness reading the page)",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 0.5,
+      "by_step": 4,
+      "chain": [
+        "a task the page's own task posted",
+        "the answer to GET /api/currency/currencies after 0.011 s",
+        "a task the page's own task posted",
+        "a task the page's own task posted"
+      ]
+    }
+  },
+  "set_up_writes": []
+}

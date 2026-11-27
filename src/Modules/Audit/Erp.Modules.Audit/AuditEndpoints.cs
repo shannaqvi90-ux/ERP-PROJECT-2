@@ -95,23 +95,49 @@ internal static class AuditEndpoints
         return result.Problem is { } problem ? problem : TypedResults.Ok(result.ToPage(r => r));
     }
 
+    /// <summary>A name as the person search reads it: Arabic letter forms alike, marks and tatweel dropped, spaces collapsed.</summary>
+    private static string Fold(string name)
+    {
+        var sb = new System.Text.StringBuilder(name.Length);
+        var space = false;
+        foreach (var c in name)
+        {
+            if (c is >= '\u064B' and <= '\u0652' or '\u0640')
+            {
+                continue;
+            }
+            if (char.IsWhiteSpace(c))
+            {
+                if (!space)
+                {
+                    sb.Append(' ');
+                }
+                space = true;
+                continue;
+            }
+            space = false;
+            sb.Append(c switch { '\u0623' or '\u0625' or '\u0622' or '\u0671' => '\u0627', '\u0649' or '\u06CC' => '\u064A', '\u0629' => '\u0647', _ => c });
+        }
+        return sb.ToString();
+    }
+
     private static async Task<Ok<IReadOnlyList<AuditPerson>>> Actors(
         [FromQuery, Description("Part of the person's name or e-mail.")] string? search,
         [FromQuery, Description("Most people to answer, 1 to 20 (default 10).")] int? take,
-        Erp.Modules.Identity.Contracts.IUserDirectory users, ICurrentUser user, CancellationToken cancellationToken)
+        Erp.Modules.Identity.Contracts.IUserDirectory users, ICurrentUser user, HttpContext http, CancellationToken cancellationToken)
     {
         var text = search?.Trim();
         if (text is { Length: > 100 })
         {
             text = text[..100];
         }
-        var page = await users.SearchAsync(string.IsNullOrEmpty(text) ? null : text, 0, Math.Clamp(take ?? 10, 1, 20), cancellationToken);
+        var page = await users.SearchAsync(string.IsNullOrEmpty(text) ? null : text, 0, Math.Clamp(take ?? 10, 1, 20), cancellationToken, AuditLog.Language(http));
         // E-mails belong to whoever may read users: without that permission the person is found by name only
         // and shown without an e-mail, as the log shows its actors.
         var mayReadEmails = user.Has(Erp.Modules.Identity.Contracts.IdentityPermissions.UsersRead);
         IReadOnlyList<AuditPerson> people = [.. page.Items
             .Where(u => mayReadEmails || string.IsNullOrEmpty(text)
-                        || u.DisplayName.Contains(text, StringComparison.OrdinalIgnoreCase) || (u.DisplayNameAr?.Contains(text, StringComparison.OrdinalIgnoreCase) ?? false))
+                        || Fold(u.DisplayName).Contains(Fold(text), StringComparison.OrdinalIgnoreCase) || (u.DisplayNameAr is { } ar && Fold(ar).Contains(Fold(text), StringComparison.OrdinalIgnoreCase)))
             .Select(u => new AuditPerson(u.Id, u.DisplayName, u.DisplayNameAr, mayReadEmails ? u.Email : null))];
         return TypedResults.Ok(people);
     }
@@ -125,7 +151,7 @@ internal static class AuditEndpoints
         {
             return Problems.NotFound(http);
         }
-        var changes = AuditReader.Changes(entry);
+        var changes = await reader.ShownChangesAsync(entry, cancellationToken);
         var actors = await reader.ActorsAsync([entry.ActorId], cancellationToken);
         var names = AuditLog.Mentioned(changes, await reader.ReferencedNamesAsync(changes, cancellationToken));
         var labels = await AuditLog.CustomFieldLabelsAsync(http.RequestServices, changes, entry.RecordType, cancellationToken);
@@ -201,7 +227,11 @@ internal static class AuditEndpoints
         }
         var texts = http.RequestServices.GetRequiredService<AuditTexts>();
         var actors = await reader.ActorsAsync(page.Select(e => e.ActorId), cancellationToken);
-        var changes = page.ToDictionary(e => e.Uid, AuditReader.Changes);
+        var changes = new Dictionary<Guid, IReadOnlyList<AuditFieldChange>>();
+        foreach (var e in page)
+        {
+            changes[e.Uid] = await reader.ShownChangesAsync(e, cancellationToken);
+        }
         var names = await reader.ReferencedNamesAsync(changes.Values.SelectMany(c => c), cancellationToken);
         var items = page.Select(e =>
         {

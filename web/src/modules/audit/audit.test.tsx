@@ -245,6 +245,17 @@ describe("recorded values", () => {
     expect(valueText("yearly", g)).toBe("yearly");
   });
 
+  it("a sequence's stored 'starts again' codes (0, 1, 2) and its kinds of document read as the labels of the audit strings, in both languages", async () => {
+    const en = (await import("./i18n/en.json")).default as Record<string, string>;
+    const ar = (await import("./i18n/ar.json")).default as Record<string, string>;
+    for (const [texts, language, expected] of [[en, "en", ["Never", "Every year", "Every month"]], [ar, "ar", ["أبدًا", "كل سنة", "كل شهر"]]] as const) {
+      const g: ValueFormat = { ...f, language, t: (key) => texts[key] ?? key, recordType: "numbering.sequences" };
+      expect([0, 1, 2].map((code) => valueText(code, g, undefined, "reset"))).toEqual(expected);
+      expect(valueText("sales.order", g, undefined, "document_type")).not.toBe("sales.order");
+      expect(fieldName("reset", (key) => texts[key] ?? key)).toBe(language === "en" ? "Starts again" : "يبدأ من جديد");
+    }
+  });
+
   it("a list cell holding several of its column's values shows their labels; ids of other records are counted", () => {
     const column = { key: "fields", labelKey: "x", type: "choice", sortable: false, filterable: true, groupable: false, aggregate: false, hidden: false, operators: [],
       choices: [{ value: "email", labelKey: "audit.field.email" }, { value: "phone", labelKey: "audit.field.phone" }] } as ListColumn;

@@ -23,7 +23,7 @@ internal sealed class NumberingSeeder(NumberingDbContext db, DefaultSequences de
         // the first is where the demo's and the gates' users start working.
         var all = (await companies.ListAsync(cancellationToken)).OrderBy(c => c.Id.ToString("N"), StringComparer.Ordinal).ToList();
         var fresh = !await db.Sequences.AnyAsync(cancellationToken);
-        await defaults.AddMissingAsync(all.Select(c => c.Id).ToList(), cancellationToken);
+        await defaults.AddMissingAsync(all, cancellationToken);
         if (!fresh || all.Count == 0)
         {
             return;
