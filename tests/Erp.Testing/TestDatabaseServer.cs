@@ -176,6 +176,38 @@ public sealed class TestDatabaseServer
         return await lazy.Value;
     }
 
+    private readonly ConcurrentDictionary<string, Lazy<Task<string>>> _migrated = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// A template database that is bootstrapped and migrated but holds no seed (made once per process
+    /// and settings combination by <paramref name="prepare"/>, which bootstraps and migrates the
+    /// database it is given). Environments with their own seed plan copy it instead of running every
+    /// migration again (round 24, owner decision #59 step 3); each still gets a database of its own,
+    /// and seeds it itself. Environments with other settings get another template.
+    /// </summary>
+    public async Task<string> MigratedTemplateAsync(IDictionary<string, string?>? settings, Func<string, Task<ErpAppFactory>> prepare)
+    {
+        var key = string.Join("\n", (settings ?? new Dictionary<string, string?>())
+            .OrderBy(s => s.Key, StringComparer.Ordinal).Select(s => $"{s.Key}={s.Value}"));
+        var lazy = _migrated.GetOrAdd(key, _ => new Lazy<Task<string>>(async () =>
+        {
+            var database = "mig" + NewDatabaseName()[3..];
+            try
+            {
+                var host = await prepare(database);
+                await host.DisposeAsync();
+            }
+            catch
+            {
+                await DropAsync(database);
+                throw;
+            }
+            await CloseAsync(database);
+            return database;
+        }, LazyThreadSafetyMode.ExecutionAndPublication));
+        return await lazy.Value;
+    }
+
     /// <summary>No connection may reach a template while PostgreSQL copies it.</summary>
     private async Task CloseAsync(string database)
     {

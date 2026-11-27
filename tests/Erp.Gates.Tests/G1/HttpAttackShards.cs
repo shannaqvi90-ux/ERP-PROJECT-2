@@ -45,6 +45,90 @@ public sealed class AttackShard
     /// <c>/api/jobs/jobs</c> for the jobs, a job's route and its cancel, rerun and output;
     /// <c>/api/lists/contacts.contacts/views</c> for a list's saved views.
     /// </summary>
+    /// <summary>The family of a request path (query stripped): the segments before the first one that is
+    /// an id (a number or a GUID), so a log of requests can be summed by family.</summary>
+    public static string FamilyOfPath(string pathAndQuery)
+    {
+        var path = pathAndQuery.Split('?', 2)[0];
+        var kept = new List<string>();
+        foreach (var segment in path.Split('/', StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (Guid.TryParse(segment, out _) || segment.All(char.IsDigit))
+            {
+                break;
+            }
+            kept.Add(segment);
+        }
+        return "/" + string.Join('/', kept);
+    }
+
+    /// <summary>
+    /// What each heavy family cost, in seconds of request time of tenant A's attack (the requests
+    /// labelled attack and list in <see cref="RequestLog.DescribeByFamily"/>), measured in round 24 with
+    /// the four shares running side by side (the r23 critic's alone run: the third share took 1 h
+    /// and 4,799 processor-seconds, the others 30 to 38 min and 2,300 to 3,200, because the guessed
+    /// weights put a list's report requests and the numbering sequences at a fraction of their cost: the
+    /// audit log's report attack alone took 2,878 s, the numbering sequences 3,501 s). Every family at or
+    /// above 180 s is here; the others are cheaper than any of these and take their guessed weight
+    /// (<see cref="Weight"/>) scaled by <see cref="GuessToSeconds"/>. A wrong entry makes one share
+    /// slower, never a request missing: the judge still refuses an endpoint in no share or in two.
+    /// Refresh it from a run's "request seconds by endpoint family" lines when the product grows.
+    /// </summary>
+    public static readonly IReadOnlyDictionary<string, int> MeasuredFamilySeconds = new Dictionary<string, int>(StringComparer.Ordinal)
+    {
+        ["/api/numbering/sequences"] = 3501,
+        ["/api/reports/lists/audit.log"] = 2878,
+        ["/api/audit/log"] = 1660,
+        ["/api/identity/users"] = 1173,
+        ["/api/contacts/contacts"] = 1148,
+        ["/api/tenancy/companies"] = 1143,
+        ["/api/tenancy/branches"] = 765,
+        ["/api/identity/roles"] = 595,
+        ["/api/tenancy/access"] = 559,
+        ["/api/jobs/jobs"] = 548,
+        ["/api/currency/currencies"] = 461,
+        ["/api/customfields/fields"] = 452,
+        ["/api/currency/rates"] = 416,
+        ["/api/reports/lists/numbering.sequences"] = 414,
+        ["/api/jobs/schedules"] = 383,
+        ["/api/importexport/contacts.contacts/imports"] = 372,
+        ["/api/reports/run/tenancy.branchDirectory"] = 347,
+        ["/api/reports/run/identity.usersByRole"] = 347,
+        ["/api/reports/lists/currency.rates"] = 347,
+        ["/api/reports/lists/tenancy.branches"] = 314,
+        ["/api/reports/lists/jobs.jobs"] = 306,
+        ["/api/lists/contacts.contacts/views"] = 301,
+        ["/api/reports/lists/identity.users"] = 297,
+        ["/api/importexport/tenant-exports"] = 285,
+        ["/api/identity/me/passkeys"] = 280,
+        ["/api/lists/customfields.fields/views"] = 280,
+        ["/api/reports/lists/tenancy.access"] = 267,
+        ["/api/lists/currency.currencies/views"] = 265,
+        ["/api/lists/tenancy.access/views"] = 260,
+        ["/api/lists/jobs.schedules/views"] = 256,
+        ["/api/lists/identity.users/views"] = 254,
+        ["/api/reports/lists/contacts.contacts"] = 254,
+        ["/api/lists/tenancy.companies/views"] = 245,
+        ["/api/reports/lists/identity.roles"] = 241,
+        ["/api/lists/currency.rates/views"] = 236,
+        ["/api/reports/lists/currency.currencies"] = 232,
+        ["/api/lists/tenancy.branches/views"] = 224,
+        ["/api/lists/audit.log/views"] = 224,
+        ["/api/lists/jobs.jobs/views"] = 219,
+        ["/api/reports/run/identity.roleSummary"] = 208,
+        ["/api/tenancy/workplace"] = 197,
+        ["/api/reports/lists/tenancy.companies"] = 195,
+        ["/api/lists/numbering.sequences/views"] = 188,
+        ["/api/lists/jobs.jobs/shared-views"] = 187,
+        ["/api/lists/currency.rates/shared-views"] = 187,
+        ["/api/reports/lists/jobs.schedules"] = 180,
+    };
+
+    /// <summary>Measured seconds per tenth of a second of guessed weight, for the families
+    /// <see cref="MeasuredFamilySeconds"/> does not list (the list views' families: guess 155 s, measured
+    /// 190 to 265 s).</summary>
+    public const double GuessToSeconds = 0.16;
+
     public static string FamilyOf(ApiEndpoint endpoint)
     {
         var path = endpoint.Pattern;
@@ -64,7 +148,9 @@ public sealed class AttackShard
         var load = new int[count];
         var owned = new HashSet<string>(StringComparer.Ordinal);
         var families = endpoints.GroupBy(FamilyOf, StringComparer.Ordinal)
-            .Select(g => (Family: g.Key, Weight: g.Sum(e => (weight ?? Weight)(e)), Keys: g.Select(e => e.Key).ToList()))
+            .Select(g => (Family: g.Key,
+                Weight: MeasuredFamilySeconds.TryGetValue(g.Key, out var seconds) ? seconds * 10 : (int)(g.Sum(e => (weight ?? Weight)(e)) * GuessToSeconds * 10),
+                Keys: g.Select(e => e.Key).ToList()))
             .OrderByDescending(f => f.Weight).ThenBy(f => f.Family, StringComparer.Ordinal);
         foreach (var family in families)
         {
@@ -176,6 +262,7 @@ public static class HttpAttackShards
             throw new InvalidOperationException($"{e.Message}\nSlowest requests seen before the failure:\n{RequestLog.Describe(20)}", e);
         }
         TestContext.Current.TestOutputHelper?.WriteLine($"Share {index + 1} of {AttackShard.GateCount}: slowest 20 requests of the attack (seconds, label, method, path):\n{RequestLog.Describe(20)}");
+        TestContext.Current.TestOutputHelper?.WriteLine($"Share {index + 1} of {AttackShard.GateCount}: request seconds by endpoint family and label (both tenants):\n{RequestLog.DescribeByFamily(60)}");
         foreach (var phase in report.Phases)
         {
             TestContext.Current.TestOutputHelper?.WriteLine(phase);
