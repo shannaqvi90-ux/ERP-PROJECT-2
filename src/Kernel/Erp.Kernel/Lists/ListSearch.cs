@@ -171,6 +171,11 @@ public static class ListSearch
             {
                 pattern.Append(c).Append(char.IsLetter(c) ? marks : "");
             }
+            else if (char.IsSurrogate(c))
+            {
+                // Half of a pair (an emoji): kept as it is, never escaped, or the database is sent a lone surrogate.
+                pattern.Append(c);
+            }
             else
             {
                 pattern.Append('\\').Append(c);
