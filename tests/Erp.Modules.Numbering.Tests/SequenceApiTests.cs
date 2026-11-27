@@ -246,7 +246,11 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
         Assert.True(order.GetProperty("canUpdate").GetBoolean());
         var invoice = all.First(r => r.GetProperty("documentType").GetString() == "sales.invoice");
         Assert.True(invoice.GetProperty("gapless").GetBoolean());
-        Assert.Equal($"INV-{Year}-00001{Month}", invoice.GetProperty("nextNumber").GetString());
+        // Other tests of this class share the workspace and may have issued invoice numbers, so the next
+        // number is held to its own counter (the pattern filled with the counter's next value), not to 1.
+        var invoiceNext = invoice.GetProperty("nextValue").GetInt64();
+        Assert.True(invoiceNext >= 1);
+        Assert.Equal($"INV-{Year}-{invoiceNext:D5}{Month}", invoice.GetProperty("nextNumber").GetString());
         // Tenant B's own prefixes never appear.
         Assert.DoesNotContain(all, r => r.GetProperty("prefix").GetString() is "BPO7-{YYYY}-" or "BQ73-" or "BDN4-{BRANCH}-");
 
@@ -298,6 +302,35 @@ public sealed class SequenceApiTests(NumberingFixture fixture) : IClassFixture<N
         Assert.Contains("\"prefix\"", changes, StringComparison.Ordinal);
         Assert.Contains("SO-2026-", changes, StringComparison.Ordinal);
         Assert.Contains("\"padding\"", changes, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Setting_the_next_number_is_recorded_on_the_sequence_and_every_numbering_row_names_its_sequence_and_company_in_both_languages()
+    {
+        using var admin = await SignInAsync();
+        var row = await RowAsync(admin, "purchasing.bill");
+        var before = row.GetProperty("nextValue").GetInt64();
+        var saved = await PutAsync(admin, row, Body(row, nextValue: before + 400));
+        Assert.True(saved.StatusCode == HttpStatusCode.OK, await saved.Content.ReadAsStringAsync());
+        var id = row.GetProperty("id").GetGuid();
+
+        // The sequence's own history says what the next number was, what it became and for which period.
+        var setTo = await Db.TextAsync(Env,
+            "SELECT string_agg(changes::text, ' ') FROM audit.entries WHERE table_schema = 'numbering' AND table_name = 'sequences' AND record_id = @id AND changes ? 'next_set_to'", ("id", id));
+        Assert.Contains((before + 400).ToString(System.Globalization.CultureInfo.InvariantCulture), setTo, StringComparison.Ordinal);
+        Assert.Contains("next_set_from", setTo, StringComparison.Ordinal);
+
+        // No audited row of numbering reads "(empty)": each names the kind of document, in English and Arabic.
+        Assert.Equal(0, await Db.ScalarAsync(Env,
+            "SELECT count(*) FROM audit.entries WHERE table_schema = 'numbering' AND (record_label IS NULL OR record_label_ar IS NULL OR record_code IS NULL) AND table_name <> 'issued_numbers'"));
+        var label = await Db.TextAsync(Env,
+            "SELECT record_label || ' | ' || record_label_ar FROM audit.entries WHERE table_schema = 'numbering' AND table_name = 'counters' AND changes ? 'next_value' ORDER BY occurred_at DESC LIMIT 1");
+        Assert.Contains("Supplier bill", label, StringComparison.Ordinal);
+        Assert.Contains("فاتورة مورد", label, StringComparison.Ordinal);
+        // Product text only: no company name is copied into the label.
+        Assert.DoesNotContain(" · ", label, StringComparison.Ordinal);
+        // The recorded changes hold no name column: the names are for the heading, not data.
+        Assert.Equal(0, await Db.ScalarAsync(Env, "SELECT count(*) FROM audit.entries WHERE table_schema = 'numbering' AND (changes ? 'name_en' OR changes ? 'name_ar' OR changes ? 'code')"));
     }
 
     [Fact]

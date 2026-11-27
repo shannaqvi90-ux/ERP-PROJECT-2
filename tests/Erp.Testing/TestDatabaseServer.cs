@@ -77,6 +77,10 @@ public sealed class TestDatabaseServer
             .WithCommand("-c", "fsync=off", "-c", "synchronous_commit=off", "-c", "full_page_writes=off", "-c", "max_connections=1500",
                 "-c", "shared_buffers=256MB")
             .WithTmpfsMount("/var/lib/postgresql/data")
+            // Docker gives a container 64 MB of /dev/shm; a parallel query at demo volume needs more
+            // ("could not resize shared memory segment ... No space left on device", G1ListVolumeTests).
+            // It is only a ceiling on a memory-backed mount, not memory taken up front.
+            .WithCreateParameterModifier(parameters => parameters.HostConfig!.ShmSize = 1024L * 1024 * 1024)
             .Build();
         await container.StartAsync();
         return new TestDatabaseServer(container, adminPassword);
@@ -168,6 +172,38 @@ public sealed class TestDatabaseServer
             await host.DisposeAsync();
             await CloseAsync(database);
             return new GateTemplate(database, plan);
+        }, LazyThreadSafetyMode.ExecutionAndPublication));
+        return await lazy.Value;
+    }
+
+    private readonly ConcurrentDictionary<string, Lazy<Task<string>>> _migrated = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// A template database that is bootstrapped and migrated but holds no seed (made once per process
+    /// and settings combination by <paramref name="prepare"/>, which bootstraps and migrates the
+    /// database it is given). Environments with their own seed plan copy it instead of running every
+    /// migration again (round 24, owner decision #59 step 3); each still gets a database of its own,
+    /// and seeds it itself. Environments with other settings get another template.
+    /// </summary>
+    public async Task<string> MigratedTemplateAsync(IDictionary<string, string?>? settings, Func<string, Task<ErpAppFactory>> prepare)
+    {
+        var key = string.Join("\n", (settings ?? new Dictionary<string, string?>())
+            .OrderBy(s => s.Key, StringComparer.Ordinal).Select(s => $"{s.Key}={s.Value}"));
+        var lazy = _migrated.GetOrAdd(key, _ => new Lazy<Task<string>>(async () =>
+        {
+            var database = "mig" + NewDatabaseName()[3..];
+            try
+            {
+                var host = await prepare(database);
+                await host.DisposeAsync();
+            }
+            catch
+            {
+                await DropAsync(database);
+                throw;
+            }
+            await CloseAsync(database);
+            return database;
         }, LazyThreadSafetyMode.ExecutionAndPublication));
         return await lazy.Value;
     }

@@ -644,20 +644,40 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
     }
 
     [Fact]
+    public void A_number_custom_field_is_shown_with_its_own_decimals_not_the_stored_eight()
+    {
+        var texts = new AuditTexts();
+        static JsonElement J(string json) => JsonDocument.Parse(json).RootElement;
+        var labels = new Dictionary<string, AuditFieldLabel> { ["custom.cfCap"] = new("Credit cap", "سقف", "number", 2) };
+        var change = new[] { new AuditFieldChange("custom.cfCap", J("1500.25000000"), J("250000.75000000")) };
+        foreach (var language in new[] { "en", "ar" })
+        {
+            var text = texts.Summary(change, "update", language, null, max: 1000, fieldLabels: labels);
+            Assert.Contains("1,500.25", text);
+            Assert.Contains("250,000.75", text);
+            Assert.DoesNotContain("00000", text);
+        }
+        var whole = new Dictionary<string, AuditFieldLabel> { ["custom.cfCap"] = new("Credit cap", "سقف", "number", 0) };
+        var rounded = texts.Summary(change, "update", "en", null, max: 1000, fieldLabels: whole);
+        Assert.Contains("1,500", rounded);
+        Assert.DoesNotContain("1,500.25", rounded);
+    }
+
+    [Fact]
     public void A_choice_shows_the_chosen_options_label_in_both_languages_never_its_code()
     {
         var texts = new AuditTexts();
-        var change = new[] { new AuditFieldChange("reset", JsonDocument.Parse("\"yearly\"").RootElement, JsonDocument.Parse("\"monthly\"").RootElement) };
+        var change = new[] { new AuditFieldChange("reset", JsonDocument.Parse("1").RootElement, JsonDocument.Parse("2").RootElement) };
         var english = texts.Summary(change, "update", "en", null, recordType: "numbering.sequences");
         Assert.Contains("Every year", english);
         Assert.Contains("Every month", english);
-        Assert.DoesNotContain("yearly", english);
+        Assert.DoesNotContain("from 1 to 2", english);
         var arabic = texts.Summary(change, "update", "ar", null, recordType: "numbering.sequences");
         Assert.Contains("كل سنة", arabic);
         Assert.Contains("كل شهر", arabic);
         // Another kind of record, or no kind: the stored value as before.
-        Assert.Contains("yearly", texts.Summary(change, "update", "en", null, recordType: "contacts.contacts"));
-        Assert.Contains("yearly", texts.Summary(change, "update", "en", null));
+        Assert.Contains("from 1 to 2", texts.Summary(change, "update", "en", null, recordType: "contacts.contacts"));
+        Assert.Contains("from 1 to 2", texts.Summary(change, "update", "en", null));
     }
 
     [Fact]

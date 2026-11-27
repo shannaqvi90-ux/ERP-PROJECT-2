@@ -1,0 +1,1692 @@
+{
+  "schema": 1,
+  "run_id": "create-restricted-user-20261126T134722-97f3",
+  "instrument": 12,
+  "task": "create-restricted-user",
+  "task_title": "Create a user with a restricted role",
+  "product": "odoo",
+  "status": "verified",
+  "goal": "Create the user \"Hessa Clerk\", sign-in hessa.clerk@demo-trading.example, who may view and create contacts and do nothing else: no purchasing, accounting, settings or user administration.",
+  "done_when": "The user is saved; the back end confirms the user exists, can create contacts and holds no administration, purchasing or accounting rights.",
+  "started_at": "2026-11-26T13:47:22.727Z",
+  "finished_at": "2026-11-26T13:49:01.483Z",
+  "environment": {
+    "base_url": "http://localhost:8069",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": 100000,
+    "node": "v24.20.0"
+  },
+  "counts": {
+    "steps": 10,
+    "keystrokes": 46,
+    "clicks": 2,
+    "scrolls": 0,
+    "field_entries": 3,
+    "key_chords": 5,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 6.932,
+    "system_wait_seconds": 6.354,
+    "human_seconds": 30.05,
+    "human_plus_wait_seconds": 36.404,
+    "klm_operator_counts": {
+      "K": 60,
+      "P": 2,
+      "B": 4,
+      "H": 3,
+      "M": 7
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "command palette",
+      "keystrokes": 2,
+      "at": 0.001,
+      "took": 0.017,
+      "chord": "Control+k",
+      "screen": "/odoo/discuss",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "type",
+      "label": "menu search /users",
+      "keystrokes": 6,
+      "at": 0.13,
+      "took": 0.027,
+      "text": "/users",
+      "same_field": false,
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 3,
+      "kind": "key",
+      "label": "open Settings / Users & Companies / Users",
+      "keystrokes": 1,
+      "at": 0.228,
+      "took": 0.01,
+      "chord": "Enter",
+      "screen": "/odoo/discuss",
+      "chain": true
+    },
+    {
+      "n": 4,
+      "kind": "key",
+      "label": "New (hotkey)",
+      "keystrokes": 2,
+      "at": 0.657,
+      "took": 0.02,
+      "chord": "Alt+c",
+      "screen": "/odoo/users",
+      "chain": false
+    },
+    {
+      "n": 5,
+      "kind": "type",
+      "label": "name",
+      "keystrokes": 13,
+      "at": 1.102,
+      "took": 0.037,
+      "text": "Hessa Clerk",
+      "same_field": false,
+      "screen": "/odoo/users/new",
+      "chain": false
+    },
+    {
+      "n": 6,
+      "kind": "key",
+      "label": "next field (login)",
+      "keystrokes": 1,
+      "at": 1.14,
+      "took": 0.009,
+      "chord": "Tab",
+      "screen": "/odoo/users/new",
+      "chain": false
+    },
+    {
+      "n": 7,
+      "kind": "type",
+      "label": "login",
+      "keystrokes": 33,
+      "at": 1.152,
+      "took": 0.076,
+      "text": "hessa.clerk@demo-trading.example",
+      "same_field": false,
+      "screen": "/odoo/users/new",
+      "chain": true
+    },
+    {
+      "n": 8,
+      "kind": "click",
+      "label": "Contact privilege",
+      "keystrokes": 0,
+      "at": 1.266,
+      "took": 0.058,
+      "began": 1.231,
+      "screen": "/odoo/users/new",
+      "chain": false
+    },
+    {
+      "n": 9,
+      "kind": "click",
+      "label": "Creation",
+      "keystrokes": 0,
+      "at": 1.365,
+      "took": 0.05,
+      "began": 1.324,
+      "screen": "/odoo/users/new",
+      "chain": false
+    },
+    {
+      "n": 10,
+      "kind": "key",
+      "label": "Save (hotkey)",
+      "keystrokes": 2,
+      "at": 1.589,
+      "took": 0.011,
+      "chord": "Alt+s",
+      "screen": "/odoo/users/new",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "palette open",
+      "at": 0.018,
+      "seconds": 0.112
+    },
+    {
+      "label": "menu found",
+      "at": 0.158,
+      "seconds": 0.068
+    },
+    {
+      "label": "Settings / Users & Companies / Users loaded",
+      "at": 0.238,
+      "seconds": 0.17
+    },
+    {
+      "label": "user list",
+      "at": 0.409,
+      "seconds": 0.248
+    },
+    {
+      "label": "new user form, name focused",
+      "at": 0.678,
+      "seconds": 0.424
+    },
+    {
+      "label": "login focused",
+      "at": 1.149,
+      "seconds": 0.003
+    },
+    {
+      "label": "saved",
+      "at": 1.6,
+      "seconds": 5.328
+    },
+    {
+      "label": "record has an id",
+      "at": 6.929,
+      "seconds": 0.001
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "90af1cfa0cb233e4.jpg",
+      "at": 0,
+      "path": "../out/blind/shots/90af1cfa0cb233e4.jpg"
+    },
+    {
+      "moment": "user filled in",
+      "file": "a2426ecc10288fdf.jpg",
+      "at": 1.416,
+      "path": "../out/blind/shots/a2426ecc10288fdf.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "2e4b7f17166802ba.jpg",
+      "at": 6.932,
+      "path": "../out/blind/shots/2e4b7f17166802ba.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "url": "http://localhost:8069/odoo/users/100264",
+      "role": "regular_user",
+      "missing": [],
+      "unexpected": []
+    }
+  },
+  "path_notes": "keyboard: Apps menu > Settings > Manage Users > Alt+C (New; name focused) > name > Tab > login > Contact: Creation (two clicks) > Alt+S (Save) | pointer: Apps menu > Settings > Manage Users > New > name (focused) > click Login > login > Contact: Creation (two clicks) > Save | palette: Ctrl+K > \"/users\" > Enter > Alt+C (New; name focused) > name > Tab > login > Contact: Creation (two clicks) > Alt+S (Save)",
+  "driver": {
+    "file": "gauntlet/compare/drivers/odoo/create-restricted-user.mjs",
+    "sha256": "c01052ad1d66c1612fc14944cfabb2dc1aa151c5ac5cae3140f46aaca952eb5e"
+  },
+  "task_notes": "Fixed values so keystroke counts are comparable run to run; set-up removes any earlier copy of the user.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/odoo/discuss",
+    "query": "",
+    "fragment": "",
+    "fields": 1,
+    "filled": [],
+    "focused": null,
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 10,
+      "longest_pause_seconds": 0.004,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.084,
+      "verified": true
+    },
+    {
+      "requests": 10,
+      "longest_pause_seconds": 0.003,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.085,
+      "verified": true,
+      "gap_seconds": 1.1
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "ba246765b63774c6",
+    "elements": 398
+  },
+  "screen_after_verify": {
+    "sha256": "ba246765b63774c6",
+    "elements": 398,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 1,
+    "requests": 2,
+    "longest_pause_seconds": 0.002,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.024
+  },
+  "set_up_writes_waited": 0,
+  "saved_state": {
+    "reads_before": 1,
+    "reads_after": 9,
+    "read_both_times": 1,
+    "read_before": [
+      "POST /web/dataset/call_kw/res.users/search_read"
+    ],
+    "read_after": [
+      "POST /web/dataset/call_kw/res.users/search_read",
+      "POST /web/dataset/call_kw/ir.model.data/search_read",
+      "POST /web/dataset/call_kw/ir.model.data/search_read",
+      "POST /web/dataset/call_kw/ir.model.data/search_read",
+      "POST /web/dataset/call_kw/ir.model.data/search_read",
+      "POST /web/dataset/call_kw/ir.model.data/search_read",
+      "POST /web/dataset/call_kw/ir.model.data/search_read",
+      "POST /web/dataset/call_kw/ir.model.data/search_read",
+      "POST /web/dataset/call_kw/ir.model.data/search_read"
+    ],
+    "changed": [
+      "POST /web/dataset/call_kw/res.users/search_read"
+    ],
+    "changed_parts": {
+      "POST /web/dataset/call_kw/res.users/search_read": [
+        "result.0.id",
+        "result.0.name",
+        "result.0.all_group_ids.0",
+        "result.0.all_group_ids.1",
+        "result.0.all_group_ids.2",
+        "result.0.all_group_ids.3",
+        "result.0.all_group_ids.4",
+        "result.0.all_group_ids.5"
+      ]
+    },
+    "gained_entered_value": [
+      "POST /web/dataset/call_kw/res.users/search_read"
+    ],
+    "end_state": [
+      "POST /web/dataset/call_kw/res.users/search_read [result.name]"
+    ],
+    "end_state_changed": {
+      "POST /web/dataset/call_kw/res.users/search_read": [
+        "result.0.name"
+      ]
+    },
+    "end_state_gained": [
+      "Hessa Clerk"
+    ],
+    "writes_sent": [
+      "POST /discuss/search",
+      "POST /web/dataset/call_kw/res.users/web_save"
+    ],
+    "writes_caused": [
+      {
+        "write": "POST /discuss/search",
+        "at": 0.028270166000002064,
+        "by_step": 1,
+        "browser_record": {
+          "caused": true,
+          "by_step": 1,
+          "chain_seconds": 0.023,
+          "chain": [
+            "input of step 1",
+            "a timer of 0.001 s",
+            "the answer to POST /mail/store after 0.012 s"
+          ]
+        }
+      },
+      {
+        "write": "POST /web/dataset/call_kw/res.users/web_save",
+        "at": 1.6144360959999904,
+        "by_step": 10,
+        "browser_record": {
+          "caused": true,
+          "by_step": 10,
+          "chain_seconds": 0.018,
+          "chain": [
+            "input of step 10",
+            "a timer of 0 s"
+          ]
+        }
+      }
+    ]
+  },
+  "screen_changes": {
+    "judged": 166,
+    "not_caused": 11,
+    "enforced": false,
+    "not_caused_first": [
+      {
+        "at": 0.128,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.173,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 0.206,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 0.249,
+        "event": "ParseHTML",
+        "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+        "chain": []
+      },
+      {
+        "at": 1.075,
+        "event": "LayoutInvalidationTracking",
+        "why": "it followed the answer to GET image/png;base64,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, which no step caused: the document image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23f8f9fa'/%3e%3c/svg%3e it loaded, whose navigation started before the clock (or no page task started it)",
+        "chain": []
+      },
+      {
+        "at": 1.456,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+        "chain": []
+      },
+      {
+        "at": 1.628,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task posted by a task no step caused: a timer armed before the clock started",
+        "chain": []
+      },
+      {
+        "at": 1.89,
+        "event": "StyleRecalcInvalidationTracking",
+        "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+        "chain": []
+      }
+    ],
+    "last_caused": {
+      "at": 6.592,
+      "by_step": 10,
+      "chain": [
+        "a timer of 0.001 s",
+        "the answer to POST /mail/store after 0.071 s",
+        "an animation frame",
+        "an animation frame"
+      ]
+    }
+  },
+  "set_up_writes": [],
+  "screenshots_path": "palette",
+  "best_path_per_metric": {
+    "steps": "keyboard",
+    "keystrokes": "pointer",
+    "machine_seconds": "palette",
+    "human_seconds": "palette",
+    "human_plus_wait_seconds": "palette"
+  },
+  "variants": [
+    {
+      "id": "keyboard",
+      "path": "Apps menu > Settings > Manage Users > Alt+C (New; name focused) > name > Tab > login > Contact: Creation (two clicks) > Alt+S (Save)",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 10,
+        "keystrokes": 51,
+        "clicks": 5,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 3,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 7.167,
+        "system_wait_seconds": 6.441,
+        "human_seconds": 34.13,
+        "human_plus_wait_seconds": 40.571,
+        "klm_operator_counts": {
+          "K": 51,
+          "P": 5,
+          "B": 10,
+          "H": 3,
+          "M": 9
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "at": 0.017,
+          "took": 0.039,
+          "began": 0.001,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Settings app",
+          "keystrokes": 0,
+          "at": 0.101,
+          "took": 0.037,
+          "began": 0.056,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "Manage Users",
+          "keystrokes": 0,
+          "at": 0.518,
+          "took": 0.048,
+          "began": 0.466,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "New (hotkey)",
+          "keystrokes": 2,
+          "at": 0.988,
+          "took": 0.024,
+          "chord": "Alt+c",
+          "screen": "/odoo/settings/635/users",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "type",
+          "label": "name",
+          "keystrokes": 13,
+          "at": 1.377,
+          "took": 0.037,
+          "text": "Hessa Clerk",
+          "same_field": false,
+          "screen": "/odoo/settings/635/users/new",
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "key",
+          "label": "next field (login)",
+          "keystrokes": 1,
+          "at": 1.414,
+          "took": 0.007,
+          "chord": "Tab",
+          "screen": "/odoo/settings/635/users/new",
+          "chain": false
+        },
+        {
+          "n": 7,
+          "kind": "type",
+          "label": "login",
+          "keystrokes": 33,
+          "at": 1.425,
+          "took": 0.071,
+          "text": "hessa.clerk@demo-trading.example",
+          "same_field": false,
+          "screen": "/odoo/settings/635/users/new",
+          "chain": true
+        },
+        {
+          "n": 8,
+          "kind": "click",
+          "label": "Contact privilege",
+          "keystrokes": 0,
+          "at": 1.535,
+          "took": 0.062,
+          "began": 1.5,
+          "screen": "/odoo/settings/635/users/new",
+          "chain": false
+        },
+        {
+          "n": 9,
+          "kind": "click",
+          "label": "Creation",
+          "keystrokes": 0,
+          "at": 1.634,
+          "took": 0.047,
+          "began": 1.598,
+          "screen": "/odoo/settings/635/users/new",
+          "chain": false
+        },
+        {
+          "n": 10,
+          "kind": "key",
+          "label": "Save (hotkey)",
+          "keystrokes": 2,
+          "at": 1.818,
+          "took": 0.019,
+          "chord": "Alt+s",
+          "screen": "/odoo/settings/635/users/new",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "Settings loaded",
+          "at": 0.139,
+          "seconds": 0.326
+        },
+        {
+          "label": "user list",
+          "at": 0.567,
+          "seconds": 0.42
+        },
+        {
+          "label": "new user form, name focused",
+          "at": 1.012,
+          "seconds": 0.365
+        },
+        {
+          "label": "login focused",
+          "at": 1.422,
+          "seconds": 0.003
+        },
+        {
+          "label": "saved",
+          "at": 1.838,
+          "seconds": 5.326
+        },
+        {
+          "label": "record has an id",
+          "at": 7.165,
+          "seconds": 0.001
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "http://localhost:8069/odoo/settings/635/users/100262",
+          "role": "regular_user",
+          "missing": [],
+          "unexpected": []
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 10,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.085,
+          "verified": true
+        },
+        {
+          "requests": 10,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.082,
+          "verified": true,
+          "gap_seconds": 1.1
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "a75056d9d34b095e",
+        "elements": 401
+      },
+      "screen_after_verify": {
+        "sha256": "a75056d9d34b095e",
+        "elements": 401,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.002,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.015
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 9,
+        "read_both_times": 1,
+        "read_before": [
+          "POST /web/dataset/call_kw/res.users/search_read"
+        ],
+        "read_after": [
+          "POST /web/dataset/call_kw/res.users/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read"
+        ],
+        "changed": [
+          "POST /web/dataset/call_kw/res.users/search_read"
+        ],
+        "changed_parts": {
+          "POST /web/dataset/call_kw/res.users/search_read": [
+            "result.0.id",
+            "result.0.name",
+            "result.0.all_group_ids.0",
+            "result.0.all_group_ids.1",
+            "result.0.all_group_ids.2",
+            "result.0.all_group_ids.3",
+            "result.0.all_group_ids.4",
+            "result.0.all_group_ids.5"
+          ]
+        },
+        "gained_entered_value": [
+          "POST /web/dataset/call_kw/res.users/search_read"
+        ],
+        "end_state": [
+          "POST /web/dataset/call_kw/res.users/search_read [result.name]"
+        ],
+        "end_state_changed": {
+          "POST /web/dataset/call_kw/res.users/search_read": [
+            "result.0.name"
+          ]
+        },
+        "end_state_gained": [
+          "Hessa Clerk"
+        ],
+        "writes_sent": [
+          "POST /base_setup/data",
+          "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+          "POST /web/dataset/call_kw/res.config.settings/web_save",
+          "POST /web/dataset/call_kw/res.users/web_save"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /base_setup/data",
+            "at": 0.40139586899999996,
+            "by_step": 2,
+            "browser_record": {
+              "caused": true,
+              "by_step": 2,
+              "chain_seconds": 0.229,
+              "chain": [
+                "input of step 2",
+                "an animation frame",
+                "an animation frame",
+                "the answer to POST /web/dataset/call_kw/res.config.settings/get_views after 0.092 s",
+                "the answer to POST /web/dataset/call_kw/res.config.settings/onchange after 0.143 s"
+              ]
+            }
+          },
+          {
+            "write": "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+            "at": 0.40227230799999963,
+            "by_step": 2,
+            "browser_record": {
+              "caused": true,
+              "by_step": 2,
+              "chain_seconds": 0.269,
+              "chain": [
+                "input of step 2",
+                "an animation frame",
+                "an animation frame",
+                "the answer to POST /web/dataset/call_kw/res.config.settings/get_views after 0.092 s",
+                "the answer to POST /web/dataset/call_kw/res.config.settings/onchange after 0.143 s"
+              ]
+            }
+          },
+          {
+            "write": "POST /web/dataset/call_kw/res.config.settings/web_save",
+            "at": 0.5631773889999895,
+            "by_step": 3,
+            "browser_record": {
+              "caused": true,
+              "by_step": 3,
+              "chain_seconds": 0.01,
+              "chain": [
+                "input of step 3"
+              ]
+            }
+          },
+          {
+            "write": "POST /web/dataset/call_kw/res.users/web_save",
+            "at": 1.8335253759999905,
+            "by_step": 10,
+            "browser_record": {
+              "caused": true,
+              "by_step": 10,
+              "chain_seconds": 0.009,
+              "chain": [
+                "input of step 10",
+                "a timer of 0 s"
+              ]
+            }
+          }
+        ]
+      },
+      "screen_changes": {
+        "judged": 171,
+        "not_caused": 60,
+        "enforced": false,
+        "not_caused_first": [
+          {
+            "at": 0.493,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+            "chain": []
+          },
+          {
+            "at": 0.509,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+            "chain": []
+          },
+          {
+            "at": 0.563,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 0.637,
+            "event": "ParseHTML",
+            "why": "the document /odoo/settings, whose navigation started before the record began (or was not the page's)",
+            "chain": []
+          },
+          {
+            "at": 1.028,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "it followed the answer to GET /web/image/res.users/49067/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 1.029,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "it followed the answer to GET /web/image/res.users/13472/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 1.031,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "it followed the answer to GET /web/image/res.users/1212/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 1.032,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "it followed the answer to GET /web/image/res.users/34979/avatar_128, which no step caused: a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          }
+        ],
+        "last_caused": {
+          "at": 6.861,
+          "by_step": 10,
+          "chain": [
+            "a timer of 0.001 s",
+            "the answer to POST /mail/store after 0.06 s",
+            "an animation frame",
+            "an animation frame"
+          ]
+        }
+      },
+      "set_up_writes": []
+    },
+    {
+      "id": "pointer",
+      "path": "Apps menu > Settings > Manage Users > New > name (focused) > click Login > login > Contact: Creation (two clicks) > Save",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 10,
+        "keystrokes": 46,
+        "clicks": 8,
+        "scrolls": 0,
+        "field_entries": 2,
+        "key_chords": 0,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 9.441,
+        "system_wait_seconds": 6.388,
+        "human_seconds": 37.03,
+        "human_plus_wait_seconds": 43.418,
+        "klm_operator_counts": {
+          "K": 46,
+          "P": 8,
+          "B": 16,
+          "H": 4,
+          "M": 9
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "click",
+          "label": "apps menu",
+          "keystrokes": 0,
+          "at": 0.022,
+          "took": 0.037,
+          "began": 0.001,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "click",
+          "label": "Settings app",
+          "keystrokes": 0,
+          "at": 0.105,
+          "took": 0.035,
+          "began": 0.06,
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "click",
+          "label": "Manage Users",
+          "keystrokes": 0,
+          "at": 0.49,
+          "took": 0.068,
+          "began": 0.436,
+          "screen": "/odoo/settings",
+          "chain": false
+        },
+        {
+          "n": 4,
+          "kind": "click",
+          "label": "New",
+          "keystrokes": 0,
+          "at": 1.055,
+          "took": 0.084,
+          "began": 1.005,
+          "screen": "/odoo/settings/636/users",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "type",
+          "label": "name",
+          "keystrokes": 13,
+          "at": 3.45,
+          "took": 0.037,
+          "text": "Hessa Clerk",
+          "same_field": false,
+          "screen": "/odoo/settings/636/users/new",
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "click",
+          "label": "focus login",
+          "keystrokes": 0,
+          "at": 3.521,
+          "took": 0.039,
+          "began": 3.488,
+          "screen": "/odoo/settings/636/users/new",
+          "chain": false
+        },
+        {
+          "n": 7,
+          "kind": "type",
+          "label": "login",
+          "keystrokes": 33,
+          "at": 3.578,
+          "took": 0.078,
+          "text": "hessa.clerk@demo-trading.example",
+          "same_field": true,
+          "screen": "/odoo/settings/636/users/new",
+          "chain": true
+        },
+        {
+          "n": 8,
+          "kind": "click",
+          "label": "Contact privilege",
+          "keystrokes": 0,
+          "at": 3.704,
+          "took": 0.06,
+          "began": 3.66,
+          "screen": "/odoo/settings/636/users/new",
+          "chain": false
+        },
+        {
+          "n": 9,
+          "kind": "click",
+          "label": "Creation",
+          "keystrokes": 0,
+          "at": 3.805,
+          "took": 0.049,
+          "began": 3.765,
+          "screen": "/odoo/settings/636/users/new",
+          "chain": false
+        },
+        {
+          "n": 10,
+          "kind": "click",
+          "label": "Save",
+          "keystrokes": 0,
+          "at": 4.055,
+          "took": 0.044,
+          "began": 4.009,
+          "screen": "/odoo/settings/636/users/new",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "Settings loaded",
+          "at": 0.141,
+          "seconds": 0.295
+        },
+        {
+          "label": "user list",
+          "at": 0.558,
+          "seconds": 0.446
+        },
+        {
+          "label": "new user form, name focused",
+          "at": 1.14,
+          "seconds": 0.308
+        },
+        {
+          "label": "saved",
+          "at": 4.1,
+          "seconds": 5.338
+        },
+        {
+          "label": "record has an id",
+          "at": 9.439,
+          "seconds": 0.001
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "http://localhost:8069/odoo/settings/636/users/100263",
+          "role": "regular_user",
+          "missing": [],
+          "unexpected": []
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 10,
+          "longest_pause_seconds": 0.002,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.088,
+          "verified": true
+        },
+        {
+          "requests": 10,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.094,
+          "verified": true,
+          "gap_seconds": 1.101
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "c62467fe373b7ddd",
+        "elements": 401
+      },
+      "screen_after_verify": {
+        "sha256": "c62467fe373b7ddd",
+        "elements": 401,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.002,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.029
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 9,
+        "read_both_times": 1,
+        "read_before": [
+          "POST /web/dataset/call_kw/res.users/search_read"
+        ],
+        "read_after": [
+          "POST /web/dataset/call_kw/res.users/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read"
+        ],
+        "changed": [
+          "POST /web/dataset/call_kw/res.users/search_read"
+        ],
+        "changed_parts": {
+          "POST /web/dataset/call_kw/res.users/search_read": [
+            "result.0.id",
+            "result.0.name",
+            "result.0.all_group_ids.0",
+            "result.0.all_group_ids.1",
+            "result.0.all_group_ids.2",
+            "result.0.all_group_ids.3",
+            "result.0.all_group_ids.4",
+            "result.0.all_group_ids.5"
+          ]
+        },
+        "gained_entered_value": [
+          "POST /web/dataset/call_kw/res.users/search_read"
+        ],
+        "end_state": [
+          "POST /web/dataset/call_kw/res.users/search_read [result.name]"
+        ],
+        "end_state_changed": {
+          "POST /web/dataset/call_kw/res.users/search_read": [
+            "result.0.name"
+          ]
+        },
+        "end_state_gained": [
+          "Hessa Clerk"
+        ],
+        "writes_sent": [
+          "POST /base_setup/data",
+          "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+          "POST /web/dataset/call_kw/res.config.settings/web_save",
+          "POST /web/dataset/call_kw/res.users/web_save"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /base_setup/data",
+            "at": 0.3708758979999984,
+            "by_step": 2,
+            "browser_record": {
+              "caused": true,
+              "by_step": 2,
+              "chain_seconds": 0.197,
+              "chain": [
+                "input of step 2",
+                "an animation frame",
+                "an animation frame",
+                "the answer to POST /web/dataset/call_kw/res.config.settings/get_views after 0.059 s",
+                "the answer to POST /web/dataset/call_kw/res.config.settings/onchange after 0.143 s"
+              ]
+            }
+          },
+          {
+            "write": "POST /web/dataset/call_kw/ir.http/lazy_session_info",
+            "at": 0.371198097000015,
+            "by_step": 2,
+            "browser_record": {
+              "caused": true,
+              "by_step": 2,
+              "chain_seconds": 0.236,
+              "chain": [
+                "input of step 2",
+                "an animation frame",
+                "an animation frame",
+                "the answer to POST /web/dataset/call_kw/res.config.settings/get_views after 0.059 s",
+                "the answer to POST /web/dataset/call_kw/res.config.settings/onchange after 0.143 s"
+              ]
+            }
+          },
+          {
+            "write": "POST /web/dataset/call_kw/res.config.settings/web_save",
+            "at": 0.5533217780000123,
+            "by_step": 3,
+            "browser_record": {
+              "caused": true,
+              "by_step": 3,
+              "chain_seconds": 0.01,
+              "chain": [
+                "input of step 3"
+              ]
+            }
+          },
+          {
+            "write": "POST /web/dataset/call_kw/res.users/web_save",
+            "at": 4.0948927210000114,
+            "by_step": 10,
+            "browser_record": {
+              "caused": true,
+              "by_step": 10,
+              "chain_seconds": 0.006,
+              "chain": [
+                "input of step 10"
+              ]
+            }
+          }
+        ]
+      },
+      "screen_changes": {
+        "judged": 190,
+        "not_caused": 10,
+        "enforced": false,
+        "not_caused_first": [
+          {
+            "at": 0.553,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 0.635,
+            "event": "ParseHTML",
+            "why": "the document /odoo/settings, whose navigation started before the record began (or was not the page's)",
+            "chain": []
+          },
+          {
+            "at": 0.996,
+            "event": "ScheduleStyleInvalidationTracking",
+            "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 1.116,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          },
+          {
+            "at": 1.452,
+            "event": "ParseHTML",
+            "why": "the document /odoo/settings/636/users/new, whose navigation started before the record began (or was not the page's)",
+            "chain": []
+          },
+          {
+            "at": 3.546,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 6 (a click whose input the browser delivers; the harness's commands only read the page)",
+            "chain": []
+          },
+          {
+            "at": 4.079,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 10 (a click whose input the browser delivers; the harness's commands only read the page)",
+            "chain": []
+          },
+          {
+            "at": 9.255,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "script the browser ran for an observer as it rendered a frame while an animation or transition of the page was running: what moved the layout may be the animation, whose time is set by its duration, not by the person",
+            "chain": []
+          }
+        ],
+        "last_caused": {
+          "at": 9.396,
+          "by_step": 10,
+          "chain": [
+            "an animation frame",
+            "an animation frame",
+            "a task the page's own task posted",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      "set_up_writes": []
+    },
+    {
+      "id": "palette",
+      "path": "Ctrl+K > \"/users\" > Enter > Alt+C (New; name focused) > name > Tab > login > Contact: Creation (two clicks) > Alt+S (Save)",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 10,
+        "keystrokes": 60,
+        "clicks": 2,
+        "scrolls": 0,
+        "field_entries": 3,
+        "key_chords": 5,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 6.932,
+        "system_wait_seconds": 6.354,
+        "human_seconds": 30.05,
+        "human_plus_wait_seconds": 36.404,
+        "klm_operator_counts": {
+          "K": 60,
+          "P": 2,
+          "B": 4,
+          "H": 3,
+          "M": 7
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "command palette",
+          "keystrokes": 2,
+          "at": 0.001,
+          "took": 0.017,
+          "chord": "Control+k",
+          "screen": "/odoo/discuss",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "menu search /users",
+          "keystrokes": 6,
+          "at": 0.13,
+          "took": 0.027,
+          "text": "/users",
+          "same_field": false,
+          "screen": "/odoo/discuss",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open Settings / Users & Companies / Users",
+          "keystrokes": 1,
+          "at": 0.228,
+          "took": 0.01,
+          "chord": "Enter",
+          "screen": "/odoo/discuss",
+          "chain": true
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "New (hotkey)",
+          "keystrokes": 2,
+          "at": 0.657,
+          "took": 0.02,
+          "chord": "Alt+c",
+          "screen": "/odoo/users",
+          "chain": false
+        },
+        {
+          "n": 5,
+          "kind": "type",
+          "label": "name",
+          "keystrokes": 13,
+          "at": 1.102,
+          "took": 0.037,
+          "text": "Hessa Clerk",
+          "same_field": false,
+          "screen": "/odoo/users/new",
+          "chain": false
+        },
+        {
+          "n": 6,
+          "kind": "key",
+          "label": "next field (login)",
+          "keystrokes": 1,
+          "at": 1.14,
+          "took": 0.009,
+          "chord": "Tab",
+          "screen": "/odoo/users/new",
+          "chain": false
+        },
+        {
+          "n": 7,
+          "kind": "type",
+          "label": "login",
+          "keystrokes": 33,
+          "at": 1.152,
+          "took": 0.076,
+          "text": "hessa.clerk@demo-trading.example",
+          "same_field": false,
+          "screen": "/odoo/users/new",
+          "chain": true
+        },
+        {
+          "n": 8,
+          "kind": "click",
+          "label": "Contact privilege",
+          "keystrokes": 0,
+          "at": 1.266,
+          "took": 0.058,
+          "began": 1.231,
+          "screen": "/odoo/users/new",
+          "chain": false
+        },
+        {
+          "n": 9,
+          "kind": "click",
+          "label": "Creation",
+          "keystrokes": 0,
+          "at": 1.365,
+          "took": 0.05,
+          "began": 1.324,
+          "screen": "/odoo/users/new",
+          "chain": false
+        },
+        {
+          "n": 10,
+          "kind": "key",
+          "label": "Save (hotkey)",
+          "keystrokes": 2,
+          "at": 1.589,
+          "took": 0.011,
+          "chord": "Alt+s",
+          "screen": "/odoo/users/new",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "palette open",
+          "at": 0.018,
+          "seconds": 0.112
+        },
+        {
+          "label": "menu found",
+          "at": 0.158,
+          "seconds": 0.068
+        },
+        {
+          "label": "Settings / Users & Companies / Users loaded",
+          "at": 0.238,
+          "seconds": 0.17
+        },
+        {
+          "label": "user list",
+          "at": 0.409,
+          "seconds": 0.248
+        },
+        {
+          "label": "new user form, name focused",
+          "at": 0.678,
+          "seconds": 0.424
+        },
+        {
+          "label": "login focused",
+          "at": 1.149,
+          "seconds": 0.003
+        },
+        {
+          "label": "saved",
+          "at": 1.6,
+          "seconds": 5.328
+        },
+        {
+          "label": "record has an id",
+          "at": 6.929,
+          "seconds": 0.001
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "http://localhost:8069/odoo/users/100264",
+          "role": "regular_user",
+          "missing": [],
+          "unexpected": []
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/odoo/discuss",
+        "query": "",
+        "fragment": "",
+        "fields": 1,
+        "filled": [],
+        "focused": null,
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 10,
+          "longest_pause_seconds": 0.004,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.084,
+          "verified": true
+        },
+        {
+          "requests": 10,
+          "longest_pause_seconds": 0.003,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.085,
+          "verified": true,
+          "gap_seconds": 1.1
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "ba246765b63774c6",
+        "elements": 398
+      },
+      "screen_after_verify": {
+        "sha256": "ba246765b63774c6",
+        "elements": 398,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 1,
+        "requests": 2,
+        "longest_pause_seconds": 0.002,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.024
+      },
+      "set_up_writes_waited": 0,
+      "saved_state": {
+        "reads_before": 1,
+        "reads_after": 9,
+        "read_both_times": 1,
+        "read_before": [
+          "POST /web/dataset/call_kw/res.users/search_read"
+        ],
+        "read_after": [
+          "POST /web/dataset/call_kw/res.users/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read",
+          "POST /web/dataset/call_kw/ir.model.data/search_read"
+        ],
+        "changed": [
+          "POST /web/dataset/call_kw/res.users/search_read"
+        ],
+        "changed_parts": {
+          "POST /web/dataset/call_kw/res.users/search_read": [
+            "result.0.id",
+            "result.0.name",
+            "result.0.all_group_ids.0",
+            "result.0.all_group_ids.1",
+            "result.0.all_group_ids.2",
+            "result.0.all_group_ids.3",
+            "result.0.all_group_ids.4",
+            "result.0.all_group_ids.5"
+          ]
+        },
+        "gained_entered_value": [
+          "POST /web/dataset/call_kw/res.users/search_read"
+        ],
+        "end_state": [
+          "POST /web/dataset/call_kw/res.users/search_read [result.name]"
+        ],
+        "end_state_changed": {
+          "POST /web/dataset/call_kw/res.users/search_read": [
+            "result.0.name"
+          ]
+        },
+        "end_state_gained": [
+          "Hessa Clerk"
+        ],
+        "writes_sent": [
+          "POST /discuss/search",
+          "POST /web/dataset/call_kw/res.users/web_save"
+        ],
+        "writes_caused": [
+          {
+            "write": "POST /discuss/search",
+            "at": 0.028270166000002064,
+            "by_step": 1,
+            "browser_record": {
+              "caused": true,
+              "by_step": 1,
+              "chain_seconds": 0.023,
+              "chain": [
+                "input of step 1",
+                "a timer of 0.001 s",
+                "the answer to POST /mail/store after 0.012 s"
+              ]
+            }
+          },
+          {
+            "write": "POST /web/dataset/call_kw/res.users/web_save",
+            "at": 1.6144360959999904,
+            "by_step": 10,
+            "browser_record": {
+              "caused": true,
+              "by_step": 10,
+              "chain_seconds": 0.018,
+              "chain": [
+                "input of step 10",
+                "a timer of 0 s"
+              ]
+            }
+          }
+        ]
+      },
+      "screen_changes": {
+        "judged": 166,
+        "not_caused": 11,
+        "enforced": false,
+        "not_caused_first": [
+          {
+            "at": 0.128,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 0.173,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 0.206,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+            "chain": []
+          },
+          {
+            "at": 0.249,
+            "event": "ParseHTML",
+            "why": "the document /odoo/discuss, whose navigation started before the record began (or was not the page's)",
+            "chain": []
+          },
+          {
+            "at": 1.075,
+            "event": "LayoutInvalidationTracking",
+            "why": "it followed the answer to GET image/png;base64,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, which no step caused: the document image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23f8f9fa'/%3e%3c/svg%3e it loaded, whose navigation started before the clock (or no page task started it)",
+            "chain": []
+          },
+          {
+            "at": 1.456,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin while another thread of the page's script ran (SharedWorker thread; a worker, another frame or window): it could have sent it",
+            "chain": []
+          },
+          {
+            "at": 1.628,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task posted by a task no step caused: a timer armed before the clock started",
+            "chain": []
+          },
+          {
+            "at": 1.89,
+            "event": "StyleRecalcInvalidationTracking",
+            "why": "a task of no traceable origin (a message, an observer) after a page task no step caused: a timer armed before the clock started",
+            "chain": []
+          }
+        ],
+        "last_caused": {
+          "at": 6.592,
+          "by_step": 10,
+          "chain": [
+            "a timer of 0.001 s",
+            "the answer to POST /mail/store after 0.071 s",
+            "an animation frame",
+            "an animation frame"
+          ]
+        }
+      },
+      "set_up_writes": []
+    }
+  ]
+}

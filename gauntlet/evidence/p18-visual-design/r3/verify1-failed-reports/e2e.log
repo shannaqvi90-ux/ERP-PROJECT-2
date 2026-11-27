@@ -1,0 +1,413 @@
+[1mClean stack: build, migrate, seed, serve (project c-p18-visual-design-r3-verify, port 21860)[0m
+[1mBuilding the application image[0m
+#1 [internal] load local bake definitions
+#1 reading from stdin 695B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 2.35kB done
+#2 DONE 0.0s
+
+#3 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#3 DONE 1.2s
+
+#4 docker-image://docker.io/docker/dockerfile:1@sha256:572cebbc2b15e6f84c077742952674889cb63cd5e9b80abdffcbe587b6f19183
+#4 resolve docker.io/docker/dockerfile:1@sha256:572cebbc2b15e6f84c077742952674889cb63cd5e9b80abdffcbe587b6f19183 0.0s done
+#4 CACHED
+
+#5 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:10.0
+#5 ...
+
+#6 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:10.0
+#6 DONE 0.2s
+
+#5 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:10.0
+#5 DONE 0.2s
+
+#7 [internal] load metadata for docker.io/library/node:22-alpine
+#7 DONE 1.1s
+
+#8 [internal] load .dockerignore
+#8 transferring context: 187B done
+#8 DONE 0.1s
+
+#9 [build 1/7] FROM mcr.microsoft.com/dotnet/sdk:10.0@sha256:8c6edfb26c85153f236d26efebd9ad349aec403583f343f201ee67838b23658d
+#9 resolve mcr.microsoft.com/dotnet/sdk:10.0@sha256:8c6edfb26c85153f236d26efebd9ad349aec403583f343f201ee67838b23658d 0.1s done
+#9 DONE 0.1s
+
+#10 [stage-3 1/5] FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:aac50ceef10391e78a899e3d2ccd00bbafa2dcb56ccf4586cbccf00edb84fc21
+#10 resolve mcr.microsoft.com/dotnet/aspnet:10.0@sha256:aac50ceef10391e78a899e3d2ccd00bbafa2dcb56ccf4586cbccf00edb84fc21 0.1s done
+#10 DONE 0.1s
+
+#11 [web 1/6] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+#11 resolve docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a 0.1s done
+#11 DONE 0.1s
+
+#12 [internal] load build context
+#12 transferring context: 6.47MB 0.1s done
+#12 DONE 0.1s
+
+#13 [build 7/7] RUN --mount=type=cache,target=/root/.nuget/packages dotnet publish src/Host/Erp.Host/Erp.Host.csproj -c Release -o /app --no-restore
+#13 CACHED
+
+#14 [build 3/7] COPY global.json Directory.Build.props Directory.Packages.props ./
+#14 CACHED
+
+#15 [stage-3 2/5] WORKDIR /app
+#15 CACHED
+
+#16 [web 3/6] COPY web/package.json web/package-lock.json ./
+#16 CACHED
+
+#17 [build 6/7] COPY --from=strings /strings/ web/src/modules/
+#17 CACHED
+
+#18 [web 2/6] WORKDIR /web
+#18 CACHED
+
+#19 [strings 3/3] RUN cd /modules && mkdir /strings && for d in */i18n; do mkdir -p "/strings/$d" && cp "$d"/*.json "/strings/$d/"; done
+#19 CACHED
+
+#20 [web 4/6] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.npm     if [ -s /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi;     npm ci --no-audit --no-fund
+#20 CACHED
+
+#21 [stage-3 3/5] COPY --from=build /app ./
+#21 CACHED
+
+#22 [build 2/7] WORKDIR /src
+#22 CACHED
+
+#23 [stage-3 4/5] COPY --from=web /web/dist ./wwwroot
+#23 CACHED
+
+#24 [web 5/6] COPY web/ ./
+#24 CACHED
+
+#25 [build 4/7] COPY src/ src/
+#25 CACHED
+
+#26 [build 5/7] RUN --mount=type=secret,id=extra_ca,target=/run/secrets/extra_ca --mount=type=cache,target=/root/.nuget/packages     if [ -s /run/secrets/extra_ca ]; then cat /run/secrets/extra_ca >>/etc/ssl/certs/ca-certificates.crt; fi;     dotnet restore src/Host/Erp.Host/Erp.Host.csproj
+#26 CACHED
+
+#27 [strings 2/3] COPY web/src/modules/ /modules/
+#27 CACHED
+
+#28 [web 6/6] RUN npm run check && npm run build
+#28 CACHED
+
+#29 [stage-3 5/5] RUN mkdir -p /data/attachments && chown app:app /data/attachments
+#29 CACHED
+
+#30 exporting to image
+#30 exporting layers done
+#30 exporting manifest sha256:c195f9f937e6ff945a41ee8678fbb780b9497bfb02ae76abe2b9da4bd56bc74e 0.0s done
+#30 exporting config sha256:42b750796917a37b96acb138668f2d418485f6bbc65c7c01c9a5a7af5e46c7c1 0.0s done
+#30 exporting attestation manifest sha256:207b311dcc3dc24d4ddfe6e27d9f852eda029bf502a6666cf40dd818b866b806
+#30 exporting attestation manifest sha256:207b311dcc3dc24d4ddfe6e27d9f852eda029bf502a6666cf40dd818b866b806 0.0s done
+#30 exporting manifest list sha256:93882e2d2a20c81d53e2834c4a750e7d5c9c93adb78b611da2596496379339f6 0.0s done
+#30 naming to docker.io/library/erp-app:c-p18-visual-design-r3-verify done
+#30 unpacking to docker.io/library/erp-app:c-p18-visual-design-r3-verify
+#30 unpacking to docker.io/library/erp-app:c-p18-visual-design-r3-verify 0.5s done
+#30 DONE 0.6s
+
+#31 resolving provenance for metadata file
+#31 DONE 0.0s
+ erp-app:c-p18-visual-design-r3-verify  Built
+[1mStarting PostgreSQL, setting up the database (roles, migrations, seed: 2000 users) and serving[0m
+ Network c-p18-visual-design-r3-verify_default  Creating
+ Network c-p18-visual-design-r3-verify_default  Created
+ Volume c-p18-visual-design-r3-verify_db-data  Creating
+ Volume c-p18-visual-design-r3-verify_db-data  Created
+ Container c-p18-visual-design-r3-verify-db-1  Creating
+ Container c-p18-visual-design-r3-verify-db-1  Created
+ Container c-p18-visual-design-r3-verify-db-1  Starting
+ Container c-p18-visual-design-r3-verify-db-1  Started
+ Container c-p18-visual-design-r3-verify-db-1  Waiting
+ Container c-p18-visual-design-r3-verify-db-1  Healthy
+ Volume c-p18-visual-design-r3-verify_attachments-data  Creating
+ Volume c-p18-visual-design-r3-verify_attachments-data  Created
+ Container c-p18-visual-design-r3-verify-db-1  Running
+ Container c-p18-visual-design-r3-verify-setup-1  Creating
+ Container c-p18-visual-design-r3-verify-setup-1  Created
+Attaching to setup-1
+setup-1  | info: Erp.Kernel.Data.DatabaseBootstrap[0]
+setup-1  |       Creating database erp
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating KernelDbContext: 8 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating TenancyDbContext: 9 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating IdentityDbContext: 15 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating NumberingDbContext: 2 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating CurrencyDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating JobsDbContext: 2 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating ContactsDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating CustomFieldsDbContext: 4 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating AttachmentsDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating ImportExportDbContext: 2 pending
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Migrating ListsDbContext: 1 pending
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant alnoor (Demo) in 13615 ms
+setup-1  | info: Erp.Kernel.Seeding.SeedRunner[0]
+setup-1  |       Seeded tenant gulfsteel (Demo) in 5691 ms
+setup-1  | info: Erp.Kernel.Data.DatabaseMigrator[0]
+setup-1  |       Refreshed statistics and index lists in 1262 ms
+[Ksetup-1 exited with code 0
+[31m[1mAborting on container exit...[0m
+ Container c-p18-visual-design-r3-verify-setup-1  Stopping
+ Container c-p18-visual-design-r3-verify-setup-1  Stopped
+ Container c-p18-visual-design-r3-verify-db-1  Running
+ Container c-p18-visual-design-r3-verify-app-1  Creating
+ Container c-p18-visual-design-r3-verify-worker-1  Creating
+ Container c-p18-visual-design-r3-verify-worker-1  Created
+ Container c-p18-visual-design-r3-verify-app-1  Created
+ Container c-p18-visual-design-r3-verify-db-1  Waiting
+ Container c-p18-visual-design-r3-verify-db-1  Healthy
+ Container c-p18-visual-design-r3-verify-setup-1  Starting
+ Container c-p18-visual-design-r3-verify-setup-1  Started
+ Container c-p18-visual-design-r3-verify-setup-1  Waiting
+ Container c-p18-visual-design-r3-verify-setup-1  Waiting
+ Container c-p18-visual-design-r3-verify-setup-1  Exited
+ Container c-p18-visual-design-r3-verify-app-1  Starting
+ Container c-p18-visual-design-r3-verify-setup-1  Exited
+ Container c-p18-visual-design-r3-verify-worker-1  Starting
+ Container c-p18-visual-design-r3-verify-app-1  Started
+ Container c-p18-visual-design-r3-verify-worker-1  Started
+[1mEnd-to-end tests in Chromium[0m
+
+[1m== Copying sources (without build output)[0m
+
+[1m== End-to-end: Playwright against http://localhost:21860[0m
+
+added 3 packages in 333ms
+
+Running 180 tests using 1 worker
+
+  ✓    1 [chromium] › specs/attachments.spec.ts:40:7 › attachments › several files are attached at once, previewed, downloaded and deleted, from the keyboard (2.6s)
+  ✓    2 [chromium] › specs/attachments.spec.ts:94:7 › attachments › files dropped on the section are attached, and a file the server refuses is told why (1.2s)
+  ✓    3 [chromium] › specs/attachments.spec.ts:129:7 › attachments › a file is found again from the top of the record: the paperclip with the count, the names under the heading, Alt+A and Enter (1.9s)
+  ✓    4 [chromium] › specs/attachments.spec.ts:208:7 › attachments › in Arabic the paperclip, the names and the shortcut speak Arabic (1.2s)
+  ✓    5 [chromium] › specs/attachments.spec.ts:228:7 › attachments › in Arabic the section reads right to left with Arabic words and an Arabic name for who added a file (993ms)
+  ✓    6 [chromium] › specs/attachments.spec.ts:238:7 › attachments › a reader sees the files and can download them but is offered no Add and no Delete (975ms)
+  ✓    7 [chromium] › specs/audit.spec.ts:26:7 › the audit trail › a record's form shows its latest change under its heading and its whole history with Alt+Y (1.1s)
+  ✓    8 [chromium] › specs/audit.spec.ts:54:7 › the audit trail › a long change under the heading never widens the form or narrows the list beside it (1.1s)
+  ✓    9 [chromium] › specs/audit.spec.ts:83:7 › the audit trail › the audit log lists changes, filters by field and opens a change with its record (1.3s)
+  ✓   10 [chromium] › specs/audit.spec.ts:110:7 › the audit trail › in Arabic: the log, the field names and the change read in Arabic (712ms)
+  ✓   11 [chromium] › specs/audit.spec.ts:121:7 › the audit trail › the audit log filters by a person chosen by name, from the keyboard, in English and Arabic (1.5s)
+  ✓   12 [chromium] › specs/audit.spec.ts:152:7 › the audit trail › a user without the log's permission is not offered it (616ms)
+client isolation: 35 steps per tenant judged on 7 markers in 12 carriers; canary.zaa91uh3@alnoor.example (A) and canary.zb0c2efc@gulfsteel.example (B)
+  ✓   13 [chromium] › specs/client-isolation.spec.ts:293:7 › G1 in the browser: one tab, tenant B then tenant A › after B signs out, the tab holds nothing of B, and A sees nothing of B on any screen, in storage or in memory (9.6s)
+  ✓   14 [chromium] › specs/client-isolation.spec.ts:363:7 › G1 in the browser: one tab, tenant B then tenant A › after signing out, Back does not bring the signed-out person's screens back (1.5s)
+history: B left 3 addresses with its search and record; A went Back 4 times: / / / /
+  ✓   15 [chromium] › specs/client-isolation.spec.ts:382:7 › G1 in the browser: one tab, tenant B then tenant A › after B signs out and A signs in, Back through every entry B left in the tab shows A nothing of B (4.0s)
+  ✓   16 [chromium] › specs/client-isolation.spec.ts:449:7 › G1 in the browser: one tab, tenant B then tenant A › signing out in one tab ends the session in every other tab of the browser at once (1.4s)
+  ✓   17 [chromium] › specs/client-isolation.spec.ts:467:7 › G1 in the browser: one tab, tenant B then tenant A › the judges' self-test: a marker planted in each carrier of the tab is found (2.3s)
+  ✓   18 [chromium] › specs/contacts.spec.ts:16:7 › the contacts directory › an administrator finds a contact by typing its name, reads its people, and opens one of them (28.1s)
+  ✓   19 [chromium] › specs/contacts.spec.ts:39:7 › the contacts directory › a new contact is created from the keyboard, with a warning when it may already exist (4.4s)
+  ✓   20 [chromium] › specs/contacts.spec.ts:69:7 › the contacts directory › the command palette opens a contact by name from anywhere (938ms)
+  ✓   21 [chromium] › specs/contacts.spec.ts:82:7 › the contacts directory › in Arabic the contacts read right to left, the Arabic name comes first and a new contact starts there (1.0s)
+  ✓   22 [chromium] › specs/contacts.spec.ts:98:7 › the contacts directory › a reader is offered no New, no Archive and no editable field (978ms)
+  ✓   23 [chromium] › specs/currency.spec.ts:31:7 › currencies and exchange rates › an administrator opens the euro, types today's rate and Enter saves it; the converter uses it at once (1.3s)
+  ✓   24 [chromium] › specs/currency.spec.ts:65:7 › currencies and exchange rates › the rates list holds the demo's rates newest first, and a rate is entered and corrected from its form (928ms)
+  ✓   25 [chromium] › specs/currency.spec.ts:102:7 › currencies and exchange rates › in Arabic the currencies screen reads right to left with Arabic names (716ms)
+  ✓   26 [chromium] › specs/currency.spec.ts:112:7 › currencies and exchange rates › a user who may only read sees rates and converts, but is offered no rate entry (711ms)
+  ✓   27 [chromium] › specs/customfields.spec.ts:29:7 › custom fields › an administrator adds a field from the keyboard, fills it on a contact and finds the contact by it (1.7s)
+  ✓   28 [chromium] › specs/customfields.spec.ts:80:7 › custom fields › the demo's fields show on a contact and in the list in Arabic, and the list can be filtered by one (915ms)
+  ✓   29 [chromium] › specs/customfields.spec.ts:98:7 › custom fields › a list filtered by a custom field prints and exports in both languages (828ms)
+  ✓   30 [chromium] › specs/customfields.spec.ts:123:9 › custom fields › an export the server cannot build says so (en) (695ms)
+  ✓   31 [chromium] › specs/customfields.spec.ts:123:9 › custom fields › an export the server cannot build says so (ar) (705ms)
+  ✓   32 [chromium] › specs/customfields.spec.ts:135:7 › custom fields › Alt+Shift+F in a custom field of a contact lists the contacts that hold its value (4.5s)
+  ✓   33 [chromium] › specs/customfields.spec.ts:154:7 › custom fields › a single-select field added with its default chosen in the same save keeps the default (4.2s)
+  ✓   34 [chromium] › specs/customfields.spec.ts:182:7 › custom fields › Alt+Shift+F still acts on the field the cursor was in after the History panel was opened (1.7s)
+  ✓   35 [chromium] › specs/customfields.spec.ts:198:7 › custom fields › a reader sees the definitions but is offered no way to change them (1.2s)
+  ✓   36 [chromium] › specs/design.spec.ts:29:7 › design system › is dark (direction G) until a theme is chosen, whatever colour the system prefers, then keeps the choice across a reload (2.5s)
+  ✓   37 [chromium] › specs/design.spec.ts:50:7 › design system › the density switch changes the row height and is remembered (1.4s)
+  ✓   38 [chromium] › specs/design.spec.ts:61:7 › design system › shows every date day first, as dd/mm/yyyy, in the users list and in Arabic (29.2s)
+  ✓   39 [chromium] › specs/design.spec.ts:75:11 › design system › no clipped control on the home, contacts and users screens in en, light (3.5s)
+  ✓   40 [chromium] › specs/design.spec.ts:75:11 › design system › no clipped control on the home, contacts and users screens in en, dark (2.9s)
+  ✓   41 [chromium] › specs/design.spec.ts:75:11 › design system › no clipped control on the home, contacts and users screens in en, hc (1.6s)
+  ✓   42 [chromium] › specs/design.spec.ts:75:11 › design system › no clipped control on the home, contacts and users screens in ar, light (1.6s)
+  ✓   43 [chromium] › specs/design.spec.ts:75:11 › design system › no clipped control on the home, contacts and users screens in ar, dark (1.6s)
+  ✓   44 [chromium] › specs/design.spec.ts:75:11 › design system › no clipped control on the home, contacts and users screens in ar, hc (1.6s)
+  ✓   45 [chromium] › specs/design.spec.ts:96:11 › design system › text cut with an ellipsis always carries its full text as a title, in en, compact (list cells, tabs, placeholders, form values) (1.7s)
+  ✓   46 [chromium] › specs/design.spec.ts:96:11 › design system › text cut with an ellipsis always carries its full text as a title, in en, comfortable (list cells, tabs, placeholders, form values) (1.7s)
+  ✓   47 [chromium] › specs/design.spec.ts:96:11 › design system › text cut with an ellipsis always carries its full text as a title, in ar, compact (list cells, tabs, placeholders, form values) (1.7s)
+  ✓   48 [chromium] › specs/design.spec.ts:96:11 › design system › text cut with an ellipsis always carries its full text as a title, in ar, comfortable (list cells, tabs, placeholders, form values) (1.7s)
+  ✓   49 [chromium] › specs/design.spec.ts:144:7 › design system › every control of a form is reachable by Tab: the section tabs and the calendar button are not skipped (699ms)
+  ✓   50 [chromium] › specs/design.spec.ts:155:7 › design system › the home screen counts what waits for the user and leads to it (612ms)
+  ✓   51 [chromium] › specs/design.spec.ts:164:7 › design system › the palette opens on every screen from the top bar field and the key (1.0s)
+  ✓   52 [chromium] › specs/forms-reports.spec.ts:15:7 › record forms and printed documents › a form tracks changes, asks before leaving, saves with Ctrl+S and moves to the next record with Alt+PageDown (1.2s)
+  ✓   53 [chromium] › specs/forms-reports.spec.ts:70:7 › record forms and printed documents › a phone number keeps +971: a click selects the number after it, and typing its last digit saves; Alt+Z undoes that save (2.5s)
+  ✓   54 [chromium] › specs/forms-reports.spec.ts:132:7 › record forms and printed documents › a user who may only read a record sees it read-only, and no key of the form sends a change (1.3s)
+  ✓   55 [chromium] › specs/forms-reports.spec.ts:159:7 › record forms and printed documents › a record prints as an Arabic PDF from Alt+R, and its document reads right to left (1.1s)
+  ✓   56 [chromium] › specs/forms-reports.spec.ts:188:7 › record forms and printed documents › the reports screen shows a grouped report as an Arabic document and exports it (2.3s)
+  ✓   57 [chromium] › specs/forms-reports.spec.ts:208:7 › record forms and printed documents › a totalled report: roles and access shows each kind's totals and the grand total, and exports it (1.4s)
+  ✓   58 [chromium] › specs/forms-reports.spec.ts:259:7 › record forms and printed documents › a report longer than the screen prints every row through its PDF (29.8s)
+  ✓   59 [chromium] › specs/forms-reports.spec.ts:281:7 › record forms and printed documents › a list prints what it shows: the filtered users list as PDF and CSV (2.2s)
+  ✓   60 [chromium] › specs/identity.spec.ts:7:7 › users, roles and permissions › an administrator creates a user with a restricted role from the keyboard, and that user sees and can do only what it grants (4.6s)
+  ✓   61 [chromium] › specs/identity.spec.ts:88:7 › users, roles and permissions › a role is built in the permission matrix with search and a bulk toggle, then copied and deleted (1.2s)
+  ✓   62 [chromium] › specs/identity.spec.ts:118:7 › users, roles and permissions › a user who may change roles but not delete them sees no Delete role, and a role granting more than they hold is read-only (1.7s)
+  ✓   63 [chromium] › specs/identity.spec.ts:163:7 › users, roles and permissions › an invitation sent to a mistyped address is corrected, and a user who never signed in is deleted (1.8s)
+  ✓   64 [chromium] › specs/identity.spec.ts:195:9 › users, roles and permissions › at 1440 px the sign-in history fits the record panel and matrix headers keep whole words (en) (1.7s)
+  ✓   65 [chromium] › specs/identity.spec.ts:195:9 › users, roles and permissions › at 1440 px the sign-in history fits the record panel and matrix headers keep whole words (ar) (1.7s)
+  ✓   66 [chromium] › specs/identity.spec.ts:269:9 › users, roles and permissions › every box of the permission matrix and the role picker is full size at 1280, 1600 and 1920 px (en) (1.9s)
+  ✓   67 [chromium] › specs/identity.spec.ts:269:9 › users, roles and permissions › every box of the permission matrix and the role picker is full size at 1280, 1600 and 1920 px (ar) (1.8s)
+  ✓   68 [chromium] › specs/identity.spec.ts:322:7 › users, roles and permissions › the Administrator role and the matrix read right to left in Arabic (925ms)
+  ✓   69 [chromium] › specs/importexport.spec.ts:22:7 › import and export › a CSV file is mapped by its headers, checked, then imported from the keyboard, with an error file for the bad row (1.3s)
+  ✓   70 [chromium] › specs/importexport.spec.ts:66:7 › import and export › the same screens work in Arabic and mirror (634ms)
+  ✓   71 [chromium] › specs/importexport.spec.ts:78:7 › import and export › the full export of the workspace is started, written in the background and downloaded as a zip (3.1s)
+  ✓   72 [chromium] › specs/importexport.spec.ts:106:7 › import and export › a click on a tag in the contacts list lists the contacts holding it, ready to export, with nothing typed (733ms)
+  ✓   73 [chromium] › specs/importexport.spec.ts:120:7 › import and export › a user who may only read contacts sees no Import button and cannot reach the import endpoints (645ms)
+  ✓   74 [chromium] › specs/jobs.spec.ts:30:7 › background jobs › an administrator finds a job by keyboard, sees when it ran, runs it again and watches the new run finish (3.5s)
+  ✓   75 [chromium] › specs/jobs.spec.ts:65:7 › background jobs › a running job shows its progress and is cancelled from the panel (3.8s)
+  ✓   76 [chromium] › specs/jobs.spec.ts:77:7 › background jobs › the schedules screen shows the daily clean-up and an administrator adds a schedule by keyboard (817ms)
+  ✓   77 [chromium] › specs/jobs.spec.ts:94:7 › background jobs › a reader sees the jobs and is offered nothing to start, run again or cancel (26.2s)
+  ✓   78 [chromium] › specs/jobs.spec.ts:104:7 › background jobs › the screen speaks Arabic and mirrors (2.6s)
+  ✓   79 [chromium] › specs/keyboard-cycle.spec.ts:28:9 › Tab cycle › Tab and Shift+Tab go round the shell with no stop outside the controls (en) (3.9s)
+  ✓   80 [chromium] › specs/keyboard-cycle.spec.ts:28:9 › Tab cycle › Tab and Shift+Tab go round the shell with no stop outside the controls (ar) (2.6s)
+  ✓   81 [chromium] › specs/keyboard-cycle.spec.ts:50:7 › Tab cycle › the sign-in screen goes round its own controls with no dead stop (408ms)
+  ✓   82 [chromium] › specs/keyboard-cycle.spec.ts:58:7 › Tab cycle › a modal dialog keeps its own cycle (664ms)
+  ✓   83 [chromium] › specs/lists.spec.ts:47:7 › list framework › finds one user by keyboard: the search box has focus, words in any order, Enter opens the only match (1.1s)
+  ✓   84 [chromium] › specs/lists.spec.ts:73:7 › list framework › keeps no row of a list on the device: no file, database or cache, no row in any store, signed in or out (1.3s)
+  ✓   85 [chromium] › specs/lists.spec.ts:127:7 › list framework › the status bar's '/ search' works with the cursor already in the search box (947ms)
+  ✓   86 [chromium] › specs/lists.spec.ts:148:7 › list framework › lists a search best match first, opens it with Enter, and reads Arabic spelling variants (2.0s)
+  ✓   87 [chromium] › specs/lists.spec.ts:168:7 › list framework › column header buttons keep Enter and Space; rows keep one column layout (1.2s)
+  ✓   88 [chromium] › specs/lists.spec.ts:208:7 › list framework › moves through rows with the arrow keys, selects with Space and opens with Enter (1.8s)
+  ✓   89 [chromium] › specs/lists.spec.ts:234:7 › list framework › sorts from a header and filters from the column menu; the address keeps the state (1.9s)
+  ✓   90 [chromium] › specs/lists.spec.ts:264:7 › list framework › groups by a column with counts and opens a group's rows (779ms)
+  ✓   91 [chromium] › specs/lists.spec.ts:279:7 › list framework › groups by status under the status's own words, as the rows say them (919ms)
+  ✓   92 [chromium] › specs/lists.spec.ts:293:7 › list framework › chooses columns and saves a personal default view that opens next time (1.3s)
+  ✓   93 [chromium] › specs/lists.spec.ts:331:7 › list framework › a read-only user keeps personal views but is not offered sharing (2.6s)
+  ✓   94 [chromium] › specs/lists.spec.ts:346:7 › list framework › the list works right to left in Arabic with Arabic counts and headers (946ms)
+  ✓   95 [chromium] › specs/lists.spec.ts:377:7 › list framework › a value that does not fit is cut at its own end in an Arabic list, the screen's own boxes included (607ms)
+  ✓   96 [chromium] › specs/lists.spec.ts:400:9 › list framework › every header stays inside its own column, wide and narrow (ar) (3.8s)
+  ✓   97 [chromium] › specs/lists.spec.ts:400:9 › list framework › every header stays inside its own column, wide and narrow (en) (3.8s)
+  ✓   98 [chromium] › specs/lists.spec.ts:434:9 › list framework › with a record open no column of the list is cut: the rest wait behind a marker that names them and makes room (ar) (26.2s)
+  ✓   99 [chromium] › specs/lists.spec.ts:434:9 › list framework › with a record open no column of the list is cut: the rest wait behind a marker that names them and makes room (en) (2.6s)
+  ✓  100 [chromium] › specs/lists.spec.ts:538:9 › list framework › a screen's record form grows with the window and its tables keep whole headers (en) (3.4s)
+  ✓  101 [chromium] › specs/lists.spec.ts:538:9 › list framework › a screen's record form grows with the window and its tables keep whole headers (ar) (2.6s)
+  ✓  102 [chromium] › specs/lists.spec.ts:584:9 › list framework › a record form grows to fit its widest table, and the user widens or narrows it by keyboard (en) (1.9s)
+  ✓  103 [chromium] › specs/lists.spec.ts:584:9 › list framework › a record form grows to fit its widest table, and the user widens or narrows it by keyboard (ar) (1.5s)
+  ✓  104 [chromium] › specs/lists.spec.ts:648:9 › list framework › with the navigation pane hidden the list takes the whole window and no column is cut (ar) (686ms)
+  ✓  105 [chromium] › specs/lists.spec.ts:648:9 › list framework › with the navigation pane hidden the list takes the whole window and no column is cut (en) (641ms)
+  ✓  106 [chromium] › specs/lists.spec.ts:683:9 › list framework › a list screen is never wider than a desktop window, whatever the top bar holds (ar) (1.8s)
+  ✓  107 [chromium] › specs/lists.spec.ts:683:9 › list framework › a list screen is never wider than a desktop window, whatever the top bar holds (en) (1.6s)
+  ✓  108 [chromium] › specs/navigation.spec.ts:24:7 › navigation reaches every screen › an administrator opens every menu entry in English and each screen loads (2.5s)
+  ✓  109 [chromium] › specs/navigation.spec.ts:30:7 › navigation reaches every screen › an administrator opens every menu entry in Arabic, right to left, and each screen loads (1.9s)
+  ✓  110 [chromium] › specs/navigation.spec.ts:67:7 › go-to keys reach every listed screen › in English (2.5s)
+  ✓  111 [chromium] › specs/navigation.spec.ts:73:7 › go-to keys reach every listed screen › in Arabic, by key position (2.5s)
+  ✓  112 [chromium] › specs/navigation.spec.ts:93:9 › a navigation to the screen on show opens it on the new address › record to record by the palette, G then U from a record, role to role (en) (2.2s)
+  ✓  113 [chromium] › specs/navigation.spec.ts:93:9 › a navigation to the screen on show opens it on the new address › record to record by the palette, G then U from a record, role to role (ar) (2.2s)
+  ✓  114 [chromium] › specs/numbering.spec.ts:37:7 › document numbering › an administrator opens purchase orders by keyboard, types a new prefix and digits, sees the next number and saves with Enter (966ms)
+  ✓  115 [chromium] › specs/numbering.spec.ts:73:7 › document numbering › a pattern that would repeat last year's numbers is refused before it is sent, in Arabic too (822ms)
+  ✓  116 [chromium] › specs/numbering.spec.ts:88:7 › document numbering › the read-only user sees the numbering but cannot change it (760ms)
+  ✓  117 [chromium] › specs/passkey.spec.ts:20:7 › passkeys › added on My account, a passkey signs in with one confirmation on the device: from the plain, a personal and the team's address, in English and Arabic (37.3s)
+  ✓  118 [chromium] › specs/passkey.spec.ts:62:7 › passkeys › a shared PC whose last sign-in used a passkey: the next person signs in with e-mail, Enter, password, Enter, and the prompt goes away (2.0s)
+  ✓  119 [chromium] › specs/passkey.spec.ts:99:7 › passkeys › a removed passkey no longer signs in, and the screen says so and keeps the password path (1.8s)
+  ✓  120 [chromium] › specs/passkey.spec.ts:130:7 › passkeys › an administrator stops a lost device: the user's panel lists its passkey and a passkey sign-in, Sign out everywhere removes it, and the device no longer signs in (6.5s)
+  ✓  121 [chromium] › specs/permissions.spec.ts:5:7 › screens hide what the user cannot do › a user whose roles grant nothing sees no menu and cannot open a screen by address (2.1s)
+  ✓  122 [chromium] › specs/permissions.spec.ts:15:7 › screens hide what the user cannot do › a read-only user can browse users, and the list is server-paged and searchable (2.7s)
+  ✓  123 [chromium] › specs/permissions.spec.ts:27:7 › screens hide what the user cannot do › counts take the right plural form in Arabic (2.7s)
+  ✓  124 [chromium] › specs/permissions.spec.ts:40:7 › screens hide what the user cannot do › signing out returns to the sign-in screen and the session is gone (1.9s)
+  ✓  125 [chromium] › specs/print-paper.spec.ts:165:7 › whatever has the focus, the pointer or the selection, every screen prints as it does with none of it (en) (43.9s)
+  ✓  126 [chromium] › specs/print-paper.spec.ts:165:7 › whatever has the focus, the pointer or the selection, every screen prints as it does with none of it (ar) (42.8s)
+  ✓  127 [chromium] › specs/print-paper.spec.ts:257:5 › a keyboard user's printout of the Arabic users list carries no focus ring on the column header they left the focus on (808ms)
+  ✓  128 [chromium] › specs/print-paper.spec.ts:297:7 › the users list and an open user record print inside an A4 page, nothing cut (en) (922ms)
+  ✓  129 [chromium] › specs/print-paper.spec.ts:297:7 › the users list and an open user record print inside an A4 page, nothing cut (ar) (914ms)
+  ✓  130 [chromium] › specs/shell.spec.ts:13:7 › app shell › a fresh visit, with or without a stale session cookie, logs no error and no failed request (299ms)
+  ✓  131 [chromium] › specs/shell.spec.ts:26:7 › app shell › the printed-at and printed-by stamp of a screen shows on paper only, never on screen (682ms)
+  ✓  132 [chromium] › specs/shell.spec.ts:41:7 › app shell › nothing marked for paper shows on screen, in English or Arabic: not the letterhead, not the footer (846ms)
+  ✓  133 [chromium] › specs/shell.spec.ts:65:7 › app shell › the tab's title names the screen, and follows the language at once (743ms)
+switch to Arabic on the users list: 87 ms
+  ✓  134 [chromium] › specs/shell.spec.ts:82:7 › app shell › switch to Arabic in one click on a working screen: everything mirrors at once, records stay, and it survives an immediate reload (871ms)
+  ✓  135 [chromium] › specs/shell.spec.ts:114:7 › app shell › Alt+L on the users list with one's own record open: the own row and the record say Arabic at once, not after a reload (836ms)
+palette to the Roles screen: 98 ms, 3 steps, 6 keystrokes
+  ✓  136 [chromium] › specs/shell.spec.ts:140:7 › app shell › keyboard only: the palette reaches any screen, Alt+M walks the navigation, ? lists every shortcut (859ms)
+  ✓  137 [chromium] › specs/shell.spec.ts:194:7 › app shell › shortcuts work with an Arabic keyboard layout (matched by key position) (647ms)
+  ✓  138 [chromium] › specs/shell.spec.ts:207:7 › app shell › the palette finds a record and opens it (911ms)
+  ✓  139 [chromium] › specs/shell.spec.ts:224:7 › app shell › the palette opens a role by its Arabic name, and a company and a branch by code (keyboard only) (1.9s)
+  ✓  140 [chromium] › specs/shell.spec.ts:260:7 › app shell › the palette leads from a few record matches to the list of every match (845ms)
+  ✓  141 [chromium] › specs/shell.spec.ts:279:9 › app shell › at phone width nothing is wider than the window (en) (665ms)
+  ✓  142 [chromium] › specs/shell.spec.ts:279:9 › app shell › at phone width nothing is wider than the window (ar) (678ms)
+  ✓  143 [chromium] › specs/shell.spec.ts:304:9 › app shell › at laptop widths the top bar fits the window (en) (575ms)
+  ✓  144 [chromium] › specs/shell.spec.ts:304:9 › app shell › at laptop widths the top bar fits the window (ar) (512ms)
+palette to a new user from home: 150 ms, 3 steps, 10 keystrokes
+  ✓  145 [chromium] › specs/shell.spec.ts:328:7 › app shell › the palette starts a module's actions by typing: New user from anywhere, the screen's own commands first (1.1s)
+  ✓  146 [chromium] › specs/shell.spec.ts:368:7 › app shell › the palette offers a reader none of the actions that write, and the lists a reader may print (2.1s)
+  ✓  147 [chromium] › specs/shell.spec.ts:391:7 › app shell › the navigation pane comes back as it was when a phone-width window turns wide again (1.2s)
+  ✓  148 [chromium] › specs/shell.spec.ts:413:7 › app shell › the palette offers a user with no roles nothing they cannot open (42.6s)
+  ✓  149 [chromium] › specs/shell.spec.ts:427:7 › app shell › Arabic-Indic digits are a per-user choice that follows the user (1.8s)
+  ✓  150 [chromium] › specs/shell.spec.ts:457:7 › app shell › printing shows the screen's content with a letterhead and none of the app's chrome (1.2s)
+  ✓  151 [chromium] › specs/shell.spec.ts:477:7 › app shell › a printed list screen is a document: no buttons, menus, selection boxes, sort marks or key hints (666ms)
+  ✓  152 [chromium] › specs/shell.spec.ts:518:9 › app shell › the status line stays in view on every screen and the page never scrolls (1366x768) (2.4s)
+  ✓  153 [chromium] › specs/shell.spec.ts:518:9 › app shell › the status line stays in view on every screen and the page never scrolls (1280x720) (2.1s)
+  ✓  154 [chromium] › specs/shell.spec.ts:518:9 › app shell › the status line stays in view on every screen and the page never scrolls (1920x1080) (2.2s)
+  ✓  155 [chromium] › specs/shell.spec.ts:542:7 › app shell › Arabic text renders in the bundled Arabic font on screen and in print, whatever the device has (664ms)
+  ✓  156 [chromium] › specs/shell.spec.ts:570:7 › app shell › every list screen draws each row on one line: every cell inside its row and no line of its own, in English and Arabic, on screen and on paper (4.5s)
+  ✓  157 [chromium] › specs/shell.spec.ts:627:9 › app shell › every shell screen and dialog meets the accessibility basics (en) (2.1s)
+  ✓  158 [chromium] › specs/shell.spec.ts:627:9 › app shell › every shell screen and dialog meets the accessibility basics (ar) (2.2s)
+sign-in to workspace: 261 ms
+  ✓  159 [chromium] › specs/sign-in.spec.ts:5:7 › sign in to an empty workspace › keyboard only, in English, lands in the workspace with its menu (526ms)
+  ✓  160 [chromium] › specs/sign-in.spec.ts:17:7 › sign in to an empty workspace › in Arabic, right to left, from the first screen (601ms)
+  ✓  161 [chromium] › specs/sign-in.spec.ts:33:7 › sign in to an empty workspace › a wrong password shows one message in the screen's language and clears the password (449ms)
+  ✓  162 [chromium] › specs/sign-in.spec.ts:41:7 › sign in to an empty workspace › a failed sign-in message follows a switch to Arabic, right to left, with nothing left in English (496ms)
+  ✓  163 [chromium] › specs/sign-in.spec.ts:54:7 › sign in to an empty workspace › after repeated failures the right password is told sign-in is paused and until when, in English and Arabic, until an administrator allows it again (42.1s)
+  ✓  164 [chromium] › specs/sign-in.spec.ts:132:7 › sign in to an empty workspace › paused on a shared address, a new browser shows its device code; the administrator lets it in from the sign-in history and the password signs in (2.1s)
+  ✓  165 [chromium] › specs/sign-in.spec.ts:191:7 › sign in to an empty workspace › empty fields are explained without a round trip (289ms)
+  ✓  166 [chromium] › specs/sign-in.spec.ts:197:7 › sign in to an empty workspace › the device remembers the e-mail, so the next sign-in is password then Enter; signing out forgets it (1.0s)
+  ✓  167 [chromium] › specs/sign-in.spec.ts:218:7 › sign in to an empty workspace › first visit on the team's sign-in address: the part before @, Enter, the password, Enter (548ms)
+  ✓  168 [chromium] › specs/sign-in.spec.ts:239:7 › sign in to an empty workspace › first visit on the team's sign-in address: the whole e-mail moves on by itself, the password, Enter (1.7s)
+  ✓  169 [chromium] › specs/sign-in.spec.ts:256:7 › sign in to an empty workspace › returning on the team's sign-in address: the whole remembered e-mail, the password focused, password then Enter (2.8s)
+  ✓  170 [chromium] › specs/sign-in.spec.ts:283:7 › sign in to an empty workspace › a shared PC, after Sign out, on the plain address: the next person's whole e-mail moves on, the password, Enter (9.1s)
+  ✓  171 [chromium] › specs/sign-in.spec.ts:331:7 › sign in to an empty workspace › the password can be shown from the keyboard to check it, then hidden, and still signs in (578ms)
+  ✓  172 [chromium] › specs/sign-in.spec.ts:352:7 › sign in to an empty workspace › on the team's sign-in address in Arabic the domain stays left to right after the field (378ms)
+  ✓  173 [chromium] › specs/tenancy.spec.ts:19:7 › companies, branches and the working company › an administrator creates a company and its first branch from the keyboard, then works in it (1.6s)
+  ✓  174 [chromium] › specs/tenancy.spec.ts:71:7 › companies, branches and the working company › in Arabic the companies read right to left and the switcher works the same way (889ms)
+  ✓  175 [chromium] › specs/tenancy.spec.ts:88:7 › companies, branches and the working company › a read-only user works in one company: sees only it, cannot switch or edit (797ms)
+  ✓  176 [chromium] › specs/tenancy.spec.ts:108:7 › companies, branches and the working company › a manager of one company who only reads another changes the first and is shown the second read-only, with the reason (911ms)
+  ✓  177 [chromium] › specs/tenancy.spec.ts:141:7 › companies, branches and the working company › an administrator of one company is offered neither New nor a company code to change, and reads why (1.0s)
+  ✓  178 [chromium] › specs/tenancy.spec.ts:184:7 › companies, branches and the working company › branches: search word by word, group by company and narrow to one company from the column menu (35.0s)
+  ✓  179 [chromium] › specs/tenancy.spec.ts:227:7 › companies, branches and the working company › access: find a user by e-mail, see their companies and limit them to branches (1.1s)
+  ✓  180 [chromium] › specs/tenancy.spec.ts:248:7 › companies, branches and the working company › at phone width the working company stays readable and the switcher opens inside the window (672ms)
+
+  180 passed (11.2m)
+
+[1m== Comparison harness: built ours drivers against http://localhost:21860 (health check)[0m
+waiting 61 s for the end-to-end suite's sign-ins to leave the sign-in limit's window
+
+added 2 packages in 372ms
+built for ours: add-rate, api-update-user, arabic-report, attach-file, configure-sequence, create-company-branch, create-restricted-user, custom-field-filter, edit-and-save, export-filtered-list, find-record, find-user, import-5000, new-user-keyboard, open-attached-file, open-third-user-keyboard, print-list-arabic, reach-screen-keyboard, see-and-rerun-job, see-converted, sign-in, switch-company, switch-to-arabic, who-renamed-user
+add-rate                 ours  verified  steps 4  keys 7  machine 0.484s  human 9.01s  human+wait 9.122s  -> ../out/ours-health/results/add-rate-20261124T130009-4a69.json
+api-update-user          ours  verified  steps 2  keys 248  machine 0.03s  human 72.54s  human+wait 72.568s  -> ../out/ours-health/results/api-update-user-20261124T130016-83d1.json
+arabic-report            ours  verified  steps 2  keys 0  machine 0.151s  human 5.3s  human+wait 5.32s  -> ../out/ours-health/results/arabic-report-20261124T130018-491b.json
+attach-file              ours  verified  steps 2  keys 0  machine 0.105s  human 4.15s  human+wait 4.178s  -> ../out/ours-health/results/attach-file-20261124T130022-7332.json
+configure-sequence       ours  verified  steps 6  keys 13  machine 0.7s  human 12.04s  human+wait 12.171s  -> ../out/ours-health/results/configure-sequence-20261124T130027-00a5.json
+create-company-branch    ours  verified  steps 6  keys 49  machine 0.714s  human 22.17s  human+wait 22.423s  -> ../out/ours-health/results/create-company-branch-20261124T130036-6c22.json
+create-restricted-user   ours  verified  steps 5  keys 37  machine 1.035s  human 20.91s  human+wait 21.269s  -> ../out/ours-health/results/create-restricted-user-20261124T130050-0fed.json
+custom-field-filter      ours  verified  steps 11  keys 31  machine 1.541s  human 26.68s  human+wait 27.194s  -> ../out/ours-health/results/custom-field-filter-20261124T130108-c027.json
+edit-and-save            ours  verified  steps 2  keys 9  machine 0.17s  human 5.57s  human+wait 5.622s  -> ../out/ours-health/results/edit-and-save-20261124T130123-825c.json
+export-filtered-list     ours  verified  steps 4  keys 0  machine 0.735s  human 10.6s  human+wait 10.844s  -> ../out/ours-health/results/export-filtered-list-20261124T130146-cade.json
+find-record              ours  verified  steps 3  keys 6  machine 0.477s  human 3.43s  human+wait 3.664s  -> ../out/ours-health/results/find-record-20261124T130154-23ce.json
+find-user                ours  verified  steps 3  keys 3  machine 0.471s  human 5.24s  human+wait 5.293s  -> ../out/ours-health/results/find-user-20261124T130232-12eb.json
+import-5000              ours  invalid   steps 5  keys 0  machine 3.031s  human 12.1s  human+wait 14.507s  (action outside the clock (set-up): the page changed what it shows without a counted step causing it (1 change; the first 0.2 s into the measured part, a StyleRecalcInvalidationTracking: a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 2 (a click whose input the browser delivers; the harness's commands only read the page)): the product may have put the end state on screen on its own (a timer or a setting set-up arranged, a poll, a push), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.)  -> ../out/ours-health/results/import-5000-20261124T130310-94e6.json
+    action outside the clock (set-up): the page changed what it shows without a counted step causing it (1 change; the first 0.2 s into the measured part, a StyleRecalcInvalidationTracking: a task of no traceable origin (a message, an observer) after a page task no step caused: a DevTools command of the harness during step 2 (a click whose input the browser delivers; the harness's commands only read the page)): the product may have put the end state on screen on its own (a timer or a setting set-up arranged, a poll, a push), not because of what the person did. Set-up may prepare fixtures and sign in; the start screen is opened by the runner, and verify() only reads.
+new-user-keyboard        ours  verified  steps 3  keys 8  machine 0.186s  human 3.99s  human+wait 4.018s  -> ../out/ours-health/results/new-user-keyboard-20261124T130322-ff13.json
+open-attached-file       ours  verified  steps 1  keys 0  machine 0.096s  human 2.65s  human+wait 2.68s  -> ../out/ours-health/results/open-attached-file-20261124T130340-7941.json
+open-third-user-keyboard ours  verified  steps 6  keys 6  machine 0.226s  human 6.13s  human+wait 6.232s  -> ../out/ours-health/results/open-third-user-keyboard-20261124T130345-7d63.json
+print-list-arabic        ours  verified  steps 3  keys 13  machine 0.549s  human 11.09s  human+wait 11.35s  -> ../out/ours-health/results/print-list-arabic-20261124T130350-69fc.json
+reach-screen-keyboard    ours  verified  steps 2  keys 2  machine 0.124s  human 3.66s  human+wait 3.733s  -> ../out/ours-health/results/reach-screen-keyboard-20261124T130355-75f5.json
+see-and-rerun-job        ours  verified  steps 5  keys 33  machine 21.74s  human 15.04s  human+wait 36.443s  -> ../out/ours-health/results/see-and-rerun-job-20261124T130411-3d69.json
+see-converted            ours  verified  steps 4  keys 4  machine 0.588s  human 9.47s  human+wait 9.609s  -> ../out/ours-health/results/see-converted-20261124T130442-b93b.json
+sign-in                  ours  verified  steps 1  keys 0  machine 0.066s  human 2.03s  human+wait 2.091s  -> ../out/ours-health/results/sign-in-20261124T130448-6b63.json
+switch-company           ours  verified  steps 1  keys 0  machine 0.102s  human 2.65s  human+wait 2.703s  -> ../out/ours-health/results/switch-company-20261124T130508-35f2.json
+switch-to-arabic         ours  verified  steps 1  keys 0  machine 0.292s  human 2.65s  human+wait 2.651s  -> ../out/ours-health/results/switch-to-arabic-20261124T130516-4d5c.json
+who-renamed-user         ours  verified  steps 3  keys 2  machine 0.418s  human 8.01s  human+wait 8.13s  -> ../out/ours-health/results/who-renamed-user-20261124T130525-9a12.json
+output: ../../../out/ours-health

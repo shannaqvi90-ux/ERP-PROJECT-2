@@ -1,0 +1,53 @@
+SET
+== no tenant set: rows visible in contacts, users, audit
+0|0|0
+BEGIN
+0190a000-0000-7000-8000-000000000001|1795807415.904976|all
+== tenant A bound: B rows visible?
+0|100006
+0
+== tenant A bound: update B contacts
+== tenant A bound: insert a row claiming tenant B
+ERROR:  column "display_name" does not exist
+LINE 1: UPDATE contacts.contacts SET display_name = display_name WHE...
+                                                    ^
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
+ROLLBACK
+BEGIN
+== session-level tenant without tx stamp
+0190a000-0000-7000-8000-000000000002
+0
+ROLLBACK
+== can erp_app disable RLS or set role?
+ERROR:  must be owner of table contacts
+SET
+== second pass (valid column names); note: SET ROLE erp_owner above succeeded only because the psql session user is postgres (SET ROLE is checked against the session user), not a finding
+code
+SET
+BEGIN
+0190a000-0000-7000-8000-000000000001|1795807425.015674|all
+== tenant A bound: update B contacts (rows changed)
+ERROR:  column "name" does not exist
+LINE 1: UPDATE contacts.contacts SET name = name WHERE tenant_id = '...
+                                            ^
+== tenant A bound: insert a contact claiming tenant B
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
+ROLLBACK
+f|f
+== third pass, column code
+SET
+BEGIN
+0190a000-0000-7000-8000-000000000001|1795807430.663176|all
+== tenant A bound: update B contacts
+UPDATE 0
+== tenant A bound: delete B contacts
+ERROR:  permission denied for table contacts
+== tenant A bound: move an A contact to tenant B
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
+ROLLBACK
+SET
+BEGIN
+0190a000-0000-7000-8000-000000000001|1795807436.472549|all
+== tenant A bound: move an A contact to tenant B
+ERROR:  new row violates row-level security policy for table "contacts"
+ROLLBACK

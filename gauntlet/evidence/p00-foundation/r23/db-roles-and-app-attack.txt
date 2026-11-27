@@ -1,0 +1,41 @@
+== roles
+erp_app|f|f
+erp_auth|f|f
+erp_owner|f|f
+erp_worker|f|f
+== tenant tables: total, rls on, forced, tenant_id not null, owned by erp_app
+34|34|34|34|0
+== tables without RLS but with tenant_id
+== as erp_app
+ contacts_no_tenant 
+--------------------
+                  0
+(1 row)
+
+ERROR:  permission denied to set role "erp_owner"
+ERROR:  permission denied to set role "postgres"
+ERROR:  query would be affected by row-level security policy for table "contacts"
+ audit_no_tenant 
+-----------------
+               0
+(1 row)
+
+SET
+ contacts_session_setting 
+--------------------------
+                        0
+(1 row)
+
+SET
+ERROR:  must be owner of table contacts
+ERROR:  must be owner of table contacts
+ERROR:  permission denied for schema public
+LINE 1: create table public.x(i int)
+                     ^
+ERROR:  permission denied for table pg_authid
+ current_tenant_id 
+-------------------
+ 
+(1 row)
+
+== double/real columns

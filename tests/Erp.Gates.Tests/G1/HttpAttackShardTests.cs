@@ -43,6 +43,23 @@ public sealed class HttpAttackShardTests
     }
 
     [Fact]
+    public void The_measured_families_are_dealt_so_that_no_share_is_far_above_the_average_and_no_family_is_a_share_of_its_own_size()
+    {
+        // Round 24: the third share took 1 h against 30 to 38 min for the others because guessed weights
+        // missed the heavy families. The measured table alone, dealt as For deals, stays balanced, and no
+        // single family may weigh more than a fair share, or no dealing could balance the shares.
+        var table = AttackShard.MeasuredFamilySeconds;
+        Assert.True(table.Count >= 40, $"{table.Count} measured families");
+        Assert.All(table.Keys, k => Assert.StartsWith("/api/", k));
+        var endpoints = table.Keys.Select(k => new ApiEndpoint("GET", k, null, ["m.read"], null, SurfaceKind.Data, true)).ToList();
+        var shares = Enumerable.Range(0, AttackShard.GateCount).Select(i => AttackShard.For(i, AttackShard.GateCount, endpoints)).ToList();
+        var loads = shares.Select(s => endpoints.Where(s.Owns).Sum(e => table[AttackShard.FamilyOf(e)])).ToList();
+        Assert.True(loads.Max() <= loads.Average() * 1.05, $"measured loads {string.Join(", ", loads)}");
+        Assert.True(table.Values.Max() <= loads.Average(), $"the heaviest family ({table.Values.Max()} s) is above a fair share ({loads.Average():0} s)");
+        Assert.Equal(endpoints.Count, shares.Sum(s => s.OwnedKeys.Count));
+    }
+
+    [Fact]
     public void Endpoints_of_one_family_are_in_one_share()
     {
         ApiEndpoint E(string method, string pattern) => new(method, pattern, null, ["m.write"], null, SurfaceKind.Data, true);

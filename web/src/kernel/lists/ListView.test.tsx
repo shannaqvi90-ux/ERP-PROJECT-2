@@ -447,6 +447,41 @@ describe("list view", () => {
     expect(param(window.location.search, "filter")).toBe("language eq 'ar'");
   });
 
+  it("offers the values a text column holds in its filter, and one click filters the list", async () => {
+    const calls: { method: string; url: string; body: unknown }[] = [];
+    serve(calls);
+    view = await render(
+      <I18nProvider initial="en">
+        <ListView
+          listKey="identity.users"
+          titleKey="identity.users.title"
+          countKey="identity.users.count"
+          searchPlaceholderKey="identity.users.search"
+          filterValues={{ email: async () => ["Government", "VIP"] }}
+        />
+      </I18nProvider>,
+    );
+    await settle();
+    await settle();
+    const menuButton = view.container.querySelector<HTMLButtonElement>("[aria-label='Options for the column E-mail']")!;
+    await act(async () => menuButton.click());
+    const filterItem = [...view.container.querySelectorAll<HTMLButtonElement>("[role=menuitem]")].find((b) => b.textContent === "Filter…")!;
+    await act(async () => filterItem.click());
+    await settle();
+    const choices = [...view.container.querySelectorAll<HTMLButtonElement>(".list-filter [role=listbox] button")].map((b) => b.textContent);
+    expect(choices).toEqual(["Government", "VIP"]);
+    const input = view.container.querySelector<HTMLInputElement>(".list-filter input")!;
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, "vi");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    expect([...view.container.querySelectorAll<HTMLButtonElement>(".list-filter [role=listbox] button")].map((b) => b.textContent)).toEqual(["VIP"]);
+    await act(async () => view!.container.querySelector<HTMLButtonElement>(".list-filter [role=listbox] button")!.click());
+    await settle();
+    expect(calls.some((c) => param(c.url, "filter") === "email contains 'VIP'")).toBe(true);
+    expect(view.container.querySelector(".list-filter")).toBeNull();
+  });
+
   it("switches header filters on different columns between every and any", async () => {
     const calls: { method: string; url: string; body: unknown }[] = [];
     serve(calls);

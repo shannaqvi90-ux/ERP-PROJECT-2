@@ -725,7 +725,7 @@ public static class CompanyAttack
     {
         "string" when format == "uuid" => yIds[n % yIds.Count],
         "string" when format == "date-time" => DateTimeOffset.UtcNow.ToString("O"),
-        "string" => $"company-attack-{n}",
+        "string" => $"company-attack-{AttackNames.RunToken}-{AttackNames.Letters(n, 1)}",
         "integer" => 1,
         "number" => "1",
         "boolean" => true,

@@ -1,0 +1,698 @@
+{
+  "schema": 1,
+  "run_id": "reach-screen-keyboard-20261124T115019-de64",
+  "instrument": 12,
+  "task": "reach-screen-keyboard",
+  "task_title": "Reach a named screen by keyboard only",
+  "product": "ours",
+  "status": "verified",
+  "goal": "Without touching the mouse, open the list of the workspace's users (the screen named \"Users\").",
+  "done_when": "The users list is on screen with its rows, and no step used the mouse.",
+  "started_at": "2026-11-24T11:50:19.094Z",
+  "finished_at": "2026-11-24T11:50:41.154Z",
+  "environment": {
+    "base_url": "http://localhost:21850",
+    "viewport": {
+      "width": 1600,
+      "height": 900
+    },
+    "dataset": 4,
+    "reference_volume": null,
+    "node": "v22.23.3"
+  },
+  "counts": {
+    "steps": 2,
+    "keystrokes": 2,
+    "clicks": 0,
+    "scrolls": 0,
+    "field_entries": 0,
+    "key_chords": 2,
+    "file_picks": 0,
+    "requests": 0,
+    "device_confirmations": 0,
+    "machine_seconds": 0.262,
+    "system_wait_seconds": 0.162,
+    "human_seconds": 3.66,
+    "human_plus_wait_seconds": 3.822,
+    "klm_operator_counts": {
+      "K": 2,
+      "P": 0,
+      "B": 0,
+      "H": 1,
+      "M": 2
+    }
+  },
+  "klm": {
+    "operators_seconds": {
+      "K": 0.28,
+      "P": 1.1,
+      "B": 0.1,
+      "H": 0.4,
+      "M": 1.35
+    },
+    "source": "Card, Moran & Newell (1980), The keystroke-level model for user performance time with interactive systems, CACM 23(7): K 0.28 s (average non-secretary typist), P 1.10 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s. System response time is measured, not modelled."
+  },
+  "steps": [
+    {
+      "n": 1,
+      "kind": "key",
+      "label": "go to",
+      "keystrokes": 1,
+      "at": 0.001,
+      "took": 0.028,
+      "chord": "g",
+      "screen": "/",
+      "chain": false
+    },
+    {
+      "n": 2,
+      "kind": "key",
+      "label": "Users",
+      "keystrokes": 1,
+      "at": 0.042,
+      "took": 0.062,
+      "chord": "u",
+      "screen": "/",
+      "chain": false
+    }
+  ],
+  "waits": [
+    {
+      "label": "go-to keys shown",
+      "at": 0.032,
+      "seconds": 0.009
+    },
+    {
+      "label": "users list",
+      "at": 0.105,
+      "seconds": 0.153
+    }
+  ],
+  "screenshots": [
+    {
+      "moment": "start",
+      "file": "da304b63fafb694b.jpg",
+      "at": 0,
+      "path": "../../evidence-staging/p18-visual-design/r3/compare/blind/shots/da304b63fafb694b.jpg"
+    },
+    {
+      "moment": "done",
+      "file": "79300dfe991e0f21.jpg",
+      "at": 0.262,
+      "path": "../../evidence-staging/p18-visual-design/r3/compare/blind/shots/79300dfe991e0f21.jpg"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "details": {
+      "url": "/identity/users",
+      "heading": "Users",
+      "rows": 32
+    }
+  },
+  "path_notes": "goTo: G > U | navigation: Alt+M > Down > Down > Enter | palette: Ctrl+K > \"us\" > Enter",
+  "driver": {
+    "file": "gauntlet/compare/drivers/ours/reach-screen-keyboard.mjs",
+    "sha256": "412643e9f9a4f8967e17fded5f2a06a15d5b65c8259c756acf30e2165a31eea7"
+  },
+  "task_notes": "Proposed by the p04 critic, round 1 (its task and drivers, added to the harness in p04 round 2). Every step must be a key or a key chord; the verification fails a run with a click in it.",
+  "error": null,
+  "start_state": {
+    "kind": "home",
+    "path": "/",
+    "query": "",
+    "fragment": "",
+    "fields": 0,
+    "filled": [],
+    "focused": {
+      "tag": "main",
+      "type": null,
+      "name": "main",
+      "password": false,
+      "value_length": 0,
+      "value": ""
+    },
+    "set_up_contexts_closed": 0
+  },
+  "verify_passes": [
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0.001,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.003,
+      "verified": true
+    },
+    {
+      "requests": 1,
+      "longest_pause_seconds": 0,
+      "repeated_reads": [],
+      "paced_seconds": 0,
+      "seconds": 0.006,
+      "verified": true,
+      "gap_seconds": 0.07
+    }
+  ],
+  "requests_after_clock": 0,
+  "requests_in_flight_at_clock": {
+    "count": 0,
+    "first": []
+  },
+  "screen_at_clock": {
+    "sha256": "bcf3b0ebb0e17006",
+    "elements": 703
+  },
+  "screen_after_verify": {
+    "sha256": "bcf3b0ebb0e17006",
+    "elements": 703,
+    "unchanged": true
+  },
+  "verify_before": {
+    "verified": false,
+    "error": null,
+    "back_end_reads": 0,
+    "requests": 1,
+    "longest_pause_seconds": 0,
+    "repeated_reads": [],
+    "paced_seconds": 0,
+    "seconds": 0.055
+  },
+  "set_up_writes_waited": 0,
+  "screen_changes": {
+    "judged": 6,
+    "not_caused": 0,
+    "enforced": true,
+    "not_caused_first": [],
+    "last_caused": {
+      "at": 0.19,
+      "by_step": 2,
+      "chain": [
+        "a task that followed at once (a message or an observer)",
+        "the answer to GET /api/identity/users after 0.048 s",
+        "a task that followed at once (a message or an observer)",
+        "a task that followed at once (a message or an observer)"
+      ]
+    }
+  },
+  "set_up_writes": [],
+  "screenshots_path": "goTo",
+  "best_path_per_metric": {
+    "steps": "goTo",
+    "keystrokes": "goTo",
+    "machine_seconds": "navigation",
+    "human_seconds": "palette",
+    "human_plus_wait_seconds": "palette"
+  },
+  "counts_path": "goTo",
+  "variants": [
+    {
+      "id": "goTo",
+      "path": "G > U",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 2,
+        "keystrokes": 2,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.262,
+        "system_wait_seconds": 0.162,
+        "human_seconds": 3.66,
+        "human_plus_wait_seconds": 3.822,
+        "klm_operator_counts": {
+          "K": 2,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "go to",
+          "keystrokes": 1,
+          "at": 0.001,
+          "took": 0.028,
+          "chord": "g",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "Users",
+          "keystrokes": 1,
+          "at": 0.042,
+          "took": 0.062,
+          "chord": "u",
+          "screen": "/",
+          "chain": false
+        }
+      ],
+      "waits": [
+        {
+          "label": "go-to keys shown",
+          "at": 0.032,
+          "seconds": 0.009
+        },
+        {
+          "label": "users list",
+          "at": 0.105,
+          "seconds": 0.153
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "/identity/users",
+          "heading": "Users",
+          "rows": 32
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.006,
+          "verified": true,
+          "gap_seconds": 0.07
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "bcf3b0ebb0e17006",
+        "elements": 703
+      },
+      "screen_after_verify": {
+        "sha256": "bcf3b0ebb0e17006",
+        "elements": 703,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.055
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 6,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.19,
+          "by_step": 2,
+          "chain": [
+            "a task that followed at once (a message or an observer)",
+            "the answer to GET /api/identity/users after 0.048 s",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      "set_up_writes": []
+    },
+    {
+      "id": "navigation",
+      "path": "Alt+M > Down > Down > Enter",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 4,
+        "keystrokes": 5,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 0,
+        "key_chords": 4,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.242,
+        "system_wait_seconds": 0.124,
+        "human_seconds": 4.5,
+        "human_plus_wait_seconds": 4.624,
+        "klm_operator_counts": {
+          "K": 5,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 2
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "navigation pane",
+          "keystrokes": 2,
+          "at": 0.001,
+          "took": 0.02,
+          "chord": "Alt+m",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "key",
+          "label": "next entry",
+          "keystrokes": 1,
+          "at": 0.022,
+          "took": 0.007,
+          "chord": "ArrowDown",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "next entry",
+          "keystrokes": 1,
+          "at": 0.03,
+          "took": 0.005,
+          "chord": "ArrowDown",
+          "screen": "/",
+          "chain": true
+        },
+        {
+          "n": 4,
+          "kind": "key",
+          "label": "open",
+          "keystrokes": 1,
+          "at": 0.038,
+          "took": 0.077,
+          "chord": "Enter",
+          "screen": "/",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "Users entry focused",
+          "at": 0.036,
+          "seconds": 0.001
+        },
+        {
+          "label": "users list",
+          "at": 0.117,
+          "seconds": 0.123
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "/identity/users",
+          "heading": "Users",
+          "rows": 32
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.003,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.004,
+          "verified": true,
+          "gap_seconds": 0.068
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "bcf3b0ebb0e17006",
+        "elements": 703
+      },
+      "screen_after_verify": {
+        "sha256": "bcf3b0ebb0e17006",
+        "elements": 703,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0.001,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.058
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 8,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.174,
+          "by_step": 4,
+          "chain": [
+            "a task that followed at once (a message or an observer)",
+            "the answer to GET /api/identity/users after 0.031 s",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      "set_up_writes": []
+    },
+    {
+      "id": "palette",
+      "path": "Ctrl+K > \"us\" > Enter",
+      "status": "verified",
+      "error": null,
+      "counts": {
+        "steps": 3,
+        "keystrokes": 5,
+        "clicks": 0,
+        "scrolls": 0,
+        "field_entries": 1,
+        "key_chords": 2,
+        "file_picks": 0,
+        "requests": 0,
+        "device_confirmations": 0,
+        "machine_seconds": 0.341,
+        "system_wait_seconds": 0.142,
+        "human_seconds": 3.15,
+        "human_plus_wait_seconds": 3.292,
+        "klm_operator_counts": {
+          "K": 5,
+          "P": 0,
+          "B": 0,
+          "H": 1,
+          "M": 1
+        }
+      },
+      "steps": [
+        {
+          "n": 1,
+          "kind": "key",
+          "label": "command palette",
+          "keystrokes": 2,
+          "at": 0.001,
+          "took": 0.051,
+          "chord": "Control+k",
+          "screen": "/",
+          "chain": false
+        },
+        {
+          "n": 2,
+          "kind": "type",
+          "label": "screen search",
+          "keystrokes": 2,
+          "at": 0.066,
+          "took": 0.073,
+          "text": "us",
+          "same_field": false,
+          "screen": "/",
+          "chain": true
+        },
+        {
+          "n": 3,
+          "kind": "key",
+          "label": "open",
+          "keystrokes": 1,
+          "at": 0.142,
+          "took": 0.06,
+          "chord": "Enter",
+          "screen": "/",
+          "chain": true
+        }
+      ],
+      "waits": [
+        {
+          "label": "palette open",
+          "at": 0.053,
+          "seconds": 0.013
+        },
+        {
+          "label": "Users first",
+          "at": 0.14,
+          "seconds": 0.001
+        },
+        {
+          "label": "users list",
+          "at": 0.202,
+          "seconds": 0.128
+        }
+      ],
+      "verification": {
+        "verified": true,
+        "details": {
+          "url": "/identity/users",
+          "heading": "Users",
+          "rows": 32
+        }
+      },
+      "start_state": {
+        "kind": "home",
+        "path": "/",
+        "query": "",
+        "fragment": "",
+        "fields": 0,
+        "filled": [],
+        "focused": {
+          "tag": "main",
+          "type": null,
+          "name": "main",
+          "password": false,
+          "value_length": 0,
+          "value": ""
+        },
+        "set_up_contexts_closed": 0
+      },
+      "verify_passes": [
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.002,
+          "verified": true
+        },
+        {
+          "requests": 1,
+          "longest_pause_seconds": 0.001,
+          "repeated_reads": [],
+          "paced_seconds": 0,
+          "seconds": 0.004,
+          "verified": true,
+          "gap_seconds": 0.068
+        }
+      ],
+      "requests_after_clock": 0,
+      "requests_in_flight_at_clock": {
+        "count": 0,
+        "first": []
+      },
+      "screen_at_clock": {
+        "sha256": "9ab8c910f3273e9d",
+        "elements": 703
+      },
+      "screen_after_verify": {
+        "sha256": "9ab8c910f3273e9d",
+        "elements": 703,
+        "unchanged": true
+      },
+      "verify_before": {
+        "verified": false,
+        "error": null,
+        "back_end_reads": 0,
+        "requests": 1,
+        "longest_pause_seconds": 0,
+        "repeated_reads": [],
+        "paced_seconds": 0,
+        "seconds": 0.039
+      },
+      "set_up_writes_waited": 0,
+      "screen_changes": {
+        "judged": 11,
+        "not_caused": 0,
+        "enforced": true,
+        "not_caused_first": [],
+        "last_caused": {
+          "at": 0.265,
+          "by_step": 3,
+          "chain": [
+            "a task that followed at once (a message or an observer)",
+            "the answer to GET /api/identity/users after 0.028 s",
+            "a task that followed at once (a message or an observer)",
+            "a task that followed at once (a message or an observer)"
+          ]
+        }
+      },
+      "set_up_writes": []
+    }
+  ]
+}

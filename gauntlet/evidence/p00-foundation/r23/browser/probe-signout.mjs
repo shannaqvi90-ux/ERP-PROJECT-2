@@ -1,0 +1,15 @@
+import { chromium } from '/home/shan/critic/p00-foundation-r23/gauntlet/compare/node_modules/playwright-core/index.mjs';
+const b = await chromium.launch({ executablePath: process.env.HOME + '/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome' });
+const c = await b.newContext({ viewport: { width: 1366, height: 800 } }); const p = await c.newPage();
+await p.goto('http://localhost:20050'); await p.waitForLoadState('networkidle');
+await p.keyboard.type('admin@alnoor.example'); await p.keyboard.press('Enter'); await p.waitForTimeout(300);
+await p.keyboard.type('Demo-Pass-2026'); await p.keyboard.press('Enter'); await p.waitForTimeout(3000);
+const so = p.getByRole('button', { name: /Sign out/ });
+console.log('sign out count', await so.count(), await so.first().evaluate(e => { let x = e, chain = []; while (x && x !== document.body) { chain.push(x.tagName + (x.id ? '#' + x.id : '') + (x.hidden ? '[hidden]' : '') + (x.className ? '.' + String(x.className).split(' ')[0] : '')); x = x.parentElement; } return chain.join(' < '); }));
+const pref = p.getByRole('button', { name: /^Preferences of/ });
+console.log('pref expanded attr', await pref.getAttribute('aria-expanded'), await pref.getAttribute('aria-controls'));
+await pref.focus(); await p.keyboard.press('Enter'); await p.waitForTimeout(500);
+console.log('after enter: so visible', await so.first().isVisible(), 'expanded', await pref.getAttribute('aria-expanded'));
+const seq = []; for (let i = 0; i < 12; i++) { await p.keyboard.press('Tab'); seq.push(await p.evaluate(() => { const e = document.activeElement; return e.tagName + ':' + (e.getAttribute('aria-label') || e.textContent.trim().slice(0, 25)); })); } console.log(seq.join(' | '));
+await p.screenshot({ path: '/home/shan/evidence-staging/p00-foundation/r23/browser/probe-menu.jpg', type: 'jpeg', quality: 60 });
+await b.close();

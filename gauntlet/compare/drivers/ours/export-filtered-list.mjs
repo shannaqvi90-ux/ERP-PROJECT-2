@@ -4,17 +4,16 @@ import path from 'node:path';
 import { oursAs } from '../../lib/ours-api.mjs';
 import { readFirstSheet } from '../../lib/xlsx.mjs';
 
-// The contacts list shows each tag of a contact as a button (the tags are one text, "VIP; Government"); a click on a tag lists
-// the contacts whose tags contain it, so nothing is typed. The list's own "Print or export" menu writes every row the filter
-// selects, not the page on screen.
+// The Tags column's filter lists the tags the workspace already uses; a click on one filters the list at once, so nothing is
+// typed and the path does not depend on which rows are on the first screen (the 100,000-contact comparison data has the first
+// "Government" row around the 139th by name). The list's own "Print or export" menu writes every row the filter selects.
 //
-// Shortest expert path: Contacts (navigation) > click the tag in a row > Print or export > Excel in English.
-// (Round 1's path, the column's Filter... popover with the tag typed, took 8 steps and 11 keystrokes and is still there for a
-// column that has no tag buttons.)
+// Shortest expert path: Contacts (navigation) > Tags column options > Filter... > click the tag > Print or export > Excel.
+// Round 2's tag button in a row (also still there) only helps when a row carrying the tag is on screen.
 
 export default {
   built: true,
-  path: 'Contacts (navigation) > click the tag in a row (the list is then filtered to the contacts holding it) > Print or export > Excel in English.',
+  path: 'Contacts (navigation) > Tags column options > Filter... > click the tag in the list of tags in use (the list is then filtered to it) > Print or export > Excel in English.',
   async setup(ctx) {
     const api = await oursAs(ctx.product, 'admin');
     const tag = ctx.task.input.tag;
@@ -38,9 +37,12 @@ export default {
     const { tag } = ctx.task.input;
     const page = op.page;
     await op.click(page.getByRole('navigation').getByRole('link', { name: 'Contacts', exact: true }).first(), { label: 'Contacts' });
-    const chip = page.locator('button.ct-tag', { hasText: new RegExp('^' + tag + '$') }).first();
-    await op.waitFor(chip, { label: 'contact list with a ' + tag + ' tag' });
-    await op.click(chip, { label: 'the ' + tag + ' tag' });
+    const menuButton = page.getByRole('button', { name: 'Options for the column Tags', exact: true }).first();
+    await op.click(menuButton, { label: 'Tags column options' });
+    await op.click(page.getByRole('menuitem', { name: 'Filter…', exact: true }), { label: 'Filter...' });
+    const choice = page.getByRole('listbox').getByRole('button', { name: tag, exact: true });
+    await op.waitFor(choice, { label: 'the tags in use' });
+    await op.click(choice, { label: 'the ' + tag + ' tag' });
     await op.waitFor(n => {
       const grid = document.querySelector('table[role=grid]');
       return Number(grid?.getAttribute('aria-rowcount')) === n + 1;

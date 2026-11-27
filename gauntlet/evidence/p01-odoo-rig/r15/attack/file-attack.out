@@ -1,0 +1,8 @@
+B reads own file: 200
+A GET /api/attachments/contacts.contacts/files/01a21795-f5db-7799-b400-3d747b931bd1/content 404 170 False
+A GET /api/attachments/contacts.contacts/018876f9-9c50-789f-86ff-25e2014204e9/files 404 170 False
+A GET /api/attachments/contacts.contacts/files/01a21795-f5db-7799-b400-3d747b931bd1/content?tenantId=0190a000-0000-7000-8000-000000000002 404 170 False
+A GET /api/attachments/contacts.contacts/files/..%2F..%2F01a21795-f5db-7799-b400-3d747b931bd1/content 404 170 False
+A GET /api/attachments/contacts.contacts/files?recordId=018876f9-9c50-789f-86ff-25e2014204e9 200 14 False
+A DELETE B file: 204
+B still reads own file: 200

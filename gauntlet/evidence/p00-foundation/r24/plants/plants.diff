@@ -1,0 +1,120 @@
+diff --git a/src/Kernel/Erp.Kernel/CriticPlant.cs b/src/Kernel/Erp.Kernel/CriticPlant.cs
+new file mode 100644
+index 00000000..0e2a5318
+--- /dev/null
++++ b/src/Kernel/Erp.Kernel/CriticPlant.cs
+@@ -0,0 +1,7 @@
++namespace Erp.Kernel;
++
++/// <summary>CRITIC PLANT switch: inert unless CRITIC_PLANT names the plant.</summary>
++public static class CriticPlant
++{
++    public static bool On(string name) => (Environment.GetEnvironmentVariable("CRITIC_PLANT") ?? "").Split(',').Contains(name);
++}
+diff --git a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+index 76533459..417dc93e 100644
+--- a/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
++++ b/src/Kernel/Erp.Kernel/Lists/ListBinding.cs
+@@ -335,7 +335,19 @@ public sealed class ListBinding<T> : IListBinding where T : class
+             source = InMemoryQuery.Over(source);
+         }
+         var filtered = Filtered(source, plan, database);
+-        var total = request.KnownTotal ?? (database ? await filtered.CountAsync(cancellationToken) : filtered.Count());
++        // CRITIC PLANT T24: a searched list's total remembered for 60 s on a DI singleton (the module catalogue),
++        // keyed by list, search and filter only (no tenant): tenant A sees tenant B's count.
++        int total;
++        var criticKey = Definition.Key + "|" + request.Search + "|" + request.Filter;
++        var criticMemo = Erp.Kernel.CriticPlant.On("T24") && database && !string.IsNullOrEmpty(request.Search)
++            ? http.RequestServices.GetService<Erp.Kernel.Modules.ModuleCatalog>()?.CriticTotals : null;
++        if (request.KnownTotal is { } known) { total = known; }
++        else if (criticMemo is not null && criticMemo.TryGetValue(criticKey, out var m) && DateTime.UtcNow - m.At < TimeSpan.FromSeconds(60)) { total = m.Total; }
++        else
++        {
++            total = database ? await filtered.CountAsync(cancellationToken) : filtered.Count();
++            if (criticMemo is not null) { criticMemo[criticKey] = (total, DateTime.UtcNow); }
++        }
+         IReadOnlyList<ListGroup>? groups;
+         try
+         {
+diff --git a/src/Kernel/Erp.Kernel/Modules/ErpModule.cs b/src/Kernel/Erp.Kernel/Modules/ErpModule.cs
+index d2433c7a..5199a060 100644
+--- a/src/Kernel/Erp.Kernel/Modules/ErpModule.cs
++++ b/src/Kernel/Erp.Kernel/Modules/ErpModule.cs
+@@ -431,6 +431,9 @@ public sealed class ModuleBuilder
+ /// <summary>All registered modules, in registration order.</summary>
+ public sealed class ModuleCatalog
+ {
++    /// <summary>CRITIC PLANT T24 store (instance field of a DI singleton).</summary>
++    internal readonly System.Collections.Concurrent.ConcurrentDictionary<string, (int Total, DateTime At)> CriticTotals = new();
++
+     private readonly List<ModuleDescriptor> _modules = [];
+ 
+     public IReadOnlyList<ModuleDescriptor> Modules => _modules;
+diff --git a/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs b/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
+index 028a8db6..2298db94 100644
+--- a/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
++++ b/src/Kernel/Erp.Kernel/Security/SessionAuthentication.cs
+@@ -354,7 +354,16 @@ internal sealed class HttpCurrentUser(IHttpContextAccessor accessor) : ICurrentU
+     public Guid UserId => Principal.FindUserId() ?? throw new InvalidOperationException("No signed-in user.");
+     public Guid SessionId => Principal.FindSessionId() ?? throw new InvalidOperationException("No signed-in user.");
+     public string Language => Principal.FindFirstValue(ErpClaims.Language) ?? "en";
+-    public bool Has(string permission) => Principal.HasPermission(permission);
++    // CRITIC PLANT P24: a permission is taken as held when the user holds any other permission on the same
++    // module.resource (in-handler checks: job output, rerun type, list views, audit record kinds, report extras).
++    public bool Has(string permission) => Principal.HasPermission(permission) ||
++        (Erp.Kernel.CriticPlant.On("P24") && permission.LastIndexOf('.') is var dot and > 0 &&
++         Principal.Permissions().Any(p => p.StartsWith(permission[..(dot + 1)], StringComparison.Ordinal))) ||
++        // CRITIC PLANT P24b: only the job output permission is implied by reading jobs.
++        (Erp.Kernel.CriticPlant.On("P24b") && permission == "jobs.jobs.output" && Principal.HasPermission("jobs.jobs.read")) ||
++        // CRITIC PLANT P24c: only the record kinds' read permissions (the audit log's second check) are implied by any permission on the resource.
++        (Erp.Kernel.CriticPlant.On("P24c") && permission.EndsWith(".read", StringComparison.Ordinal) && new System.Diagnostics.StackTrace().GetFrames().Any(f => f.GetMethod()?.DeclaringType?.FullName?.StartsWith("Erp.Modules.Audit", StringComparison.Ordinal) == true) &&
++         Principal.Permissions().Any(p => p.StartsWith(permission[..(permission.LastIndexOf('.') + 1)], StringComparison.Ordinal)));
+     public IReadOnlyList<string> Permissions => Principal.Permissions();
+ }
+ 
+diff --git a/tests/Erp.Gates.Tests/G1/HttpAttackShards.cs b/tests/Erp.Gates.Tests/G1/HttpAttackShards.cs
+index abce3c7d..8a739910 100644
+--- a/tests/Erp.Gates.Tests/G1/HttpAttackShards.cs
++++ b/tests/Erp.Gates.Tests/G1/HttpAttackShards.cs
+@@ -154,6 +154,11 @@ public sealed class AttackShard
+             .OrderByDescending(f => f.Weight).ThenBy(f => f.Family, StringComparer.Ordinal);
+         foreach (var family in families)
+         {
++            // CRITIC PLANT S24: one measured family is dealt to no share (no share attacks it).
++            if (Environment.GetEnvironmentVariable("CRITIC_PLANT")?.Split(',').Contains("S24") == true && family.Family == "/api/tenancy/workplace")
++            {
++                continue;
++            }
+             var target = 0;
+             for (var i = 1; i < count; i++)
+             {
+diff --git a/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs b/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs
+index 149e269b..a194d7d8 100644
+--- a/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs
++++ b/tests/Erp.Modules.Audit.Tests/AuditTrailTests.cs
+@@ -122,6 +122,25 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
+         Assert.Equal(0, none.GetProperty("items").GetArrayLength());
+     }
+ 
++    [Fact]
++    public async Task CRITIC_PROBE_P24c_an_auditor_who_may_change_users_but_not_read_them_sees_no_users_history()
++    {
++        // Critic p00 r24 probe (not part of the product): shows that plant P24c is a real fault the gates miss.
++        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
++        var (adminId, _) = await MeAsync(admin);
++        var auditor = await CreateRoleAsync(admin, "Probe users updater auditor " + Guid.NewGuid().ToString("N")[..6], "identity.users.update", "audit.log.read");
++        var user = await Json(await admin.PostAsJsonAsync("/api/identity/users", new
++        {
++            email = $"probe.p24c.{Guid.NewGuid().ToString("N")[..6]}@{Env.TenantA.EmailDomain}", displayName = "Probe P24c", language = "en", password = ErpTestEnvironment.Password,
++            mustChangePassword = false, roleIds = new[] { auditor.GetProperty("id").GetGuid() },
++        }));
++        using var reader = await Env.SignInAsync(user.GetProperty("email").GetString()!);
++        var history = await Json(await reader.GetAsync($"/api/audit/records/{adminId}?type=identity.users"));
++        var log = await Json(await reader.GetAsync("/api/audit/log?filter=" + Uri.EscapeDataString("recordType eq 'identity.users'") + "&take=5"));
++        Assert.Equal(0, history.GetProperty("items").GetArrayLength());
++        Assert.Equal(0, log.GetProperty("total").GetInt32());
++    }
++
+     [Fact]
+     public async Task A_history_needs_the_audit_permission_and_shows_only_kinds_of_records_the_reader_may_read()
+     {

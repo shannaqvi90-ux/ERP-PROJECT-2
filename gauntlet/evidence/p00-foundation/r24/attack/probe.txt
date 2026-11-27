@@ -1,0 +1,17 @@
+audit records with B ids identical to a random id: 54 different: 0
+B still downloads its file after A deleted it by id: 200 69 bytes
+A downloads B file: 404
+B file list of its contact: 200 {"items":[{"id":"01a21e75-eb19-77c7-ba0f-5f277057b67c","name":"company-seal-1.png","contentType":"image/png","sizeBytes":70,"sha256":"c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77",
+B rate after A DELETE: B sees 200 A sees 404
+/api/contacts/contacts: plain 200 contains Gulf Steel false الخليج true B tenant id false; switched 200; identical apart from trace/time: true
+/api/audit/log: plain 200 contains Gulf Steel false الخليج false B tenant id false; switched 200; identical apart from trace/time: true
+/api/reports/lists/contacts.contacts: plain 200 contains Gulf Steel true الخليج false B tenant id false; switched 200; identical apart from trace/time: true
+/api/reports/lists/contacts.contacts?format=csv&language=en: plain 200 contains Gulf Steel true الخليج false B tenant id false; switched 200; identical apart from trace/time: true
+/api/reports/lists/audit.log?format=csv&language=en: plain 200 contains Gulf Steel true الخليج false B tenant id true; switched 200; identical apart from trace/time: true
+A audit log rows mentioning B tenant id (first 300 chars): {"items":[],"total":0,"next":null,"groups":null,"ranked":true}
+A contacts matching Gulf Steel: {"items":[{"id":"018884e7-77b0-7b8d-a8fd-a0c6f7e046c4","kind":"organisation","code":"C006960","nameEn":"Gulf Steel Industries FZE","nameAr":"الخليج للصناعات الحديدية م.م.ح","organisationId":null,"organisationName":null,"organisationNameAr":null,"jobTitle":null,"email":"info6960@gulf6960.example","mo
+== A audit entries whose text mentions the B tenant id (where it came from)
+== A audit entries whose text mentions the B tenant id (where it came from)
+2
+(769329,0190a000-0000-7000-8000-000000000001,"2026-11-27 19:23:30.247492+00",01a21e71-e6f7-7e93-bbef-7d36cf18011a,user,jobs,schedules,01a21e76-7836-7724-bc0a-86b70528292e,insert,"{""id"": {""new"": ""01a21e76-7836-7724-bc0a-86b70528292e""}, ""cron"": {""new"": ""0 3 * * *""}, ""name"": {""new"": ""atk""}, ""type"": {""new"": ""jobs.cleanup""}, ""payload"": {""new"": {""tenantId
+(769328,0190a000-0000-7000-8000-000000000001,"2026-11-27 19:23:30.16506+00",01a21e71-e6f7-7e93-bbef-7d36cf18011a,user,jobs,jobs,01a21e76-77d1-74bc-8416-a7903b97442c,insert,"{""id"": {""new"": ""01a21e76-77d1-74bc-8416-a7903b97442c""}, ""type"": {""new"": ""jobs.cleanup""}, ""run_at"": {""new"": ""2026-11-27T19:23:30.128986+00:00""}, ""source"": {""new"": ""user""}, ""status"": 

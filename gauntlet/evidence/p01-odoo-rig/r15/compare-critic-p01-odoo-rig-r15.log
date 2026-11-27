@@ -1,0 +1,20 @@
+verify-slot: slot 1 of 2 taken at 2026-11-26T13:45:37Z after waiting 0 s; time the run from here
+reference rig: at least 100,000 rows in each of 7 main lists (checked live)
+find-record              ours  verified  steps 3  keys 14  machine 0.627s  human 5.67s  human+wait 5.941s  -> ../out/results/find-record-20261126T134546-8b6b.json
+find-record              odoo  verified  steps 5  keys 30  machine 1.671s  human 17.91s  human+wait 19.058s  -> ../out/results/find-record-20261126T134633-022c.json
+find-record              verdict win (ours judged on its whole path 'palette-shortest')
+create-restricted-user   odoo  verified  steps 10  keys 46  machine 6.932s  human 30.05s  human+wait 36.404s  -> ../out/results/create-restricted-user-20261126T134722-97f3.json
+create-restricted-user   ours  verified  steps 5  keys 37  machine 1.713s  human 20.91s  human+wait 21.828s  -> ../out/results/create-restricted-user-20261126T134901-3f85.json
+create-restricted-user   verdict win (ours judged on its whole path 'pointer')
+custom-field-filter      ours  verified  steps 11  keys 39  machine 1.819s  human 28.92s  human+wait 29.68s  -> ../out/results/custom-field-filter-20261126T134921-3f94.json
+custom-field-filter      odoo  verified  steps 17  keys 61  machine 5.854s  human 53.48s  human+wait 54.983s  -> ../out/results/custom-field-filter-20261126T134935-9f11.json
+custom-field-filter      verdict win
+switch-to-arabic         ours  verified  steps 1  keys 0  machine 0.354s  human 2.65s  human+wait 2.651s  -> ../out/results/switch-to-arabic-20261126T135010-3b49.json
+switch-to-arabic         odoo  verified  steps 6  keys 1  machine 2.252s  human 15.28s  human+wait 16.614s  -> ../out/results/switch-to-arabic-20261126T135019-776e.json
+switch-to-arabic         verdict win
+import-5000              odoo  verified  steps 7  keys 0  machine 11.076s  human 17.4s  human+wait 27.317s  -> ../out/results/import-5000-20261126T135053-e39d.json
+import-5000              ours  verified  steps 5  keys 0  machine 4.803s  human 12.1s  human+wait 16.135s  -> ../out/results/import-5000-20261126T135211-7137.json
+import-5000              verdict win
+import-5000              left out: keystrokes (both products exactly 0 on a count metric; neither a tie nor a win, owner decision 2026-10-08, needs-human #11)
+blind review page: ../../../out/blind/review.html
+output: ../../../out

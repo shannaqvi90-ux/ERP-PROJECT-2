@@ -61,11 +61,24 @@ public sealed class AuditTexts
     /// <summary>One recorded value as text: a flag as Yes or No, a list joined with commas, nothing
     /// as "(empty)", a redacted secret as "(hidden)"; a record's id by the record's name when
     /// <paramref name="labels"/> knows it.</summary>
-    public string Value(JsonElement? value, string language, IReadOnlyDictionary<Guid, AuditRecordName>? labels = null, string? recordType = null, string? field = null)
+    public string Value(JsonElement? value, string language, IReadOnlyDictionary<Guid, AuditRecordName>? labels = null, string? recordType = null, string? field = null, IReadOnlyDictionary<string, AuditFieldLabel>? fieldLabels = null)
     {
         if (value is not { } v || v.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
         {
             return Get("audit.value.empty", language);
+        }
+        // A tenant's single-select custom field shows the option's label in the language (its own screen's text), never the stored key.
+        if (field is not null && fieldLabels is not null && fieldLabels.TryGetValue(field, out var custom) && custom.Type == "select"
+            && v.ValueKind == JsonValueKind.String && custom.Option(v.GetString() ?? "", language) is { } option)
+        {
+            return option;
+        }
+        // A tenant's number custom field shows the field's own decimals (2 for 1,500.25), not the 8 the column stores.
+        if (field is not null && fieldLabels is not null && fieldLabels.TryGetValue(field, out var numeric) && numeric.Type == "number"
+            && (v.ValueKind == JsonValueKind.Number || v.ValueKind == JsonValueKind.String)
+            && FixedDecimals(v.ValueKind == JsonValueKind.Number ? v.GetRawText() : v.GetString() ?? "", numeric.Decimals) is { } fixedText)
+        {
+            return Number(fixedText);
         }
         // A choice shows the chosen option's label, never its code: the module registers
         // audit.choice.<kind>.<field>.<value> in both languages.
@@ -125,6 +138,16 @@ public sealed class AuditTexts
     }
 
     private static readonly System.Text.RegularExpressions.Regex IsoDate = new(@"^\d{4}-\d{2}-\d{2}$", System.Text.RegularExpressions.RegexOptions.CultureInvariant | System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    /// <summary>The decimal text cut or padded to <paramref name="decimals"/> places without a binary float (rounded half away from zero), or null when it is not a plain decimal.</summary>
+    private static string? FixedDecimals(string raw, int decimals)
+    {
+        if (decimals < 0 || !decimal.TryParse(raw, System.Globalization.NumberStyles.AllowLeadingSign | System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.CultureInfo.InvariantCulture, out var d))
+        {
+            return null;
+        }
+        return Math.Round(d, Math.Min(decimals, 28), MidpointRounding.AwayFromZero).ToString("F" + Math.Min(decimals, 28), System.Globalization.CultureInfo.InvariantCulture);
+    }
 
     /// <summary>A number with its thousands grouped (25,000.50), the fraction kept exactly as stored (never through a binary float).</summary>
     private static string Number(string raw)
@@ -204,11 +227,11 @@ public sealed class AuditTexts
             var field = fieldLabels is not null && fieldLabels.TryGetValue(change.Field, out var custom) ? custom.For(language) : FieldName(change.Field, language);
             var line = action switch
             {
-                "insert" => Get("audit.value.set", language, ("field", field), ("new", Value(change.New, language, labels, recordType, change.Field))),
-                "delete" => Get("audit.value.set", language, ("field", field), ("new", Value(change.Old, language, labels, recordType, change.Field))),
+                "insert" => Get("audit.value.set", language, ("field", field), ("new", Value(change.New, language, labels, recordType, change.Field, fieldLabels))),
+                "delete" => Get("audit.value.set", language, ("field", field), ("new", Value(change.Old, language, labels, recordType, change.Field, fieldLabels))),
                 _ when change.New is null || change.New.Value.ValueKind == JsonValueKind.Null =>
-                    Get("audit.value.cleared", language, ("field", field), ("old", Value(change.Old, language, labels, recordType, change.Field))),
-                _ => Get("audit.value.from", language, ("field", field), ("old", Value(change.Old, language, labels, recordType, change.Field)), ("new", Value(change.New, language, labels, recordType, change.Field))),
+                    Get("audit.value.cleared", language, ("field", field), ("old", Value(change.Old, language, labels, recordType, change.Field, fieldLabels))),
+                _ => Get("audit.value.from", language, ("field", field), ("old", Value(change.Old, language, labels, recordType, change.Field, fieldLabels)), ("new", Value(change.New, language, labels, recordType, change.Field, fieldLabels))),
             };
             if (builder.Length > 0)
             {

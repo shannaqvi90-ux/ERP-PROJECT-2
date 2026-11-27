@@ -1,0 +1,115 @@
+{
+  "piece": "p00-foundation",
+  "round": 23,
+  "commit": "841abb8312c8f766c499e109d2a6bc8e2fb03046",
+  "judged_at": "2026-11-26T19:31:18Z",
+  "verdict": "WIN",
+  "critic": "fresh critic, p00-foundation round 23",
+  "hard_gates": [
+    {
+      "gate": "G3 clean clone: ./erp verify (build, migrate, seed, every test)",
+      "status": "pass",
+      "evidence": "I ran three full alone verifies (ERP_VERIFY_ALONE=1, through verify-slot.sh) on a fresh clone of 841abb83, with project c-p00-foundation-r23 and ports 20050/20051/20060/20061 set through the environment.\n\nRun 3 passed every test. Slot taken 17:06:23Z, with nothing else of mine running:\n- dotnet 1,216, web unit 811, e2e 180, compare 494, build 22. That is 2,723 passed, 0 failed, 0 skipped, and every count is at or above its minimum.\n- The built-ours health check verified all 24 drivers.\n- Every ratchet line passed except one: 'verify.cpuSeconds: the verify stages used 26092 processor seconds, maximum 26000' (dotnet 22,202, web 2,864, e2e 927, timing 98). That is 92 s (0.35 %) over, at load mean 9.3 and peak 25. The ratchet also printed 'other work beside the verify 34978 s (57.3 %)'. Under the critic rule, integrators' alone runs measure this maximum, so I report it and do not judge on it.\n\nRun 1 failed only web/src/modules/shell/clientIsolation.test.tsx. Its first test timed out at 30 s and the other 9 cascaded, at load 16 to 23. I stopped run 1 by its PID.\n\nRun 2 failed only gauntlet/compare measured-part.test.mjs 'control C3', judged invalid on StyleRecalcInvalidationTracking, so 493/494 compare tests passed. Its dotnet stage and its e2e stage (180/180, health check 24/24) passed.\n\nEvidence: verify-summary.txt, the logs of runs 1 to 3, run1-kept/, run2-kept/, run3-kept/."
+    },
+    {
+      "gate": "G3 clean clone: ./erp up (running seeded demo)",
+      "status": "pass",
+      "evidence": "ERP_PROJECT=c-p00-foundation-r23 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ./erp up exited 0. It printed 'The demo is running (449 s): http://localhost:20050' on the overridden project and ports, with the demo sign-ins, the team addresses, the API description and the database port (erp-up.log).\n\nThe demo holds 100,005 users and 100,006 contacts in tenant A (the counts recorded in the full export).\n\n./erp tenant create made an empty workspace, and its owner reached the Arabic RTL home by keyboard (85 keys, 2.64 s; browser/empty.log, 08-empty-workspace-ar.jpg)."
+    },
+    {
+      "gate": "G1 tenant isolation: my own live attack as tenant A (alnoor) on tenant B (gulfsteel): API, exports, jobs, files",
+      "status": "pass",
+      "evidence": "attack/attack.mjs (the critic script carried from r22) collected 872 B-only ids and sent, as A:\n- all 260 operations with B's ids\n- 1,668 documented query-parameter requests\n- 1,140 tenant-switch requests (headers, query, cookies)\n- 190 export requests, 77 filter requests and 346 path-variant and audit requests.\n\n'B rows unchanged by A attack: true': B's checksums over all 34 tenant tables were identical before and after.\n\nAll 138 flagged lines are explained (attack/probe.txt, attack/probe-db.txt):\n- 81 audit-record reads with B ids answered byte-identically to a random id (54/54 in the probe).\n- 'Gulf Steel' and 'الخليج' are A's own data: 143 and 1,633 alnoor contacts carry them.\n- B's tenant id in A's audit log and CSV comes from A's own attack payload: the jobs.jobs and jobs.schedules inserts by admin@alnoor with {tenantId: B}.\n- DELETE of B's rate, file and import answered 204, like a random id. B still downloads its file (200, 69 bytes) and reads its rate (200), while A gets 404 on both.\n\nThe full tenant export as A now succeeds: 32 files, 14.9 MB. It holds no B id (31 checked), no B canary, no 'gulfsteel' and no B tenant id (attack/full-export.txt)."
+    },
+    {
+      "gate": "G1 tenant isolation: the database role the app uses",
+      "status": "pass",
+      "evidence": "The app connects as erp_app (ConnectionStrings__App). No erp role is superuser or has BYPASSRLS. All 34 tables with tenant_id have row-level security enabled and forced and a NOT NULL tenant_id, and none is owned by erp_app.\n\nSigned in as erp_app (db-roles-and-app-attack.txt):\n- With no tenant set it sees 0 contacts and 0 audit rows. A session-level SET app.tenant_id to B's id also shows 0.\n- SET ROLE erp_owner and postgres are denied.\n- row_security=off answers 'query would be affected by row-level security policy'.\n- NO FORCE and DISABLE RLS answer 'must be owner'.\n- CREATE in public and reading pg_authid are denied.\n\nThere is no real or double precision column anywhere."
+    },
+    {
+      "gate": "G2 permissions on the real product",
+      "status": "pass",
+      "evidence": "attack/g2-live.txt: a no-roles user called all 259 documented operations in five request forms and got '2xx answers: 0'.\n\nattack/revoke-live.txt: the admin removed identity.roles.read from Read-only. The signed-in viewer's next request got 403, and after the permission was restored it got 200.\n\nBrowser (browser/walk.log):\n- The no-roles user gets API 403 and a 'No access' screen at /identity/users.\n- The viewer sees no New button on Roles, and POST role answers 403.\n- After sign-out the API answers 401.\n\nAll G2 classes passed in all three verifies."
+    },
+    {
+      "gate": "G1/G2 gate self-check: faults planted in p00's kernel (plants/plants.diff, plants/plant-results.txt)",
+      "status": "pass",
+      "evidence": "All plant runs went through the verify slot.\n\nL23 was a tenant leak in the kernel list framework, ListBinding.QueryAsync: a static 60 s 'count memo' keyed by list, search and filter, with no tenant. G1ProcessStateTests caught it: 'static Erp.Kernel.Lists.ListTotalMemo.Totals: a read-only field that holds a mutable ConcurrentDictionary ... key it by tenant'.\n\nP23 was a permission fault in SessionAuthenticationHandler: a session's permissions were kept for 5 minutes, so a removed permission kept working. Two gates caught it. The static walk did. G2ReportDataTests also caught it by behaviour, with 2 of 101 G2 tests failing: 'catalogue for [reports.catalog.read, contacts.contacts.read] lists reports [], expected [contacts.contactCard]' and a 403 on tenancy.companyProfile.\n\nP23b was an action without its permission in PermissionAuthorizationHandler: any permission of a module passed every <module>.*.read check. G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it caught it: '[bearer] contacts.contacts.archive: GET /api/contacts/contacts answered 200 (expected 403)'.\n\nThis round's p00 change adds no product surface. It only changes the G1 gate's attack names, the marker judge and the list-walk take."
+    },
+    {
+      "gate": "Rule gates (licences, no float money, EN/AR parity, audit coverage) and ratchet minimums",
+      "status": "pass",
+      "evidence": "The rule gates passed in every run. Run 3's ratchet passed every count minimum, and failed only cpuSeconds by 92 s (see G3).\n\nMoney is stored as numeric amount (28,10), currency, exchange rate (19,8), base amount (19,4) and base currency (db-money.txt).\n\nThe live role change wrote audit rows with actor admin@alnoor.example, the time and field-level permissions values (db-audit.txt).\n\nEvery tenant table carries the audit.capture trigger except audit.entries and identity.sign_in_attempts, as in r22.\n\nCounts did not fall from r22: dotnet 1,216 ≥ 1,201, web 811 ≥ 786, e2e 180 ≥ 174, compare 494 ≥ 489, build 22 ≥ 22."
+    }
+  ],
+  "tests": {
+    "command": "ERP_VERIFY_ALONE=1 ERP_PROJECT=c-p00-foundation-r23 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ERP_VERIFY_HTTP_PORT=20060 ERP_VERIFY_DB_PORT=20061 ERP_VERIFY_LOG=<staging>/verify-critic-p00-foundation-r23-run3.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify (run 3 of 3; runs 1 and 2 each failed one load-sensitive test outside p00's code, see hard gates)",
+    "total": 2723,
+    "passed": 2723,
+    "failed": 0,
+    "skipped": 0,
+    "duration_s": 8644
+  },
+  "clean_clone": {
+    "status": "pass",
+    "seconds": 8644,
+    "evidence": "Run 3 on a fresh clone of 841abb83 passed every test: 2,723 passed, 0 failed. Slot taken 17:06:23Z, finished 19:30:27Z; wall time before the ratchet was 8,639 s.\n\nIts only ratchet failure was verify.cpuSeconds, 26,092 s against 26,000 s (92 s over, load mean 9.3, peak 25). Integrators' alone runs measure that line, so it is reported, not judged.\n\nRuns 1 and 2 each failed one load-sensitive test outside p00's code:\n- Run 1: web clientIsolation.test.tsx, a 30 s timeout that cascaded to the other 9 tests of the file.\n- Run 2: compare measured-part.test.mjs control C3.\n\n./erp up came up in 449 s."
+  },
+  "odoo": [
+    {
+      "task": "sign-in (sign in to an empty workspace)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.084,
+        "klm_seconds": 2.03
+      },
+      "odoo": {
+        "steps": 2,
+        "keystrokes": 0,
+        "seconds": 1.28,
+        "klm_seconds": 4.68
+      },
+      "notes": "I used the shared rig on :8069, which run.mjs accepted: 'at least 100,000 rows in each of 7 main lists (checked live)'.\n\nCommand: COMPARE_OURS_URL=http://localhost:20050 node run.mjs --task sign-in --product both --repeat 3 --out <staging>/compare. It exited 0 and all 6 runs were verified. Verdict: 'win (ours judged on its whole path passkey)'.\n\nFigures are medians of 3:\n- Steps: 1 against 2.\n- Machine time: 0.084 s against 1.28 s.\n- KLM: 2.03 s against 4.68 s.\n- Human+wait: 2.105 s against 5.859 s.\n\nKeystrokes were exactly 0 in both and are left out under needs-human #11.\n\nThe blind shots were pruned to the median run of each product (compare/PRUNED.txt). Separately, the empty workspace's owner signed in by keyboard with the password path: 85 keys, new password chosen, Arabic RTL home in 2.64 s (browser/empty.log)."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p00-foundation/r23/01-sign-in-en.jpg",
+    "gauntlet/evidence/p00-foundation/r23/02-sign-in-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r23/03-shell-en.jpg",
+    "gauntlet/evidence/p00-foundation/r23/04-shell-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r23/05-roles-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r23/06-no-roles-user.jpg",
+    "gauntlet/evidence/p00-foundation/r23/07-no-roles-direct-url.jpg",
+    "gauntlet/evidence/p00-foundation/r23/08-empty-workspace-ar.jpg",
+    "gauntlet/evidence/p00-foundation/r23/compare/blind/shots/033631dae8256413.jpg",
+    "gauntlet/evidence/p00-foundation/r23/compare/blind/shots/60d1885030d8233c.jpg",
+    "gauntlet/evidence/p00-foundation/r23/compare/blind/shots/b74171beb8c9b922.jpg",
+    "gauntlet/evidence/p00-foundation/r23/compare/blind/shots/dae6926f50a73034.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The one-command verify is still slow, unreliable and at its processor-time ceiling: 1 of 3 alone runs passed every test, 8,639 s wall time, 26,092 s against the 26,000 s maximum",
+    "detail": "Every gate held and every p00 test passed in all three runs. What most holds the foundation back is the cost and flakiness of proving it. Every later business module pays this on every integration.\n\nReliability:\n- Two of three alone verifies, each the only verify on the machine, failed on one load-sensitive test outside p00's code.\n- Run 1: web clientIsolation.test.tsx timed out at 30 s and cascaded to 10 failures. This happened at load 16 to 23 during the first minutes, when ./erp verify itself starts the web tests, the .NET build, the app image build and the e2e stack together.\n- Run 2: the comparison harness's measured-part control C3 was judged invalid on StyleRecalcInvalidationTracking.\n- So a critic needs about two to three 2.4-hour runs for one green run. The load that breaks these tests comes from verify's own stage layout, not from other agents.\n\nWall time:\n- Run 3 took 8,639 s against the ratchet's 3,600 s quiet-machine figure.\n- The dotnet stage is again paced by the third G1 HTTP share: 1 h against 30 m 7 s, 33 m 13 s and 37 m 56 s for the others. In processor time it is 4,799 s against 2,308 to 3,182 s. The shares are still unbalanced, as in r22.\n\nCost:\n- Processor time was 26,092 s against the 26,000 s maximum, 92 s over in an alone run.\n- The next endpoint any piece adds pushes integrations over again.",
+    "evidence": "Logs: verify-summary.txt, and verify-critic-p00-foundation-r23-run1.log, -run2.log and -run3.log.\n\nRun 3 ratchet lines:\n- 'verify processor time: 26092 s (dotnet 22202, web 2864, e2e 927, timing 98; maximum 26000 s)'\n- 'verify wall time before the ratchet: 8639 s (maximum on a quiet machine 3600 s ...)'\n\nShare times and processor time: run3-kept/http-share-times.txt ('Tenant_A_attacks_its_third_share_of_the_endpoints [1 h]') and run3-kept/cpu-group-http-2 = 4798.7 against http-0 2307.6.\n\nLoad: run1-kept/verify-load-samples (16 to 23 while the web stage ran) and run1-kept/web.log (clientIsolation failures).\n\nTo reproduce: run the command above on a clone of 841abb83, then read the per-group cpu-group-* files and the share 'Passed ... [time]' lines in the kept folder."
+  },
+  "other_findings": [
+    "[route: p04-shell] Run 1, an alone verify at load 16 to 23, failed web/src/modules/shell/clientIsolation.test.tsx. 'tenant A sees, and the tab keeps, nothing of tenant B after B signs out' timed out at 30 s, and the other 9 tests in the file then failed with 'TypeError: Cannot read properties of null (reading type)' at signInAs (clientIsolation.test.tsx:321). One slow first test still turns into ten failures. It passed in runs 2 and 3 (run1-kept/web.log).",
+    "[route: p01-odoo-rig] Run 2 failed gauntlet/compare/test/measured-part.test.mjs:151, 'control C3: a save the page sends a few event-loop turns after the click ... is caused by the click'. The result was invalid against expected verified: 'action outside the clock (set-up): the page changed what it shows without a counted step causing it ... StyleRecalcInvalidationTracking: a task of no traceable origin'. Load was about 15 to 20. This is the same class as the health-check fault that p01 r15 was BLOCKED on. It passed in runs 1 and 3. It was not skipped or loosened.",
+    "[route: p04-shell] The Arabic shell at 1366 px still cuts the command-search placeholder to 'البحث في الشاشات والسجلات ...' (04-shell-ar.jpg). It is unchanged since r15.",
+    "[route: p04-shell] Right after a keyboard sign-in as the Arabic-language admin, one read at networkidle saw Arabic text with lang='en', dir='ltr' and title 'Home · ERP' (browser/walk.log, 'AR admin shell'). A probe at 0, 250, 1000, 3000 and 6000 ms after the Sign out button appeared, and after a reload, always saw lang ar, dir rtl and an Arabic title (browser/probe-ar.log). So it looks like a brief moment before the document direction is set, not a lasting fault.",
+    "[route: p14-import-export] The full tenant export now works, where it crashed in r22: 202, then succeeded, 32 files, 14.9 MB, with nothing of tenant B in it. It carries no audit history (audit.entries) and no jobs or schedules. Whether 'a tenant's full data export' should include its audit trail is p14's or the owner's call.",
+    "Kernel operator CLI, unchanged since r20: './erp tenant create --help' ends with 'Unhandled exception. Erp.Modules.Tenancy.Provisioning.TenantCommand+CommandException: --help needs a value.', a stack trace and exit 139 (tenant-create-wrong-usage.log). './erp tenant' with no arguments prints usage and exits 2.",
+    "Coverage note, not a gap. Erp.Modules.Identity.Tests passed all 114 tests with plant P23, a stale 5-minute permission memo: no identity test checks that a role change reaches a session that is already signed in. The gates covered it, through G1ProcessStateTests (the state) and G2ReportDataTests (the behaviour).",
+    "English and Arabic by keyboard (browser/walk.log):\n- The sign-in screen switches to lang ar and dir rtl. Its only Latin text is 'English'.\n- Keyboard sign-in takes 0.66 to 0.69 s.\n- 40 Tab presses in the shell never land on the body (39 distinct stops).\n- Ctrl+K with 'Roles' opens Roles, and Ctrl+K with الأدوار opens Roles in RTL.\n- In Arabic the navigation sits on the right (left 1134, right 1366)."
+  ],
+  "human_gates": [
+    {
+      "gate": "Ratchet line verify.cpuSeconds (owner's, needs-human #34/#54)",
+      "what": "A critic's alone run of 841abb83 passed every test but counted 26,092 processor seconds against the 26,000 s maximum at that commit (92 s over). The integration branch has since been raised to 26,500 s (6517b9ea). The owner decides any further change through integrators' alone runs."
+    }
+  ],
+  "gate_gaps": [],
+  "evidence_staging": "/home/shan/evidence-staging/p00-foundation/r23",
+  "evidence_dir": "gauntlet/evidence/p00-foundation/r23"
+}

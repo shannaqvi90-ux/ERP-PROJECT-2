@@ -320,8 +320,13 @@ public sealed class GateSelfTests(LeakyFixture fixture) : IClassFixture<LeakyFix
         // (The scroll list's sorted searches carry the planted sorted-search memo below; every other
         // first page of it is right.)
         static bool SortedSearch(string w) => w.Contains("&sort=", StringComparison.Ordinal) && w.Contains("&search=", StringComparison.Ordinal);
-        Assert.DoesNotContain(report.ListAnswersWrong, w => w.Contains("/api/leaky/scroll", StringComparison.Ordinal) && w.Contains(" page 1 of ", StringComparison.Ordinal) && !SortedSearch(w));
-        Assert.DoesNotContain(report.ListAnswersWrong, w => w.Contains("GET /api/leaky/scroll?take=50", StringComparison.Ordinal) && !SortedSearch(w));
+        Assert.True(!report.ListAnswersWrong.Any(w => w.Contains("/api/leaky/scroll", StringComparison.Ordinal) && w.Contains(" page 1 of ", StringComparison.Ordinal) && !SortedSearch(w)),
+            "a planted scroll list answered a first page wrong outside its sorted searches:\n" + string.Join("\n", report.ListAnswersWrong.Where(w => w.Contains("/api/leaky/scroll", StringComparison.Ordinal) && w.Contains(" page 1 of ", StringComparison.Ordinal) && !SortedSearch(w)).Take(10)));
+        // (": GET" is a finding about the request the check sends itself, with take=50. A walk takes
+        // ceil(rows / 4) per page, which is 50 when a tenant holds 197 to 200 rows, and its findings read
+        // "of GET ...?take=50": the planted memo of the pages after the first is meant to be found there.)
+        Assert.True(!report.ListAnswersWrong.Any(w => w.Contains(": GET /api/leaky/scroll?take=50", StringComparison.Ordinal) && !SortedSearch(w)),
+            "a planted scroll list answered take=50 wrong outside its sorted searches:\n" + string.Join("\n", report.ListAnswersWrong.Where(w => w.Contains(": GET /api/leaky/scroll?take=50", StringComparison.Ordinal) && !SortedSearch(w)).Take(10)));
         // A list whose offset (skip) pages reuse the total the last first page counted, whatever
         // its tenant, kept in a pooled scratch object (critic p05 round 5, plant L10): every first
         // page and every keyset page is right, so only judging offset pages, walked in lock step

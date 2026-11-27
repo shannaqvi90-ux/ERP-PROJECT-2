@@ -15,6 +15,7 @@ internal static class RequestLog
     {
         public readonly object Lock = new();
         public readonly List<(string Line, double Seconds)> Slowest = [];
+        public readonly Dictionary<(string Family, string Label), (int Count, double Seconds)> ByFamily = [];
     }
 
     private static readonly Sink Shared = new();
@@ -56,8 +57,10 @@ internal static class RequestLog
     {
         var line = $"[{label}] {request.Method} {PathOf(request)}";
         var sink = Current;
+        var key = (AttackShard.FamilyOfPath(PathOf(request)), label.Split(' ', 2)[0]);
         lock (sink.Lock)
         {
+            sink.ByFamily[key] = sink.ByFamily.TryGetValue(key, out var seen) ? (seen.Count + 1, seen.Seconds + seconds) : (1, seconds);
             var slowest = sink.Slowest;
             if (slowest.Count >= Kept && seconds <= slowest[^1].Seconds)
             {
@@ -79,6 +82,20 @@ internal static class RequestLog
         lock (sink.Lock)
         {
             return string.Join('\n', sink.Slowest.Take(count).Select(s => $"  {s.Seconds,7:0.0} s  {s.Line}"));
+        }
+    }
+
+    /// <summary>What each endpoint family (<see cref="AttackShard.FamilyOfPath"/>) cost in request time,
+    /// by the first word of the request's label: count and seconds, largest first. Request time only (the
+    /// requests of both tenants, several at once), so it ranks families; it is not a share's wall time.
+    /// The shares' weights (<see cref="AttackShard.MeasuredFamilySeconds"/>) are set from it.</summary>
+    public static string DescribeByFamily(int count)
+    {
+        var sink = Current;
+        lock (sink.Lock)
+        {
+            return string.Join('\n', sink.ByFamily.OrderByDescending(p => p.Value.Seconds).Take(count)
+                .Select(p => $"  {p.Value.Seconds,9:0.0} s  {p.Value.Count,7} requests  {p.Key.Family}  [{p.Key.Label}]"));
         }
     }
 }

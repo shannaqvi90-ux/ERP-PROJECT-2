@@ -1,0 +1,40 @@
+{
+  "shots": {
+    "6e2c67920f8e307e.jpg": {
+      "product": "odoo",
+      "task": "who-renamed-user",
+      "moment": "start",
+      "run_id": "who-renamed-user-20261126T200159-4ce3"
+    },
+    "90db85c7cf559ca1.jpg": {
+      "product": "odoo",
+      "task": "who-renamed-user",
+      "moment": "done",
+      "run_id": "who-renamed-user-20261126T200159-4ce3"
+    },
+    "9e391e14424c0852.jpg": {
+      "product": "ours",
+      "task": "who-renamed-user",
+      "moment": "start",
+      "run_id": "who-renamed-user-20261126T200552-48f5"
+    },
+    "eb69076b29c6c602.jpg": {
+      "product": "ours",
+      "task": "who-renamed-user",
+      "moment": "done",
+      "run_id": "who-renamed-user-20261126T200552-48f5"
+    }
+  },
+  "run_order": {
+    "who-renamed-user": [
+      "odoo",
+      "ours"
+    ]
+  },
+  "letters": {
+    "who-renamed-user": {
+      "ours": "A",
+      "odoo": "B"
+    }
+  }
+}

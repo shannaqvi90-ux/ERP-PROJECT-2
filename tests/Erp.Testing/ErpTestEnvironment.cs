@@ -115,7 +115,26 @@ public sealed class ErpTestEnvironment : IAsyncDisposable
     public static async Task<ErpTestEnvironment> StartAsync(SeedPlan plan, IDictionary<string, string?>? settings = null)
     {
         var server = await TestDatabaseServer.GetAsync();
+        // A copy of this process's migrated template for these settings (round 24): the database is
+        // still the environment's own and seeded here with its own plan, only the migrations are not
+        // run again for it. The copy goes through the bootstrap and the migrator like any gate copy.
+        var template = await server.MigratedTemplateAsync(settings, async templateDatabase =>
+        {
+            var host = new ErpAppFactory(server.Configuration(templateDatabase, settings));
+            try
+            {
+                await server.BootstrapAsync(host);
+                await host.Services.GetRequiredService<DatabaseMigrator>().MigrateAsync();
+                return host;
+            }
+            catch
+            {
+                await host.DisposeAsync();
+                throw;
+            }
+        });
         var database = server.NewDatabaseName();
+        await server.CopyAsync(template, database);
         var factory = await SeedAsync(server, database, plan, settings);
         return server.Environment(database, factory, plan);
     }

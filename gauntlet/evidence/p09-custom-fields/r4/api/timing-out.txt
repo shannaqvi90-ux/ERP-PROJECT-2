@@ -1,0 +1,28 @@
+200 259 ms total=20170 groups=- filter=cfCustomerSegment eq 'government'  
+200 167 ms total=8292 groups=- filter=cfAccountManager contains 'ah'  
+200 224 ms total=7476 groups=- filter=cfCreditReview ge '2026-01-01' and cfCreditReview le '2026-06-30'  
+200 62 ms total=10068 groups=- filter=cfPreferredPartner eq true  
+200 308 ms total=4033 groups=- filter=cfCustomerSegment in ('retail','wholesale') and cfPreferredPartner eq true  
+200 1866 ms total=100007 groups=- sort=-cfCreditReview  first="2026-12-31"
+200 1291 ms total=100007 groups=- sort=cfAccountManager&skip=50000  
+200 16998 ms total=100007 groups=25 groupBy=cfCreditReview.month  
+200 1082 ms total=100007 groups=6 groupBy=cfCustomerSegment  
+200 165 ms total=0 groups=- search=Critic en  
+200 36 ms total=2 groups=- filter=cfCreditCapR4E ge 1000  
+200 1954 ms total=100007 groups=- sort=-cfCreditCapR4E  first=undefined
+200 41 ms total=1 groups=- filter=cfIncotermR4E eq 'CIF'  
+200 1041 ms total=100007 groups=2 groupBy=cfIncotermR4E  
+200 309 ms total=20170 groups=- filter=cfCustomerSegment eq 'government'  
+200 188 ms total=8292 groups=- filter=cfAccountManager contains 'ah'  
+200 224 ms total=7476 groups=- filter=cfCreditReview ge '2026-01-01' and cfCreditReview le '2026-06-30'  
+200 60 ms total=10068 groups=- filter=cfPreferredPartner eq true  
+200 329 ms total=4033 groups=- filter=cfCustomerSegment in ('retail','wholesale') and cfPreferredPartner eq true  
+200 1946 ms total=100007 groups=- sort=-cfCreditReview  first="2026-12-31"
+200 1368 ms total=100007 groups=- sort=cfAccountManager&skip=50000  
+200 19001 ms total=100007 groups=25 groupBy=cfCreditReview.month  
+200 1232 ms total=100007 groups=6 groupBy=cfCustomerSegment  
+200 195 ms total=0 groups=- search=Critic en  
+200 33 ms total=2 groups=- filter=cfCreditCapR4E ge 1000  
+200 1912 ms total=100007 groups=- sort=-cfCreditCapR4E  first=undefined
+200 31 ms total=1 groups=- filter=cfIncotermR4E eq 'CIF'  
+200 949 ms total=100007 groups=2 groupBy=cfIncotermR4E  

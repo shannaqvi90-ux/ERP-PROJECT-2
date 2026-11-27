@@ -1,0 +1,182 @@
+{
+  "piece": "p01-odoo-rig",
+  "round": 15,
+  "commit": "946c8d489372d0711f1bd21b4decc91c791d8af1",
+  "critic": "fresh critic, p01-odoo-rig round 15",
+  "judged_at": "2026-11-26T13:53:00Z",
+  "verdict": "BLOCKED",
+  "hard_gates": [
+    {
+      "gate": "G3 clean clone: one command builds, migrates, seeds and runs all tests",
+      "status": "fail",
+      "evidence": "Fresh clone at 946c8d48. Command: ERP_VERIFY_ALONE=1 ERP_PROJECT=c-p01-odoo-rig-r15 ERP_HTTP_PORT=20150 ERP_DB_PORT=20151 ERP_VERIFY_HTTP_PORT=20160 ERP_VERIFY_DB_PORT=20161 verify-slot.sh ./erp verify. The slot was taken at 10:56:43Z and the run ended at 13:14:45Z: 'verify stages failed: e2e', 'verify FAILED (exit 1)'. The machine was quiet (load 0.4 to 1.4 at the end). dotnet 0, web 0, e2e 1. All 180 Playwright e2e tests passed. The e2e stage failed only on the comparison harness's built-ours health check: 23 of 24 drivers verified, and add-rate came back INVALID. The reason given: 'action outside the clock (set-up): the page changed what it shows without a counted step causing it (1 change; the first 0.465 s into the measured part, a StyleRecalcInvalidationTracking: a task posted by a task no step caused: a DevTools command outside any step (the harness reading the page))'. Step 4 (Enter, save) ran at 0.454 s. The 'done' screenshot shows the rate saved as asked (evidence 03). The reason text is this round's new postedCause rule in lib/causation.mjs. Kept as verify-failed/ours-health/results/add-rate-*.json and verify-failed/e2e.log. The demo command (ERP_SEED_USERS_CSV/RATES/CONTACTS=gauntlet/compare/data/out/... ./erp up, ports 20150/20151) returned in 454 s with the image build. Port and project overrides worked as documented."
+    },
+    {
+      "gate": "Instrument integrity (this piece's surface: the health-check fault fix in lib/causation.mjs)",
+      "status": "fail",
+      "evidence": "Fixing the health-check fault was the one job of this round, and it is not fixed. On verify's clean stack the same class of false 'action outside the clock' came back, now on add-rate, on a quiet machine, and the reason it gives comes from the new code. Separately I ran 3 health checks on a fresh clean stack (2,000 generated users, ports 20170/20171, toolbox image; health/health-run1..3.log). Run 1 verified 24 of 24. Runs 2 and 3 verified 23 of 24: export-filtered-list timed out waiting for the 'Government' tag button on a repeat run on the same stack (routed to p14 below). add-rate verified in all 3, so the add-rate false positive is intermittent. Seen 1 time in 4 clean-stack runs.\n\nPlants on the measuring instrument (plants/):\n- Z1, a write on a 2.5 s delayed scheduler.postTask: refused.\n- Z2, a ten-step posted-task poll: refused.\n- Z2c, the same with setInterval: refused.\n- Y1/Y2/Y3, a record revealed by a CSS animation armed before the clock: all refused.\n\nMy 13 mutations of the round-15 code (plants/k-mutations-run1.log): 10 of 13 MISSED, listed in gate_gaps. The builder's M135-M138 are caught, and 138 of 138 instrument mutations are caught in verify."
+    },
+    {
+      "gate": "G1 tenant isolation (product as built)",
+      "status": "pass",
+      "evidence": "Every G1 dotnet group passed in my verify (http-0..3, ni-0..2, listvolume, self-http, self-company, self-noninterference, gates-rest).\n\nMy own HTTP attack (attack/http_attack.py, http-attack.json): signed in as admin@alnoor, 1,669 requests over all 263 OpenAPI operations. B's ids went into paths with GET/PUT/POST/DELETE, into query strings (companyId, branchId, tenantId, id, filter, q, search, csv/xlsx/pdf exports) and into X-Tenant, X-Workspace and Host headers. Leak markers were 1,768 tenant-B-only names and e-mails from the database, matched as whole values. Result: 0 leaks. B's lists were unchanged after the attack. The remaining name hits were tenant A's own cfAccountManager custom-field values, checked in the database. DELETE on a B id answers 204, the same as a random id, and changes nothing (attack/oracle-check.out).\n\nFiles (attack/file-attack.out): A gets 404 on B's file content, B's record file list and path-traversal forms, and B still reads its file after A's DELETE.\n\nDatabase (attack/db-attack.txt): erp_app, erp_auth, erp_worker and erp_owner are neither superuser nor BYPASSRLS, and all 34 tenant_id tables have RLS enabled and forced. Logged in as erp_app: no context sees 0 rows. Stamped as A, it sees only A's 100,005 users, 100,006 contacts, 100,000 rates and 15 files. It updates and deletes 0 of B's rows, is refused an insert with B's tenant_id, and is refused SET ROLE erp_owner and postgres."
+    },
+    {
+      "gate": "G2 permissions (product as built)",
+      "status": "pass",
+      "evidence": "Every G2 gate test passed in my verify (dotnet 1199 of 1199). p01 adds no product endpoint, screen or job."
+    },
+    {
+      "gate": "Rule gates (licence, float money, EN/AR strings, audit, OpenAPI)",
+      "status": "pass",
+      "evidence": "All dotnet and web rule tests passed in my verify. The ratchet check was not reached because the e2e stage failed. Counts: dotnet 1199 (min 1190), web unit 811 (808), e2e 180 (172), compare 494 (494), build 22 (22). Processor time: dotnet 22,669 s, web 2,991 s and e2e 924 s, about 26,584 s in all against the 26,000 s maximum at this commit. The load was 0.4 to 14 during my run, with my plant runs beside it."
+    }
+  ],
+  "tests": {
+    "command": "ERP_VERIFY_ALONE=1 ERP_PROJECT=c-p01-odoo-rig-r15 ERP_HTTP_PORT=20150 ERP_DB_PORT=20151 ERP_VERIFY_HTTP_PORT=20160 ERP_VERIFY_DB_PORT=20161 ERP_VERIFY_LOG=<staging>/verify-critic-p01-odoo-rig-r15.log /home/shan/ERP-PROJECT-2/gauntlet/tools/verify-slot.sh ./erp verify",
+    "total": 2707,
+    "passed": 2706,
+    "failed": 1,
+    "skipped": 0,
+    "duration_s": 8282
+  },
+  "clean_clone": {
+    "status": "fail",
+    "seconds": 8282,
+    "evidence": "verify FAILED (exit 1), stage e2e. All 180 Playwright tests passed. The built-ours health check judged add-rate INVALID ('a task posted by a task no step caused: a DevTools command outside any step (the harness reading the page)'), on a quiet machine. Logs: verify-critic-p01-odoo-rig-r15.log and verify-failed/. The demo came up from the clean clone in 454 s."
+  },
+  "odoo": [
+    {
+      "task": "find-record (named)",
+      "winner": "ours",
+      "ours": {
+        "steps": 3,
+        "keystrokes": 14,
+        "seconds": 0.627,
+        "klm_seconds": 5.67
+      },
+      "odoo": {
+        "steps": 5,
+        "keystrokes": 30,
+        "seconds": 1.671,
+        "klm_seconds": 17.91
+      },
+      "notes": "Path 'palette-shortest'. Run against my demo (shared dataset) and the shared rig, which the harness checked live at the bar. Ran through verify-slot."
+    },
+    {
+      "task": "create-restricted-user (named)",
+      "winner": "ours",
+      "ours": {
+        "steps": 5,
+        "keystrokes": 37,
+        "seconds": 1.713,
+        "klm_seconds": 20.91
+      },
+      "odoo": {
+        "steps": 10,
+        "keystrokes": 46,
+        "seconds": 6.932,
+        "klm_seconds": 30.05
+      },
+      "notes": "Path 'pointer'."
+    },
+    {
+      "task": "custom-field-filter (named)",
+      "winner": "ours",
+      "ours": {
+        "steps": 11,
+        "keystrokes": 39,
+        "seconds": 1.819,
+        "klm_seconds": 28.92
+      },
+      "odoo": {
+        "steps": 17,
+        "keystrokes": 61,
+        "seconds": 5.854,
+        "klm_seconds": 53.48
+      },
+      "notes": "Ours wins on every metric."
+    },
+    {
+      "task": "switch-to-arabic (named)",
+      "winner": "ours",
+      "ours": {
+        "steps": 1,
+        "keystrokes": 0,
+        "seconds": 0.354,
+        "klm_seconds": 2.65
+      },
+      "odoo": {
+        "steps": 6,
+        "keystrokes": 1,
+        "seconds": 2.252,
+        "klm_seconds": 15.28
+      },
+      "notes": "Ours wins on every metric."
+    },
+    {
+      "task": "import-5000 (named)",
+      "winner": "ours",
+      "ours": {
+        "steps": 5,
+        "keystrokes": 0,
+        "seconds": 4.803,
+        "klm_seconds": 12.1
+      },
+      "odoo": {
+        "steps": 7,
+        "keystrokes": 0,
+        "seconds": 11.076,
+        "klm_seconds": 17.4
+      },
+      "notes": "Keystrokes left out: both products scored exactly 0 (needs-human #11). Valid on the demo with the comparison dataset."
+    },
+    {
+      "task": "follow-approval (named)",
+      "winner": "not-compared",
+      "notes": "The ours driver is still a 'not built yet' stub, which p01's spec allows. The Odoo baseline exists."
+    }
+  ],
+  "screenshots": [
+    "gauntlet/evidence/p01-odoo-rig/r15/01-health-addrate-start.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r15/02-health-addrate-rate-entered.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r15/03-health-addrate-done.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r15/04-find-record-af2b.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r15/05-find-record-3e6d.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r15/06-import-5000-98e2.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r15/07-import-5000-2f2f.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r15/08-switch-arabic-8d8b.jpg",
+    "gauntlet/evidence/p01-odoo-rig/r15/09-switch-arabic-92d3.jpg"
+  ],
+  "biggest_gap": {
+    "title": "The health-check fault is not fixed: verify's health check still fails ours with a false 'action outside the clock', now on add-rate, and the new posted-task rule gives the reason",
+    "detail": "This round's one job was to stop the harness's built-ours health check from blaming a harness DevTools command for a page change a step made. In my clean-clone alone verify the e2e stage failed on exactly that, on a quiet machine (load about 1). The product did what the step asked (the rate was saved, screenshot 03).\n\nWhat the verdict says: add-rate INVALID, 'the page changed what it shows without a counted step causing it (1 change; 0.465 s into the measured part, a StyleRecalcInvalidationTracking: a task posted by a task no step caused: a DevTools command outside any step (the harness reading the page))'. Step 4, Enter to save, ran at 0.454 s.\n\nWhere it comes from: the new postedCause in lib/causation.mjs links a task to its poster through Chromium's flow ids. Here the poster was a harness read, which pointCause judges 'no step'. So a follow-up task that interleaves with the harness's own read now inherits 'not caused', even when the change belongs to the step around it.\n\nIt is intermittent: 1 time in 4 clean-stack runs (my verify invalid; health runs 1 to 3 on a fresh stack verified add-rate).\n\nSuspected fix: a task posted during a DevTools command that only reads, while a step's input is being handled, should be judged by the step's input. Alternatively, when the poster is a harness read, fall back to the pre-round-15 judgement instead of declaring the change uncaused. Add a real-browser control in which the harness reads the page between a key and the change.",
+    "evidence": "Staging verify-critic-p01-odoo-rig-r15.log (grep 'add-rate'). Also verify-failed/ours-health/results/add-rate-20261126T130839-9c73.json (screen_changes.not_caused_first, steps) and verify-failed/e2e.log. The kept folder was /home/shan/critic/p01-odoo-rig-r15/.verify-failed/20261126T131445Z-1995269 (copied, then removed with the clone). Health reruns: health/health-run1..3.log and health/hc1..3/.\n\nTo reproduce: ERP_VERIFY_ALONE=1 ... verify-slot.sh ./erp verify on 946c8d48. Or bring up a clean stack (ERP_SEED_VOLUME=2000, no CSVs) and repeat: cd gauntlet/compare && COMPARE_OURS_URL=<stack> node run.mjs --task add-rate --product ours --health --out <dir>."
+  },
+  "evidence_staging": "/home/shan/evidence-staging/p01-odoo-rig/r15",
+  "evidence_dir": "gauntlet/evidence/p01-odoo-rig/r15",
+  "gate_gaps": [
+    {
+      "owner": "p01-odoo-rig",
+      "gate": "compare self-tests (test/causation.test.mjs round 14/15 tests) for postedCause",
+      "planted": "K1: lib/causation.mjs postedCause takes a poster on any thread ('if (!from || !...main) return null' -> 'if (!from) return null'). K8: a flow id used twice still links (last post wins).",
+      "evidence": "plants/k-mutations-run1.log: K1 MISSED (0 failing, 10 passing), K8 MISSED. The screen-causes real-browser plants also miss K1 (K12 MISSED, 3 passing)."
+    },
+    {
+      "owner": "p01-odoo-rig",
+      "gate": "compare self-tests for pointerStateCause (round 15 :hover rule)",
+      "planted": "K2: no in-script check. K3: any task, not only a BeginMainFrame frame. K4: any pseudo-class (/^:/). K5: any invalidation reason. K7: any task between frames taken as the pointer's input. K10: step chosen by the frame's end, not by the input's time.",
+      "evidence": "plants/k-mutations-run1.log: K2, K3, K4, K5, K7 and K10 all MISSED (0 failing, 10 passing each), and K13 (no input-queue condition) MISSED by screen-causes.test.mjs. Only M137/M138/K6/K9 (input queued since the frame before, moves after the change) are tested. K7 matters most: a page that moves content under a still pointer would be credited to a step whenever any page task ran between frames."
+    }
+  ],
+  "other_findings": [
+    "Plants on the real instrument: all refused. Z1 (S10 laundered through scheduler.postTask with a 2.5 s delay), Z2 (a posted-task poll of 10 x 300 ms) and Z2c (the same with setInterval) are refused for writes by the time limit after the step's input (plants/z-plants-run1.log). Y1/Y2/Y3 (a record revealed by a CSS animation armed before the clock, including typing two letters just before it ends) are refused for screen changes (plants/y-plants-run1.log, y3-run1..2.log).",
+    "[route: p14-import-export] The ours export-filtered-list driver fails on a second health run on the same stack. It waits 120 s for button.ct-tag 'Government' on /contacts/contacts and times out, in health runs 2 and 3 (health/hc2, hc3). The first run on a fresh stack verifies. Verify runs it only once, so this did not fail the round.",
+    "Odoo side by side: ours wins all five compared named tasks (find-record, create-restricted-user, custom-field-filter, switch-to-arabic, import-5000) on steps, keys, machine seconds and modelled human seconds. import-5000's keystrokes are left out (both 0). follow-approval is not compared because its ours driver is a stub. The blind review page names no product or tenant (0 matches).",
+    "Processor time of my verify was about 26,584 s (dotnet 22,669, web 2,991, e2e 924) against the 26,000 s maximum at this commit. Load was 0.4 to 20 (my plant runs beside it). Reported for the integrators' judgement only; the ratchet was not reached.",
+    "dotnet test count 1199 (ratchet min 1190): the integrator's message for 946c8d48 says 1211; I counted 1199 in 28 trx files, 0 failed, 0 skipped.",
+    "CLAUDE.md rules: p01 adds no money, business record or product endpoint. Harness dependencies remain playwright-core (Apache-2.0) and acorn (MIT). No Odoo code, views or text found copied; the drivers only operate Odoo's screens."
+  ],
+  "human_gates": [],
+  "minor_only": false
+}

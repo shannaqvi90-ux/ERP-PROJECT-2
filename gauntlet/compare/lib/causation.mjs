@@ -59,6 +59,9 @@ export const TRACE_CATEGORIES = Object.freeze([
   'devtools.timeline', 'disabled-by-default-devtools.timeline', 'toplevel', 'devtools', 'navigation', 'blink.user_timing', 'loading',
   // Round 14: every change of what the page shows, inside the task that made it (screenCauses).
   'disabled-by-default-devtools.timeline.invalidationTracking',
+  // Round 15: which task posted which (a flow id on the post and on the run: SequenceManager PostTask),
+  // so a task the browser or the page's own layout posted is linked to its poster, not guessed from timing.
+  'toplevel.flow',
 ]);
 /** An answer the page waited on for longer than this before it sent its write links nothing (plant S2). */
 export const LINK_SECONDS = 2;
@@ -213,6 +216,23 @@ export function analyseTrace(events) {
   const sendEvents = events.filter(e => e.name === 'ResourceSendRequest' && e.args?.data?.requestId);
   // Where the page's frames started navigations (a form posted, an address set), with the address.
   const navigationStarts = events.filter(e => e.name === 'FrameLoader::StartNavigation' && e.args?.url);
+  // Round 15 (the health-check fault): the task that posted each task, from Chromium's flow ids of its
+  // task posts (a post is a flow start inside the posting task; the run is a flow end inside the task
+  // that ran it). An id seen more than once is no link.
+  const flowStarts = new Map();
+  const flowEnds = new Map();
+  for (const e of events) {
+    if (e.name !== 'SequenceManager PostTask' || (e.ph !== 's' && e.ph !== 'f') || e.id === undefined) continue;
+    const map = e.ph === 's' ? flowStarts : flowEnds;
+    map.set(e.id, map.has(e.id) ? null : e);
+  }
+  for (const [id, end] of flowEnds) {
+    const start = flowStarts.get(id);
+    if (!start || !end) continue;
+    const run = taskAt({ threads }, keyOf(end), end.ts);
+    const poster = taskAt({ threads }, keyOf(start), start.ts);
+    if (run && poster && poster !== run) run.postedBy = { event: start, task: poster };
+  }
   for (const v of sockets.values()) { v.sends.sort((a, b) => a.event.ts - b.event.ts); v.receives.sort((a, b) => a.event.ts - b.event.ts); }
   // Round 14: a task that only delivered what the browser fetched of its own accord (the page's icon) and
   // ran nothing of the page's (no script, no event, nothing inside its microtask checkpoint) cannot have
@@ -433,7 +453,186 @@ function pointCause(ctx, point, depth) {
   // Round 13: a refresh the page set (a meta refresh, a Refresh header) navigates when its delay ends.
   if (task.events.some(e => e.name === 'HttpRefreshScheduler::NavigateTask')) return no('a refresh the page set (a meta refresh or a Refresh header): when it navigates is set by its delay, not by the person');
   if (task.observerScript && animatedAt(ctx, task.ts)) return no(ANIMATED_OBSERVER);
+  const posted = postedCause(ctx, task, depth);
+  if (posted) return posted;
+  const hover = pointerStateCause(ctx, task, point);
+  if (hover) return hover;
+  const defaultAction = inputDefaultActionCause(ctx, task, point);
+  if (defaultAction) return defaultAction;
+  const forced = forcedWorkCause(ctx, task, point, depth);
+  if (forced) return forced;
   return otherCause(ctx, task, depth);
+}
+
+/**
+ * Round 15 (the health-check fault, owner's lead): a task the page's main thread ran that another task
+ * of the page's main thread posted (Chromium's flow ids) is that task's: the browser's own follow-up
+ * of a change (focus cleared when the focused control went away, a deferred layout step) is judged by
+ * the task that made the change, at the point where it posted. Only a poster on a main thread of the
+ * page counts: a task posted from the compositor, the network or the browser process stays untraceable
+ * here and is judged as before. What the poster did not cause is not caused, and why is the poster's.
+ */
+function postedCause(ctx, task, depth) {
+  const from = task.postedBy;
+  if (!from || !ctx.model.threads.get(from.task.thread)?.main) return null;
+  // Round 16: a task posted while a DevTools command made the page update its style and layout was
+  // posted by that work, not by the command: the command only forced what was pending.
+  if (from.task.protocol) {
+    const forced = forcedWorkCause(ctx, from.task, from.event, depth + 1);
+    if (forced) return forced.caused ? yes(forced.step, [...forced.chain, 'a task the page\'s own pending work posted'], forced.origin) : noFrom('a task posted by work no step caused', forced);
+  }
+  const c = pointCause(ctx, { ...from.event, pid: Number(from.task.thread.split(':')[0]), tid: Number(from.task.thread.split(':')[1]) }, depth + 1);
+  return c.caused ? yes(c.step, [...c.chain, 'a task the page\'s own task posted'], c.origin) : noFrom('a task posted by a task no step caused', c);
+}
+
+/** The browser's focus and press states of the element an input acts on. */
+const FOCUS_STATES = /^:(focus|focus-visible|focus-within|active)$/;
+/** The browser's own steps of rendering a frame (style, layout, pre-paint, paint). */
+const LIFECYCLE_SPAN = /^(UpdateLayoutTree|Layout|PrePaint|Paint)$/;
+/** Entries into the page's code (what a task ran; the empty microtask checkpoint every task ends with is none). */
+const ENTRY_SPAN = /^(FunctionCall|EvaluateScript|TimerFire|FireAnimationFrame|FireIdleCallback|EventDispatch|v8\.callFunction|V8\.Execute)$/;
+/** What marks style as stale. */
+const STALE_MARK = /^(ScheduleStyleInvalidationTracking|ScheduleStyleRecalculation|StyleRecalcInvalidationTracking)$/;
+/** An entry into the page's code in `task`: in a DevTools command, the harness's own evaluations are not the page's. */
+const isEntry = (task, e) => e.ph === 'X' && ENTRY_SPAN.test(e.name) && !(task.protocol && /^(FunctionCall|EvaluateScript)$/.test(e.name) && !PAGE_SCRIPT(e));
+
+/**
+ * Round 16 (the health-check fault, lead): the browser's own state of what an input acts on. A press sets
+ * :active before it dispatches pointerdown; a click moves the focus to what was pressed, and a key may too,
+ * after the event's dispatch (its blur and focus events follow). A focus or press state recalculation
+ * outside every entry into the page's code, in the task that delivered a discrete input event, with none of
+ * the page's code between it and the event's dispatch, is that input's (the step the input belongs to),
+ * never a guess from the task before it (which may be a command of the harness that only read the page).
+ */
+function inputDefaultActionCause(ctx, task, point) {
+  if (!point || point.name !== 'StyleRecalcInvalidationTracking' || point.args?.data?.reason !== 'PseudoClass' || !FOCUS_STATES.test(String(point.args?.data?.extraData || ''))) return null;
+  if (task.protocol || !task.inputs.length) return null;
+  if (task.events.some(e => isEntry(task, e) && !task.inputs.includes(e) && e.ts < point.ts && e.ts + (e.dur || 0) > point.ts)) return null;
+  // The state is set before the event's dispatch (a press sets :active) or after it (the focus a press moves),
+  // by the browser, with none of the page's code in between.
+  const pageCode = task.events.filter(e => isEntry(task, e) && e.name !== 'EventDispatch');
+  const delivered = task.inputs.some(e => e.ts + (e.dur || 0) <= point.ts && !pageCode.some(x => x.ts >= e.ts + (e.dur || 0) && x.ts < point.ts))
+    || task.inputs.some(e => e.ts >= point.ts && !pageCode.some(x => x.ts >= point.ts && x.ts < e.ts));
+  if (!delivered) return null;
+  const s = stepBefore(ctx, task.ts);
+  return s ? yes(s.n, [`the browser's own state for step ${s.n}'s input (press or focus)`], task.ts) : null;
+}
+
+/**
+ * Round 16 (the health-check fault, lead): work the browser's update of style and layout forced. A task
+ * posted while a frame (or a DevTools command that reads layout) updated style and layout (Blink clears
+ * the focus of a control that went away, posting a task for it) was posted by the update, and an update
+ * only carries out what is pending: style made stale since the last update, by someone. That someone is
+ * found in the trace: the marks of stale style (ScheduleStyleInvalidationTracking, ScheduleStyleRecalculation,
+ * StyleRecalcInvalidationTracking) of this thread between the update before and this one, each judged at
+ * its own point, once per entry into the page's code (an input's handler, a timer ...). The work is the
+ * step's only when every one of them is; one no step caused (a timer armed before the clock, a command of
+ * the harness) makes it uncaused, with that one's reason. No timing and no nearness to a step decide:
+ * no marks found, or an update a script forced from inside its own call (judged where that script ran),
+ * leave it to the older rules.
+ */
+function forcedWorkCause(ctx, task, point, depth) {
+  if (!point) return null;
+  const lifecycle = task.events.filter(e => e.ph === 'X' && LIFECYCLE_SPAN.test(e.name) && e.ts <= point.ts);
+  if (!lifecycle.length) return null;
+  const entries = task.events.filter(e => isEntry(task, e));
+  const scriptHolds = ts => entries.some(e => e.ts < ts && e.ts + (e.dur || 0) > ts);
+  const last = lifecycle[lifecycle.length - 1];
+  // The update must be the browser's own step at the end of the task (nothing of the page's ran from its
+  // start to the point) and not forced from inside a script.
+  if (scriptHolds(last.ts) || entries.some(e => e.ts >= last.ts && e.ts <= point.ts)) return null;
+  let start = last.ts;
+  for (let i = lifecycle.length - 2; i >= 0; i--) {
+    const s = lifecycle[i];
+    if (scriptHolds(s.ts) || entries.some(e => e.ts >= s.ts && e.ts < start)) break;
+    start = s.ts;
+  }
+  const key = `forced:${task.thread}:${start}`;
+  if (ctx.memo.has(key)) return ctx.memo.get(key);
+  ctx.memo.set(key, null);
+  const index = lifecycleIndex(ctx, task.thread);
+  // The update before this one: the last style update on this thread that ended before this one began.
+  let lo = 0;
+  let hi = index.updates.length - 1;
+  let before = -Infinity;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    if (index.updates[mid].end <= start) { before = index.updates[mid].end; lo = mid + 1; } else hi = mid - 1;
+  }
+  const tasks = ctx.model.threads.get(task.thread).tasks;
+  const groups = new Map();
+  for (const m of index.marks) {
+    if (m.event.ts < before || m.event.ts >= start) continue;
+    const t = tasks[m.task];
+    const span = t.events.filter(e => isEntry(t, e) && e.ts <= m.event.ts && e.ts + (e.dur || 0) >= m.event.ts).sort((a, b) => a.ts - b.ts)[0];
+    // What the browser's own update of style marked while it ran follows from what was marked before it.
+    if (!span && t.events.some(e => e.ph === 'X' && LIFECYCLE_SPAN.test(e.name) && spanHolds(e, m.event.ts))) continue;
+    const k = span ? `${m.task}:${span.name}:${span.ts}` : `${m.task}:bare:${m.event.name}:${m.event.args?.data?.reason || ''}:${m.event.args?.data?.extraData || ''}`;
+    if (!groups.has(k)) groups.set(k, m.event);
+  }
+  let result = null;
+  if (groups.size) {
+    let found = null;
+    for (const event of groups.values()) {
+      const c = pointCause(ctx, { ...event, pid: Number(task.thread.split(':')[0]), tid: Number(task.thread.split(':')[1]) }, depth + 1);
+      if (!c.caused) { found = null; result = noFrom('style no step made stale was pending when the page updated style and layout', c); break; }
+      if (!found || c.origin >= found.origin) found = c;
+    }
+    if (!result) result = yes(found.step, [...found.chain, 'style that step made stale, updated with the frame'], found.origin);
+  }
+  ctx.memo.set(key, result);
+  return result;
+}
+
+/** Per thread: its style updates (ends) and the marks of stale style, by trace time (built once per judgement). */
+function lifecycleIndex(ctx, thread) {
+  if (!ctx.lifecycle) ctx.lifecycle = new Map();
+  if (ctx.lifecycle.has(thread)) return ctx.lifecycle.get(thread);
+  const updates = [];
+  const marks = [];
+  for (const t of ctx.model.threads.get(thread).tasks) {
+    for (const e of t.events) {
+      if (e.ph === 'X' && e.name === 'UpdateLayoutTree') updates.push({ ts: e.ts, end: e.ts + (e.dur || 0) });
+      else if (STALE_MARK.test(e.name)) marks.push({ event: e, task: t.index });
+    }
+  }
+  updates.sort((a, b) => a.end - b.end);
+  const r = { updates, marks };
+  ctx.lifecycle.set(thread, r);
+  return r;
+}
+
+/** Pointer events a frame hands the page from the input queue (moves and boundary events), not discrete input. */
+const POINTER_MOVES = /^(pointer(move|over|out|enter|leave|rawupdate)|mouse(move|over|out|enter|leave))$/;
+/** The browser's own state classes of the element under the pointer or in focus. */
+const POINTER_STATES = /^:(hover|active|focus|focus-visible|focus-within)$/;
+
+/**
+ * Round 15 (the health-check fault): the pointer a step moves reaches the page inside a frame's task
+ * (the browser aligns moves with frames), and the browser puts the :hover state on the element under
+ * the pointer there, before it dispatches the move events: a style recalculation outside any script,
+ * in a frame task that dispatched pointer moves outside script, after a task of the input queue
+ * handed the page that input since the frame before. That input is a step's: only the harness's steps
+ * put input in the page. A pointer the page moved content under dispatches the same events without a
+ * task of the input queue before the frame, and what moved the content is judged where it moved.
+ */
+function pointerStateCause(ctx, task, point) {
+  if (!point || point.name !== 'StyleRecalcInvalidationTracking' || point.args?.data?.reason !== 'PseudoClass' || !POINTER_STATES.test(String(point.args?.data?.extraData || ''))) return null;
+  if (!task.src || !/BeginMainFrame/.test(task.src) || task.protocol) return null;
+  const moves = task.topDispatches.filter(e => POINTER_MOVES.test(e.args?.data?.type || ''));
+  if (!moves.length || !moves.some(e => e.ts >= point.ts)) return null;
+  const inScript = task.events.some(e => e.ph === 'X' && SCRIPT_SPAN.test(e.name) && spanHolds(e, point.ts));
+  if (inScript) return null;
+  const thread = ctx.model.threads.get(task.thread);
+  let queued = null;
+  for (let i = task.index - 1; i >= 0 && !queued; i--) {
+    const t = thread.tasks[i];
+    if (/BeginMainFrame/.test(t.src || '')) break;
+    if (/main_thread_event_queue/.test(t.src || '')) queued = t;
+  }
+  if (!queued) return null;
+  const s = stepBefore(ctx, queued.ts);
+  return s ? yes(s.n, [`pointer input of step ${s.n} (delivered with a frame)`], queued.ts) : null;
 }
 
 function timerCause(ctx, timer, depth) {

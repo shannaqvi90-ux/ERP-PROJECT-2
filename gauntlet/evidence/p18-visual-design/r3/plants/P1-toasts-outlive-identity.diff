@@ -1,0 +1,13 @@
+diff --git a/web/src/kernel/ui.tsx b/web/src/kernel/ui.tsx
+index bc4ff23d..dfcdb5d9 100644
+--- a/web/src/kernel/ui.tsx
++++ b/web/src/kernel/ui.tsx
+@@ -52,7 +52,7 @@ export type ToastKind = "info" | "success" | "error";
+ type ToastItem = { id: number; message: string; kind: ToastKind };
+ 
+ // Held in identity-scoped maps, so what a toast said ends with the person who saw it.
+-const store = identityScoped<"toasts", ToastItem[]>();
++const store = new Map<"toasts", ToastItem[]>();
+ const counter = identityScoped<"toast" | "listener", number>();
+ const listeners = identityScoped<number, () => void>();
+ const current = (): ToastItem[] => {

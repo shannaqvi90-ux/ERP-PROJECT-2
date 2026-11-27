@@ -1,0 +1,54 @@
+erp_owner|f|f
+erp_app|f|f
+erp_worker|f|f
+erp_auth|f|f
+-- tables with tenant_id lacking forced RLS:
+-- count of tenant tables:
+34
+-- erp_app with no context and stamped as A:
+SET
+nocontext users|0
+nocontext contacts|0
+
+      1 set_config('app.actor_id'
+      6 set_config('app.actor_kind'
+      2 set_config('app.company_ids'
+      2 set_config('app.company_scope'
+      2 set_config('app.company_tx'
+      1 set_config('app.correlation_id'
+     12 set_config('app.tenant_id'
+     11 set_config('app.tenant_tx'
+      1 set_config('app.write_ids'
+      2 set_config('app.write_scope'
+-- erp_app stamped as A in a transaction:
+BEGIN
+SET
+0190a000-0000-7000-8000-000000000001|1019
+UPDATE 0
+ROLLBACK
+-- erp_app insert with B tenant id while stamped A:
+BEGIN
+SET
+0190a000-0000-7000-8000-000000000001|1020
+ERROR:  new row violates row-level security policy for table "exchange_rates"
+-- erp_app escalation:
+SET
+SET
+ERROR:  must be owner of table users
+SET
+-- connected as erp_app (password login), stamped as tenant A:
+BEGIN
+0190a000-0000-7000-8000-000000000001|1795693666.798017
+users|0190a000-0000-7000-8000-000000000001|100005
+contacts|0190a000-0000-7000-8000-000000000001|100006
+rates|0190a000-0000-7000-8000-000000000001|100000
+files|0190a000-0000-7000-8000-000000000001|15
+UPDATE 0
+DELETE 0
+ERROR:  new row violates row-level security policy for table "exchange_rates"
+-- as erp_app: escalation
+ERROR:  permission denied to set role "erp_owner"
+ERROR:  permission denied to set role "postgres"
+0
+0190a000-0000-7000-8000-000000000002
+0
