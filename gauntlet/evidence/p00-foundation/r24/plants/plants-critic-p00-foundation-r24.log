@@ -1,0 +1,128 @@
+verify-slot: slot 1 of 2 taken at 2026-11-27T19:36:22Z after waiting 0 s; time the run from here
+build start 19:36:26 load 0.98
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:21.80
+build end 19:36:51
+=== SHARDS-S24 (CRITIC_PLANT=S24) filter FullyQualifiedName~HttpAttackShardTests start 19:36:51 load 3.20
+=== SHARDS-S24 exit 1 end 19:37:06
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "Oracles") [79 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "UncoveredSurfaces") [64 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "VictimBlindSpots") [46 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "ChangedTables") [48 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "ListAnswersWrong") [53 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "StateChanges") [86 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "WholeTableReads") [54 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "Leaks") [61 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "ServerErrors") [45 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.Endpoints_of_one_family_are_in_one_share [6 ms]
+  Failed Erp.Gates.Tests.G1.HttpAttackShardTests.The_measured_families_are_dealt_so_that_no_share_is_far_above_the_average_and_no_family_is_a_share_of_its_own_size [3 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_an_endpoint_attacked_twice_or_by_no_share_or_different_inventories [176 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_shares_are_disjoint_together_every_endpoint_and_the_same_in_every_process [7 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_passes_shares_that_are_the_whole_attack_and_found_nothing [66 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_numbers_below_their_minimum_added_up_or_in_one_share [222 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.Every_counter_of_the_report_is_added_up_or_named_as_holding_in_every_share [< 1 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_share_that_is_missing_or_a_count_that_differs [151 ms]
+Total tests: 17
+=== SHARDS-NONE (CRITIC_PLANT=NONE) filter FullyQualifiedName~HttpAttackShardTests start 19:37:06 load 2.93
+=== SHARDS-NONE exit 0 end 19:37:19
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "Oracles") [77 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "UncoveredSurfaces") [63 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "VictimBlindSpots") [43 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "ChangedTables") [47 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "ListAnswersWrong") [52 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "StateChanges") [84 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "WholeTableReads") [54 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "Leaks") [60 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "ServerErrors") [44 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.Endpoints_of_one_family_are_in_one_share [6 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_measured_families_are_dealt_so_that_no_share_is_far_above_the_average_and_no_family_is_a_share_of_its_own_size [2 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_an_endpoint_attacked_twice_or_by_no_share_or_different_inventories [182 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_shares_are_disjoint_together_every_endpoint_and_the_same_in_every_process [7 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_passes_shares_that_are_the_whole_attack_and_found_nothing [55 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_numbers_below_their_minimum_added_up_or_in_one_share [228 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.Every_counter_of_the_report_is_added_up_or_named_as_holding_in_every_share [< 1 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_share_that_is_missing_or_a_count_that_differs [188 ms]
+Total tests: 17
+=== STATIC-T24 (CRITIC_PLANT=T24) filter FullyQualifiedName~G1ProcessStateTests|FullyQualifiedName~G1OutsideProcessStateTests|FullyQualifiedName~G1TenantSourceTests start 19:37:19 load 2.43
+=== STATIC-T24 exit 1 end 19:37:32
+  Passed Erp.Gates.Tests.G1.G1OutsideProcessStateTests.The_scan_finds_files_memory_maps_named_objects_pipes_sockets_processes_unmanaged_memory_and_native_calls [67 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Query_filters_switched_off_by_any_unproved_name_are_caught [92 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.Only_reviewed_files_choose_a_tenant_or_step_around_the_unit_of_work [385 ms]
+  Passed Erp.Gates.Tests.G1.G1TenantSourceTests.The_scanner_catches_every_planted_bypass [2 ms]
+  Passed Erp.Gates.Tests.G1.G1OutsideProcessStateTests.Only_reviewed_methods_keep_or_read_state_outside_the_process [481 ms]
+  Failed Erp.Gates.Tests.G1.G1ProcessStateTests.Process_wide_state_is_immutable_or_reviewed [579 ms]
+Total tests: 6
+=== LISTVOL-T24 (CRITIC_PLANT=T24) filter FullyQualifiedName~G1ListVolumeTests start 19:37:32 load 2.21
+=== LISTVOL-T24 exit 1 end 20:00:31
+  Passed Erp.Gates.Tests.G1.G1ListVolumeTests.The_volume_check_catches_totals_taken_from_whole_table_figures_or_kept_for_big_lists [51 s]
+  Failed Erp.Gates.Tests.G1.G1ListVolumeTests.Every_list_answers_each_tenant_from_its_own_rows_at_demo_volume [13 m 10 s]
+Total tests: 2
+=== G2-P24 (CRITIC_PLANT=P24) filter FullyQualifiedName~Erp.Gates.Tests.G2 start 20:00:31 load 4.59
+=== G2-P24 exit 1 end 20:05:44
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_a_switch_that_changes_a_company_setting [3 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_reviewed_write_sets_keep_company_settings_to_company_permissions [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it [56 s]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.No_endpoint_that_changes_data_is_guarded_by_a_read_permission [2 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [1 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [10 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.An_unknown_token_gets_401_from_every_permissioned_endpoint_through_every_carrier [257 ms]
+  Passed Erp.Gates.Tests.G2.G2XlsxCellTests.A_date_time_cell_is_the_moment_it_shows_not_its_serial_number [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2XlsxCellTests.A_date_cell_is_the_date_it_shows [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2XlsxCellTests.A_leaked_value_in_a_text_cell_is_still_caught [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2XlsxCellTests.A_self_closed_cell_does_not_swallow_the_cell_after_it [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2XlsxCellTests.A_leaked_value_in_a_number_cell_is_still_caught [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2XlsxCellTests.A_leaked_value_in_a_date_cell_is_still_caught [< 1 ms]
+  Passed Erp.Gates.Tests.G2.ImportExportWriteSetTests.A_check_writes_only_the_files_own_record_and_an_import_writes_only_the_contacts_of_the_file [1 s]
+  Passed Erp.Gates.Tests.G2.ImportExportWriteSetTests.A_download_changes_only_the_count_the_moment_and_the_person_on_the_export_and_only_its_permission_downloads [577 ms]
+  Passed Erp.Gates.Tests.G2.ImportExportWriteSetTests.Only_the_permission_that_creates_contacts_checks_or_imports_a_file [260 ms]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.Each_permission_writes_only_its_reviewed_tables_and_columns [19 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.Collections_and_their_record_names_match [< 1 ms]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.Running_a_finished_job_again_writes_one_new_job_and_changes_nothing_else [1 s]
+  Failed Erp.Gates.Tests.G2.JobsWriteSetTests.A_user_who_may_only_add_schedules_cannot_schedule_a_kind_whose_run_permission_they_lack [185 ms]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.With_the_run_permission_of_the_kind_a_schedule_is_added_switched_on_and_retimed_writing_only_the_schedule [179 ms]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.A_reader_and_a_user_who_may_only_cancel_cannot_run_a_finished_job_again [158 ms]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.Starting_and_running_again_each_need_the_run_permission_of_the_kind [86 ms]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_closing_a_company_that_also_closes_its_branches [4 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.A_write_is_covered_only_by_its_permissions_table_action_and_columns [1 ms]
+  Passed Erp.Gates.Tests.G2.G2SubjectTests.An_action_on_the_caller_never_acts_on_another_user_the_request_names [13 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [1 m 8 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [1 s]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [3 m 34 s]
+Total tests: 101
+=== G2-NONE (CRITIC_PLANT=NONE) filter FullyQualifiedName~Erp.Gates.Tests.G2 start 20:05:44 load 1.35
+=== G2-NONE exit 0 end 20:10:55
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.Every_endpoint_under_a_reviewed_prefix_declares_exactly_its_reviewed_permission [4 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.The_declaration_check_catches_AllowAnonymous_stacked_on_a_permission [10 ms]
+  Passed Erp.Gates.Tests.G2.G2PermissionTests.An_unknown_token_gets_401_from_every_permissioned_endpoint_through_every_carrier [273 ms]
+  Passed Erp.Gates.Tests.G2.G2SubjectTests.An_action_on_the_caller_never_acts_on_another_user_the_request_names [14 s]
+  Passed Erp.Gates.Tests.G2.G2XlsxCellTests.A_date_time_cell_is_the_moment_it_shows_not_its_serial_number [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2XlsxCellTests.A_date_cell_is_the_date_it_shows [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2XlsxCellTests.A_leaked_value_in_a_text_cell_is_still_caught [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2XlsxCellTests.A_self_closed_cell_does_not_swallow_the_cell_after_it [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2XlsxCellTests.A_leaked_value_in_a_number_cell_is_still_caught [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2XlsxCellTests.A_leaked_value_in_a_date_cell_is_still_caught [< 1 ms]
+  Passed Erp.Gates.Tests.G2.ImportExportWriteSetTests.A_check_writes_only_the_files_own_record_and_an_import_writes_only_the_contacts_of_the_file [1 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_a_switch_that_changes_a_company_setting [3 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_reviewed_write_sets_keep_company_settings_to_company_permissions [1 ms]
+  Passed Erp.Gates.Tests.G2.ImportExportWriteSetTests.A_download_changes_only_the_count_the_moment_and_the_person_on_the_export_and_only_its_permission_downloads [607 ms]
+  Passed Erp.Gates.Tests.G2.ImportExportWriteSetTests.Only_the_permission_that_creates_contacts_checks_or_imports_a_file [289 ms]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.Running_a_finished_job_again_writes_one_new_job_and_changes_nothing_else [1 s]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.A_user_who_may_only_add_schedules_cannot_schedule_a_kind_whose_run_permission_they_lack [251 ms]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.With_the_run_permission_of_the_kind_a_schedule_is_added_switched_on_and_retimed_writing_only_the_schedule [160 ms]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.A_reader_and_a_user_who_may_only_cancel_cannot_run_a_finished_job_again [145 ms]
+  Passed Erp.Gates.Tests.G2.JobsWriteSetTests.Starting_and_running_again_each_need_the_run_permission_of_the_kind [83 ms]
+  Passed Erp.Gates.Tests.G2.G2SetBasedWriteSourceTests.The_check_catches_a_set_based_write_in_an_unreviewed_file_and_a_new_one_in_a_reviewed_file [2 ms]
+  Passed Erp.Gates.Tests.G2.G2SetBasedWriteSourceTests.Only_reviewed_files_write_with_set_based_statements [17 ms]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.Each_permission_writes_only_its_reviewed_tables_and_columns [19 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.Collections_and_their_record_names_match [< 1 ms]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.The_write_set_check_catches_closing_a_company_that_also_closes_its_branches [3 s]
+  Passed Erp.Gates.Tests.G2.G2WriteSetTests.A_write_is_covered_only_by_its_permissions_table_action_and_columns [1 ms]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Acting_on_a_user_needs_every_permission_that_user_holds [1 m 10 s]
+  Passed Erp.Gates.Tests.G2.G2AccountTakeoverTests.Creating_from_a_role_cannot_grant_more_than_the_caller_holds [1 s]
+  Passed Erp.Gates.Tests.G2.G2ReportDataTests.Every_report_prints_only_data_its_permissions_show_elsewhere [3 m 37 s]
+Total tests: 101
+all done 20:10:55

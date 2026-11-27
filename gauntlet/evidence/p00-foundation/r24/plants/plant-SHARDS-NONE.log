@@ -1,0 +1,30 @@
+Test run for /work/tests/Erp.Gates.Tests/bin/Release/net10.0/Erp.Gates.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.17]   Discovering: Erp.Gates.Tests
+[xUnit.net 00:00:00.43]   Discovered:  Erp.Gates.Tests
+[xUnit.net 00:00:00.55]   Starting:    Erp.Gates.Tests
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "Oracles") [77 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "UncoveredSurfaces") [63 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "VictimBlindSpots") [43 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "ChangedTables") [47 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "ListAnswersWrong") [52 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "StateChanges") [84 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "WholeTableReads") [54 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "Leaks") [60 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_finding_in_any_one_share(list: "ServerErrors") [44 ms]
+[xUnit.net 00:00:12.59]   Finished:    Erp.Gates.Tests (ID = 'd67f9af34c5c91feae69a31c7ab81956a411c8cd54ea4942d23c1fd06e059e25')
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.Endpoints_of_one_family_are_in_one_share [6 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_measured_families_are_dealt_so_that_no_share_is_far_above_the_average_and_no_family_is_a_share_of_its_own_size [2 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_an_endpoint_attacked_twice_or_by_no_share_or_different_inventories [182 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_shares_are_disjoint_together_every_endpoint_and_the_same_in_every_process [7 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_passes_shares_that_are_the_whole_attack_and_found_nothing [55 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_numbers_below_their_minimum_added_up_or_in_one_share [228 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.Every_counter_of_the_report_is_added_up_or_named_as_holding_in_every_share [< 1 ms]
+  Passed Erp.Gates.Tests.G1.HttpAttackShardTests.The_judge_catches_a_share_that_is_missing_or_a_count_that_differs [188 ms]
+
+Test Run Successful.
+Total tests: 17
+     Passed: 17
+ Total time: 12.8608 Seconds
+VSTEST_ARTIFACTS_DIRECTORY environment variable was not found, falling back to a user-private temporary directory. This is most likely caused by an outdated Microsoft.NET.Test.Sdk package reference in the test project.

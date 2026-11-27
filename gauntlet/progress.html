@@ -27,108 +27,100 @@ main{max-width:1180px;margin:0 auto;padding:24px 16px 64px}h1{font-size:22px;mar
 <h1>Gauntlet progress</h1>
 <p class="muted">Platform core, judged piece by piece against the owner's bar and Odoo Community. Rebuilt from <code>gauntlet/verdicts/</code> by <code>gauntlet/tools/record.mjs</code>. Full evidence in <a href="ledger.md">ledger.md</a>; owner items in <a href="needs-human.md">needs-human.md</a>.</p>
 <div class="summary">
-<div class="stat"><b>115</b><span class="muted">verdicts</span></div>
+<div class="stat"><b>116</b><span class="muted">verdicts</span></div>
 <div class="stat"><b style="color:var(--win)">6</b><span class="muted">pieces winning</span></div>
 <div class="stat"><b style="color:var(--loss)">3</b><span class="muted">pieces losing</span></div>
 <div class="stat"><b style="color:var(--blocked)">7</b><span class="muted">pieces blocked</span></div>
 <div class="stat"><b>3</b><span class="muted">not judged yet</span></div>
 <div class="stat"><b style="color:var(--win)">7</b><span class="muted">done for now</span></div>
 <div class="stat"><b>1</b><span class="muted">frozen</span></div>
-<div class="stat"><b class="small">2026-11-27T16:52:03Z</b><span class="muted">last verdict</span></div>
+<div class="stat"><b class="small">2026-11-27T20:25:18Z</b><span class="muted">last verdict</span></div>
 </div>
 <div class="cards">
 <section class="card">
-      <header><div><span class="pid">p00-foundation</span><h2>Foundation and hard gates</h2><span class="muted small">Wave 0 · 21 rounds judged</span><span class="state done-for-now">Done for now · WIN in round 12</span></div>
+      <header><div><span class="pid">p00-foundation</span><h2>Foundation and hard gates</h2><span class="muted small">Wave 0 · 22 rounds judged</span><span class="state done-for-now">Done for now · WIN in round 12</span></div>
       <span class="badge win">WIN</span></header>
-      <div class="history"><span class="chip blocked" title="round 1 · 2026-10-02T22:39:48Z · The G1 HTTP attack misses a tenant leak through any parameter that is not an id">1</span><span class="chip blocked" title="round 2 · 2026-10-03T00:02:23Z · The isolation gate guesses tenant-switch inputs instead of proving the tenant can only come from the session">2</span><span class="chip blocked" title="round 3 · 2026-10-03T17:12:03Z · The one command fails from a clean clone under load: bulk credential seeding hits Npgsql&#39;s 30 s default command timeout">3</span><span class="chip blocked" title="round 4 · 2026-10-04T01:06:43Z · The isolation gate never checks which tenant a request&#39;s SQL actually runs under, so a tenant switch inside the reviewed unit of work goes unseen unless the attack happens to send the right input">4</span><span class="chip loss" title="round 5 · 2026-10-05T01:21:52Z · Sign-in to an empty workspace ties Odoo (steps, keystrokes, modelled human time); a tie is a loss">5</span><span class="chip win" title="round 7 · 2026-10-08T08:21:04Z · The sign-in win exists only on the team sign-in address; from a plain or per-user bookmark ours ties Odoo">7</span><span class="chip win" title="round 8 · 2026-10-09T16:17:43Z · The sign-in win rests on the passkey path alone; signing in with a password ties Odoo on the plain address, and on a shared PC it loses">8</span><span class="chip blocked" title="round 9 · 2026-10-11T06:44:15Z · The permission gate (G2) checks only cookie sessions, so a kernel fault that lets any Bearer-token caller skip every permission check passes all 1,501 tests">9</span><span class="chip win" title="round 10 · 2026-10-16T23:29:56Z · Kernel Money adds base amounts that were already rounded, against the owner-signed rounding rule, so foreign-currency documents can be off by fils">10</span><span class="chip blocked" title="round 11 · 2026-10-18T03:59:07Z · The permission gate (G2) never calls an endpoint with the caller&#39;s own id, so a kernel fault that lets anyone act on their own record passes every test">11</span><span class="chip win" title="round 12 · 2026-10-18T19:55:45Z · The one command (./erp verify) is at its processor-time limit: one of this round&#39;s two clean-clone runs failed G3 on it">12</span><span class="chip blocked" title="round 13 · 2026-10-22T04:49:16Z · The permission gate (G2) never sends a request from any client address other than the test server&#39;s own, so a kernel rule that trusts loopback callers passes every test">13</span><span class="chip blocked" title="round 14 · 2026-10-22T15:46:23Z · G2 checks only the client address, so a kernel permission rule that trusts the request&#39;s Host header passes every test">14</span><span class="chip win" title="round 15 · 2026-11-01T04:52:44Z · The shared gates still cost too much per new endpoint, and this round&#39;s savings come from sending fewer attack values">15</span><span class="chip blocked" title="round 16 · 2026-11-02T12:54:42Z · At this commit a user who may only add schedules can run job kinds they are refused, and p00&#39;s G2 gate machinery does not catch it">16</span><span class="chip blocked" title="round 17 · 2026-11-05T09:40:58Z · p00&#39;s own G1 company gate fails on a correct product when the machine is busy: its differential flags the audit log because the log changes while it is being asked">17</span><span class="chip win" title="round 19 · 2026-11-14T17:33:13Z · The gate suite takes 3 h 14 min on a quiet machine, and the processor-time ratchet sees only about a third of the CPU it uses">19</span><span class="chip blocked" title="round 20 · 2026-11-18T04:39:03Z · The new partition check in ./erp verify fails at random, so the one command can fail from a clean clone before any .NET test runs">20</span><span class="chip win" title="round 21 · 2026-11-20T14:40:04Z · A full verify still takes about 2 h 50 min on the shared machine, and its counted processor time (24,705 s) is already above the maximum the round was built against">21</span><span class="chip win" title="round 22 · 2026-11-23T08:48:52Z · The one-command verify is still slow and unreliable on the shared machine: 1 of 4 full runs passed, 7,887 s wall time even when nearly alone, and owner decision #59&#39;s third step is not done">22</span><span class="chip win" title="round 23 · 2026-11-26T19:31:18Z · The one-command verify is still slow, unreliable and at its processor-time ceiling: 1 of 3 alone runs passed every test, 8,639 s wall time, 26,092 s against the 26,000 s maximum">23</span></div>
+      <div class="history"><span class="chip blocked" title="round 1 · 2026-10-02T22:39:48Z · The G1 HTTP attack misses a tenant leak through any parameter that is not an id">1</span><span class="chip blocked" title="round 2 · 2026-10-03T00:02:23Z · The isolation gate guesses tenant-switch inputs instead of proving the tenant can only come from the session">2</span><span class="chip blocked" title="round 3 · 2026-10-03T17:12:03Z · The one command fails from a clean clone under load: bulk credential seeding hits Npgsql&#39;s 30 s default command timeout">3</span><span class="chip blocked" title="round 4 · 2026-10-04T01:06:43Z · The isolation gate never checks which tenant a request&#39;s SQL actually runs under, so a tenant switch inside the reviewed unit of work goes unseen unless the attack happens to send the right input">4</span><span class="chip loss" title="round 5 · 2026-10-05T01:21:52Z · Sign-in to an empty workspace ties Odoo (steps, keystrokes, modelled human time); a tie is a loss">5</span><span class="chip win" title="round 7 · 2026-10-08T08:21:04Z · The sign-in win exists only on the team sign-in address; from a plain or per-user bookmark ours ties Odoo">7</span><span class="chip win" title="round 8 · 2026-10-09T16:17:43Z · The sign-in win rests on the passkey path alone; signing in with a password ties Odoo on the plain address, and on a shared PC it loses">8</span><span class="chip blocked" title="round 9 · 2026-10-11T06:44:15Z · The permission gate (G2) checks only cookie sessions, so a kernel fault that lets any Bearer-token caller skip every permission check passes all 1,501 tests">9</span><span class="chip win" title="round 10 · 2026-10-16T23:29:56Z · Kernel Money adds base amounts that were already rounded, against the owner-signed rounding rule, so foreign-currency documents can be off by fils">10</span><span class="chip blocked" title="round 11 · 2026-10-18T03:59:07Z · The permission gate (G2) never calls an endpoint with the caller&#39;s own id, so a kernel fault that lets anyone act on their own record passes every test">11</span><span class="chip win" title="round 12 · 2026-10-18T19:55:45Z · The one command (./erp verify) is at its processor-time limit: one of this round&#39;s two clean-clone runs failed G3 on it">12</span><span class="chip blocked" title="round 13 · 2026-10-22T04:49:16Z · The permission gate (G2) never sends a request from any client address other than the test server&#39;s own, so a kernel rule that trusts loopback callers passes every test">13</span><span class="chip blocked" title="round 14 · 2026-10-22T15:46:23Z · G2 checks only the client address, so a kernel permission rule that trusts the request&#39;s Host header passes every test">14</span><span class="chip win" title="round 15 · 2026-11-01T04:52:44Z · The shared gates still cost too much per new endpoint, and this round&#39;s savings come from sending fewer attack values">15</span><span class="chip blocked" title="round 16 · 2026-11-02T12:54:42Z · At this commit a user who may only add schedules can run job kinds they are refused, and p00&#39;s G2 gate machinery does not catch it">16</span><span class="chip blocked" title="round 17 · 2026-11-05T09:40:58Z · p00&#39;s own G1 company gate fails on a correct product when the machine is busy: its differential flags the audit log because the log changes while it is being asked">17</span><span class="chip win" title="round 19 · 2026-11-14T17:33:13Z · The gate suite takes 3 h 14 min on a quiet machine, and the processor-time ratchet sees only about a third of the CPU it uses">19</span><span class="chip blocked" title="round 20 · 2026-11-18T04:39:03Z · The new partition check in ./erp verify fails at random, so the one command can fail from a clean clone before any .NET test runs">20</span><span class="chip win" title="round 21 · 2026-11-20T14:40:04Z · A full verify still takes about 2 h 50 min on the shared machine, and its counted processor time (24,705 s) is already above the maximum the round was built against">21</span><span class="chip win" title="round 22 · 2026-11-23T08:48:52Z · The one-command verify is still slow and unreliable on the shared machine: 1 of 4 full runs passed, 7,887 s wall time even when nearly alone, and owner decision #59&#39;s third step is not done">22</span><span class="chip win" title="round 23 · 2026-11-26T19:31:18Z · The one-command verify is still slow, unreliable and at its processor-time ceiling: 1 of 3 alone runs passed every test, 8,639 s wall time, 26,092 s against the 26,000 s maximum">23</span><span class="chip win" title="round 24 · 2026-11-27T20:25:18Z · The permissions gate (G2) cannot see a missing second-level permission check inside an answer: a user who may change users but not read them reads users&#39; audit history, and all 101 G2 tests pass">24</span></div>
       
-        <div class="gap"><div class="label">Biggest gap</div><b>The one-command verify is still slow, unreliable and at its processor-time ceiling: 1 of 3 alone runs passed every test, 8,639 s wall time, 26,092 s against the 26,000 s maximum</b><p>Every gate held and every p00 test passed in all three runs. What most holds the foundation back is the cost and flakiness of proving it. Every later business module pays this on every integration.
+        <div class="gap"><div class="label">Biggest gap</div><b>The permissions gate (G2) cannot see a missing second-level permission check inside an answer: a user who may change users but not read them reads users&#39; audit history, and all 101 G2 tests pass</b><p>G2 checks each endpoint&#39;s declared permission: grant exactly one, deny the rest. Many answers also make a second, in-handler decision through the kernel&#39;s ICurrentUser.Has. Examples:
+- which record kinds the audit log shows
+- whether a job&#39;s output text is included
+- which job kinds may be scheduled or rerun
+- whether a list view may be shared
 
-Reliability:
-- Two of three alone verifies, each the only verify on the machine, failed on one load-sensitive test outside p00&#39;s code.
-- Run 1: web clientIsolation.test.tsx timed out at 30 s and cascaded to 10 failures. This happened at load 16 to 23 during the first minutes, when ./erp verify itself starts the web tests, the .NET build, the app image build and the e2e stack together.
-- Run 2: the comparison harness&#39;s measured-part control C3 was judged invalid on StyleRecalcInvalidationTracking.
-- So a critic needs about two to three 2.4-hour runs for one green run. The load that breaks these tests comes from verify&#39;s own stage layout, not from other agents.
+I planted two faults in ICurrentUser.Has, p00&#39;s own kernel. Both are real faults, and no hard gate saw them:
+- P24c: a record kind&#39;s read permission is implied by any permission on that resource, for the audit reader. A user holding identity.users.update and audit.log.read, without identity.users.read, reads the administrator&#39;s user-record history. Users&#39; history holds e-mails and names. All 101 G2 tests pass, the 13 audit gate tests pass and the 23 audit module tests pass.
+- P24b: jobs.jobs.output is implied by jobs.jobs.read. G2 misses it. Only p12&#39;s own module test catches it.
 
-Wall time:
-- Run 3 took 8,639 s against the ratchet&#39;s 3,600 s quiet-machine figure.
-- The dotnet stage is again paced by the third G1 HTTP share: 1 h against 30 m 7 s, 33 m 13 s and 37 m 56 s for the others. In processor time it is 4,799 s against 2,308 to 3,182 s. The shares are still unbalanced, as in r22.
+So a second-level permission check stays safe only while each module remembers to write its own test for it. For a UAE trading company, the audit trail is the place a restricted clerk must not read colleagues&#39; records. The bar says &#39;every action is denied unless a role grants it&#39;.
 
-Cost:
-- Processor time was 26,092 s against the 26,000 s maximum, 92 s over in an alone run.
-- The next endpoint any piece adds pushes integrations over again.</p></div>
+The real product is clean (the probe passes unplanted), so this is a gate gap for the backlog, not a block.</p></div>
         <div class="grid2">
-          <div><div class="label">Hard gates</div><ul class="gates"><li><span class="dot pass"></span><b>G3 clean clone: ./erp verify (build, migrate, seed, every test)</b> PASS<span class="muted"> — I ran three full alone verifies (ERP_VERIFY_ALONE=1, through verify-slot.sh) on a fresh clone of 841abb83, with project c-p00-foundation-r23 and ports 20050/20051/20060/20061 set through the environment.
+          <div><div class="label">Hard gates</div><ul class="gates"><li><span class="dot pass"></span><b>G3 clean clone: ./erp verify (build, migrate, seed, every test)</b> PASS<span class="muted"> — One alone verify on a fresh clone of 98ea7194 passed on its first try, through verify-slot.sh with ERP_VERIFY_ALONE=1. I used project c-p00-foundation-r24 and ports 20050/20051/20060/20061, all set through the environment.
 
-Run 3 passed every test. Slot taken 17:06:23Z, with nothing else of mine running:
-- dotnet 1,216, web unit 811, e2e 180, compare 494, build 22. That is 2,723 passed, 0 failed, 0 skipped, and every count is at or above its minimum.
-- The built-ours health check verified all 24 drivers.
-- Every ratchet line passed except one: &#39;verify.cpuSeconds: the verify stages used 26092 processor seconds, maximum 26000&#39; (dotnet 22,202, web 2,864, e2e 927, timing 98). That is 92 s (0.35 %) over, at load mean 9.3 and peak 25. The ratchet also printed &#39;other work beside the verify 34978 s (57.3 %)&#39;. Under the critic rule, integrators&#39; alone runs measure this maximum, so I report it and do not judge on it.
+- Slot taken 2026-11-27T16:56:00Z. &#39;verify passed in 8503 s&#39;, exit 0. Nothing else of mine ran beside it.
+- Tests: 2,744 passed, 0 failed, 0 skipped (r23: 2,723).
+- Processor time: 24,981 s against the 27,500 s maximum (dotnet 21,219, web 2,725, e2e 924, timing 112). Load was 0.32 at the start, 28.28 at the highest and 1.34 at the end.
+- Ratchet check passed.
 
-Run 1 failed only web/src/modules/shell/clientIsolation.test.tsx. Its first test timed out at 30 s and the other 9 cascaded, at load 16 to 23. I stopped run 1 by its PID.
+r23 needed three runs for one green. This round&#39;s change (the web stage waits for the builds) let vitest start after 30 s at load 7.97, and clientIsolation passed. Evidence: verify-summary.txt and verify-critic-p00-foundation-r24-run1.log.</span></li><li><span class="dot pass"></span><b>G3 clean clone: ./erp up (running seeded demo)</b> PASS<span class="muted"> — ERP_PROJECT=c-p00-foundation-r24 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ./erp up exited 0. It printed &#39;The demo is running (287 s): http://localhost:20050&#39; with the demo sign-ins, the team addresses, the API description and the database port (erp-up.log).
 
-Run 2 failed only gauntlet/compare measured-part.test.mjs &#39;control C3&#39;, judged invalid on StyleRecalcInvalidationTracking, so 493/494 compare tests passed. Its dotnet stage and its e2e stage (180/180, health check 24/24) passed.
-
-Evidence: verify-summary.txt, the logs of runs 1 to 3, run1-kept/, run2-kept/, run3-kept/.</span></li><li><span class="dot pass"></span><b>G3 clean clone: ./erp up (running seeded demo)</b> PASS<span class="muted"> — ERP_PROJECT=c-p00-foundation-r23 ERP_HTTP_PORT=20050 ERP_DB_PORT=20051 ./erp up exited 0. It printed &#39;The demo is running (449 s): http://localhost:20050&#39; on the overridden project and ports, with the demo sign-ins, the team addresses, the API description and the database port (erp-up.log).
-
-The demo holds 100,005 users and 100,006 contacts in tenant A (the counts recorded in the full export).
-
-./erp tenant create made an empty workspace, and its owner reached the Arabic RTL home by keyboard (85 keys, 2.64 s; browser/empty.log, 08-empty-workspace-ar.jpg).</span></li><li><span class="dot pass"></span><b>G1 tenant isolation: my own live attack as tenant A (alnoor) on tenant B (gulfsteel): API, exports, jobs, files</b> PASS<span class="muted"> — attack/attack.mjs (the critic script carried from r22) collected 872 B-only ids and sent, as A:
-- all 260 operations with B&#39;s ids
+The demo holds 100,006 contacts and 100,005 users for alnoor, and 1,006 and 1,005 for gulfsteel (db-roles.txt).</span></li><li><span class="dot pass"></span><b>G1 tenant isolation: my own live attack as tenant A (alnoor) on tenant B (gulfsteel) through the API, exports, jobs and files</b> PASS<span class="muted"> — attack/attack.mjs collected 872 ids that belong only to B. As A it then sent:
+- all 261 operations with B&#39;s ids
 - 1,668 documented query-parameter requests
-- 1,140 tenant-switch requests (headers, query, cookies)
-- 190 export requests, 77 filter requests and 346 path-variant and audit requests.
+- 1,155 tenant-switch requests (headers, query, cookies)
+- 190 export requests, 77 filter requests and 349 path-variant and audit requests
 
-&#39;B rows unchanged by A attack: true&#39;: B&#39;s checksums over all 34 tenant tables were identical before and after.
+B&#39;s rows were unchanged by A&#39;s attack (md5 of every tenant table, b-before/after).
 
-All 138 flagged lines are explained (attack/probe.txt, attack/probe-db.txt):
-- 81 audit-record reads with B ids answered byte-identically to a random id (54/54 in the probe).
-- &#39;Gulf Steel&#39; and &#39;الخليج&#39; are A&#39;s own data: 143 and 1,633 alnoor contacts carry them.
-- B&#39;s tenant id in A&#39;s audit log and CSV comes from A&#39;s own attack payload: the jobs.jobs and jobs.schedules inserts by admin@alnoor with {tenantId: B}.
-- DELETE of B&#39;s rate, file and import answered 204, like a random id. B still downloads its file (200, 69 bytes) and reads its rate (200), while A gets 404 on both.
+The script flagged 138 answers. My controls in attack/probe.txt show every one is benign:
+- The 54 audit-record answers with B ids are byte-identical to answers for a random id.
+- Every switched answer is identical to the same request sent plainly. &#39;Gulf Steel&#39; and &#39;الخليج&#39; are A&#39;s own contact &#39;Gulf Steel Industries FZE&#39;.
+- The B tenant id in A&#39;s audit CSV is an echo: A&#39;s own job payload {tenantId: B}, written by the attacker.
+- After A&#39;s DELETEs, B still has its rate and file. A gets 404 on B&#39;s file.
 
-The full tenant export as A now succeeds: 32 files, 14.9 MB. It holds no B id (31 checked), no B canary, no &#39;gulfsteel&#39; and no B tenant id (attack/full-export.txt).</span></li><li><span class="dot pass"></span><b>G1 tenant isolation: the database role the app uses</b> PASS<span class="muted"> — The app connects as erp_app (ConnectionStrings__App). No erp role is superuser or has BYPASSRLS. All 34 tables with tenant_id have row-level security enabled and forced and a NOT NULL tenant_id, and none is owned by erp_app.
+The full tenant export of A (32 files, 14.9 MB) contains none of the 33 B values I searched for (attack/full-export.txt).</span></li><li><span class="dot pass"></span><b>G1 tenant isolation: the database role the app uses</b> PASS<span class="muted"> — No erp role is superuser or has BYPASSRLS. All 34 tables with tenant_id have:
+- row-level security enabled and forced
+- tenant_id NOT NULL
+- an owner other than erp_app
 
-Signed in as erp_app (db-roles-and-app-attack.txt):
-- With no tenant set it sees 0 contacts and 0 audit rows. A session-level SET app.tenant_id to B&#39;s id also shows 0.
-- SET ROLE erp_owner and postgres are denied.
-- row_security=off answers &#39;query would be affected by row-level security policy&#39;.
-- NO FORCE and DISABLE RLS answer &#39;must be owner&#39;.
-- CREATE in public and reading pg_authid are denied.
+erp_app can reach no table without tenant_id (db-roles.txt).
 
-There is no real or double precision column anywhere.</span></li><li><span class="dot pass"></span><b>G2 permissions on the real product</b> PASS<span class="muted"> — attack/g2-live.txt: a no-roles user called all 259 documented operations in five request forms and got &#39;2xx answers: 0&#39;.
+As erp_app (db-app-role-attack.txt):
+- With no tenant set it sees 0 contacts, users and audit rows.
+- With A bound it sees 0 B rows. UPDATE of B contacts changes 0 rows. DELETE is denied. Moving an A contact to B violates the RLS policy.
+- A session-level tenant without the transaction stamp sees 0 rows.
+- erp_app cannot disable RLS (&#39;must be owner&#39;).</span></li><li><span class="dot pass"></span><b>G2 permissions on the real product</b> PASS<span class="muted"> — attack/g2-live.txt: a user with no roles called all 260 documented operations in five request forms (plain, trailing slash, upper case, encoded, double slash). Result: 403 x 1,040 and 404 x 260, &#39;2xx answers: 0&#39;.
 
-attack/revoke-live.txt: the admin removed identity.roles.read from Read-only. The signed-in viewer&#39;s next request got 403, and after the permission was restored it got 200.
+attack/revoke-live.txt: the admin removed identity.roles.read from Read-only. The signed-in viewer&#39;s next request got 403. After the restore it got 200.
 
-Browser (browser/walk.log):
-- The no-roles user gets API 403 and a &#39;No access&#39; screen at /identity/users.
-- The viewer sees no New button on Roles, and POST role answers 403.
-- After sign-out the API answers 401.
+In the browser, the no-roles user gets &#39;No areas are open to you yet&#39; and &#39;No access&#39; on a direct URL. The viewer sees no New button on Roles, and its POST to roles answers 403.</span></li><li><span class="dot pass"></span><b>G1/G2 gate self-check: faults planted in p00&#39;s kernel and gate machinery (plants/plants.diff, plants/plant-results.txt)</b> PASS<span class="muted"> — All plant runs went through verify-slot.sh.
 
-All G2 classes passed in all three verifies.</span></li><li><span class="dot pass"></span><b>G1/G2 gate self-check: faults planted in p00&#39;s kernel (plants/plants.diff, plants/plant-results.txt)</b> PASS<span class="muted"> — All plant runs went through the verify slot.
+Caught:
+- S24 (gate machinery, this round&#39;s change): one measured family dealt to no share. Caught by HttpAttackShardTests (&#39;Expected 46, Actual 45&#39;).
+- T24 (tenant leak): a searched list&#39;s total memo on an instance field of the ModuleCatalog DI singleton, with no tenant in the key. Caught by G1ProcessStateTests (&#39;singleton ... CriticTotals ... key it by tenant&#39;) and by G1ListVolumeTests (&#39;tenant A: GET /api/tenancy/access?take=50&amp;search=a answered total 102505, but the tenant&#39;s own rows ... 100005&#39;).
+- P24 (missing permission check): kernel ICurrentUser.Has takes any permission on a module.resource as all of them. Caught by 1 of 101 G2 tests (JobsWriteSetTests).
 
-L23 was a tenant leak in the kernel list framework, ListBinding.QueryAsync: a static 60 s &#39;count memo&#39; keyed by list, search and filter, with no tenant. G1ProcessStateTests caught it: &#39;static Erp.Kernel.Lists.ListTotalMemo.Totals: a read-only field that holds a mutable ConcurrentDictionary ... key it by tenant&#39;.
+Missed by the gates (gate gaps, not product faults):
+- P24b: job output shown to a reader. Missed by G2, caught only by p12&#39;s module test.
+- P24c: audit record-kind check. A user with identity.users.update and audit.log.read, but no identity.users.read, reads the admin&#39;s user history. My probe test proves the fault (planted: 1 item, unplanted: 0). All 101 G2 tests, the 13 &#39;Audit&#39; gate tests and the 23 audit module tests pass under it.
 
-P23 was a permission fault in SessionAuthenticationHandler: a session&#39;s permissions were kept for 5 minutes, so a removed permission kept working. Two gates caught it. The static walk did. G2ReportDataTests also caught it by behaviour, with 2 of 101 G2 tests failing: &#39;catalogue for [reports.catalog.read, contacts.contacts.read] lists reports [], expected [contacts.contactCard]&#39; and a 403 on tenancy.companyProfile.
+Unplanted controls pass.</span></li><li><span class="dot pass"></span><b>Rule gates (licences, no float money, EN/AR parity, audit coverage) and ratchet minimums</b> PASS<span class="muted"> — The rule gates passed in the verify. The ratchet passed every count minimum and the maximum: &#39;Ratchet check passed&#39;.
 
-P23b was an action without its permission in PermissionAuthorizationHandler: any permission of a module passed every &lt;module&gt;.*.read check. G2PermissionTests.Granting_exactly_one_permission_opens_exactly_the_endpoints_that_declare_it caught it: &#39;[bearer] contacts.contacts.archive: GET /api/contacts/contacts answered 200 (expected 403)&#39;.
+No real or double precision column exists. Money is stored as:
+- amount numeric(28,10)
+- exchange rate numeric(19,8)
+- base amount numeric(19,4)
+- currency alongside (contacts.credit_limit_*)
 
-This round&#39;s p00 change adds no product surface. It only changes the G1 gate&#39;s attack names, the marker judge and the list-walk take.</span></li><li><span class="dot pass"></span><b>Rule gates (licences, no float money, EN/AR parity, audit coverage) and ratchet minimums</b> PASS<span class="muted"> — The rule gates passed in every run. Run 3&#39;s ratchet passed every count minimum, and failed only cpuSeconds by 92 s (see G3).
-
-Money is stored as numeric amount (28,10), currency, exchange rate (19,8), base amount (19,4) and base currency (db-money.txt).
-
-The live role change wrote audit rows with actor admin@alnoor.example, the time and field-level permissions values (db-audit.txt).
-
-Every tenant table carries the audit.capture trigger except audit.entries and identity.sign_in_attempts, as in r22.
-
-Counts did not fall from r22: dotnet 1,216 ≥ 1,201, web 811 ≥ 786, e2e 180 ≥ 174, compare 494 ≥ 489, build 22 ≥ 22.</span></li></ul></div>
-          <div><div class="label">Tests</div><p class="big">2723<span class="muted"> / 2723 passed</span></p>
-            <p class="muted">0 failed · 0 skipped · 8644s</p>
-            <p class="muted">Clean clone → demo: PASS in 8644s</p></div>
+Audit captured 760,171 rows for A (db-roles.txt). The live role change in revoke-live wrote audit rows.</span></li></ul></div>
+          <div><div class="label">Tests</div><p class="big">2744<span class="muted"> / 2744 passed</span></p>
+            <p class="muted">0 failed · 0 skipped · 8503s</p>
+            <p class="muted">Clean clone → demo: PASS in 8503s</p></div>
         </div>
-        <div class="label">Against Odoo <span class="muted">(steps · keystrokes · machine s · modelled human s)</span></div><div class="tablewrap"><table><thead><tr><th>Task</th><th>Ours</th><th>Odoo</th><th>Winner</th></tr></thead><tbody><tr><td>sign-in (sign in to an empty workspace)</td><td class="num">1 · 0 · 0.084s · 2.03s</td><td class="num">2 · 0 · 1.28s · 4.68s</td><td><span class="win ours">ours</span></td></tr></tbody></table></div>
-        <div class="label">Screenshots</div><div class="shots"><a href="evidence/p00-foundation/r23/01-sign-in-en.jpg"><img loading="lazy" src="evidence/p00-foundation/r23/01-sign-in-en.jpg" alt="01-sign-in-en.jpg"></a><a href="evidence/p00-foundation/r23/02-sign-in-ar.jpg"><img loading="lazy" src="evidence/p00-foundation/r23/02-sign-in-ar.jpg" alt="02-sign-in-ar.jpg"></a><a href="evidence/p00-foundation/r23/03-shell-en.jpg"><img loading="lazy" src="evidence/p00-foundation/r23/03-shell-en.jpg" alt="03-shell-en.jpg"></a><a href="evidence/p00-foundation/r23/04-shell-ar.jpg"><img loading="lazy" src="evidence/p00-foundation/r23/04-shell-ar.jpg" alt="04-shell-ar.jpg"></a><a href="evidence/p00-foundation/r23/05-roles-ar.jpg"><img loading="lazy" src="evidence/p00-foundation/r23/05-roles-ar.jpg" alt="05-roles-ar.jpg"></a><a href="evidence/p00-foundation/r23/06-no-roles-user.jpg"><img loading="lazy" src="evidence/p00-foundation/r23/06-no-roles-user.jpg" alt="06-no-roles-user.jpg"></a><a href="evidence/p00-foundation/r23/07-no-roles-direct-url.jpg"><img loading="lazy" src="evidence/p00-foundation/r23/07-no-roles-direct-url.jpg" alt="07-no-roles-direct-url.jpg"></a><a href="evidence/p00-foundation/r23/08-empty-workspace-ar.jpg"><img loading="lazy" src="evidence/p00-foundation/r23/08-empty-workspace-ar.jpg" alt="08-empty-workspace-ar.jpg"></a></div>
-        <p class="muted small">Round 23 · judged 2026-11-26T19:31:18Z · commit <code>841abb8312</code></p>
+        <div class="label">Against Odoo <span class="muted">(steps · keystrokes · machine s · modelled human s)</span></div><div class="tablewrap"><table><thead><tr><th>Task</th><th>Ours</th><th>Odoo</th><th>Winner</th></tr></thead><tbody><tr><td>sign-in (sign in to an empty workspace)</td><td class="num">1 · 0 · 0.068s · 2.03s</td><td class="num">2 · 0 · 0.791s · 4.68s</td><td><span class="win ours">ours</span></td></tr></tbody></table></div>
+        <div class="label">Screenshots</div><div class="shots"><a href="evidence/p00-foundation/r24/01-sign-in-en.jpg"><img loading="lazy" src="evidence/p00-foundation/r24/01-sign-in-en.jpg" alt="01-sign-in-en.jpg"></a><a href="evidence/p00-foundation/r24/02-sign-in-ar.jpg"><img loading="lazy" src="evidence/p00-foundation/r24/02-sign-in-ar.jpg" alt="02-sign-in-ar.jpg"></a><a href="evidence/p00-foundation/r24/03-shell-en.jpg"><img loading="lazy" src="evidence/p00-foundation/r24/03-shell-en.jpg" alt="03-shell-en.jpg"></a><a href="evidence/p00-foundation/r24/04-shell-ar.jpg"><img loading="lazy" src="evidence/p00-foundation/r24/04-shell-ar.jpg" alt="04-shell-ar.jpg"></a><a href="evidence/p00-foundation/r24/05-roles-ar.jpg"><img loading="lazy" src="evidence/p00-foundation/r24/05-roles-ar.jpg" alt="05-roles-ar.jpg"></a><a href="evidence/p00-foundation/r24/06-no-roles-user.jpg"><img loading="lazy" src="evidence/p00-foundation/r24/06-no-roles-user.jpg" alt="06-no-roles-user.jpg"></a><a href="evidence/p00-foundation/r24/07-no-roles-direct-url.jpg"><img loading="lazy" src="evidence/p00-foundation/r24/07-no-roles-direct-url.jpg" alt="07-no-roles-direct-url.jpg"></a><a href="evidence/p00-foundation/r24/08-empty-workspace-ar.jpg"><img loading="lazy" src="evidence/p00-foundation/r24/08-empty-workspace-ar.jpg" alt="08-empty-workspace-ar.jpg"></a></div>
+        <p class="muted small">Round 24 · judged 2026-11-27T20:25:18Z · commit <code>98ea71944e</code></p>
     </section>
 <section class="card">
       <header><div><span class="pid">p01-odoo-rig</span><h2>Odoo reference rig and blind comparison harness</h2><span class="muted small">Wave 0 · 14 rounds judged</span><span class="state frozen">Frozen · frozen by the owner, needs-human #27</span></div>
