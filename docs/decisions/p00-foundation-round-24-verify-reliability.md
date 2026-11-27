@@ -59,3 +59,22 @@ Identity (seed, users volume), Currency (whole-list seed) and Contacts volume te
 budget test failed once at load 75 and passed on two other runs.
 
 Processor time this round adds to a verify: none beyond the request-seconds counters (a dictionary update per request).
+
+## Integrator's alone run (2026-11-27)
+
+The first full verify of this round: the integrator's alone run (`ERP_VERIFY_ALONE=1`, both slots) of merge b2edcb19
+(piece head 4c7a1f69 on 82611d1b), slot taken 11:28:56 UTC. It passed every stage and the ratchet check.
+
+| | this run | r23 alone run 3 |
+|---|---|---|
+| Wall time | 8,557 s | 8,639 s |
+| Verify processor time | 25,395 s (dotnet 21,547, web 2,867, e2e 878, timing 103) | 26,092 s |
+| Load | 1.22 at the start, 1.54 at the end, highest 33.52 over 572 readings on 16 CPUs | |
+| Tests | dotnet 1,230, web unit 813, e2e 180, compare 499, build 22; none failed or skipped | |
+
+Stage walls: dotnet 7,172 s, web 4,845 s, timing 291 s. The web stage's timed tests started after "builds over after
+waiting 25 s (load 10.00)". The machine counted 59,881 s of processor time over the run, 34,486 s of it outside the
+verify stages (the ratchet's own report). One run only: the done criterion asks for 3 of 3 from fresh clones, which is
+the critic's to measure. The per-share processor time (cpu-group-http-N) and the shares' family reports were in the run's
+output folder, which a passing run removes, so they are not recorded here. All four http shares and the three
+non-interference shares passed.
