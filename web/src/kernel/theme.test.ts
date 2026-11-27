@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { applyLook, chooseDensity, chooseTheme, densityKey, resolveTheme, storedDensity, storedThemeChoice, themeKey } from "./theme";
+import { applyLook, applyUserLook, chooseDensity, chooseTheme, densityKey, resolveTheme, storedDensity, storedThemeChoice, themeKey } from "./theme";
 
 const media = (matching: string[]) =>
   vi.fn((query: string) => ({ matches: matching.includes(query), addEventListener: () => {}, removeEventListener: () => {} }) as unknown as MediaQueryList);
@@ -41,5 +41,22 @@ describe("theme and density", () => {
     localStorage.setItem(densityKey, "huge");
     expect(storedThemeChoice()).toBe("system");
     expect(storedDensity()).toBe("compact");
+  });
+
+  it("takes a signed-in user's own look, and the default (not the previous person's) where they never chose", () => {
+    vi.stubGlobal("matchMedia", media([]));
+    chooseTheme("light");
+    chooseDensity("comfortable");
+    applyUserLook({ theme: "hc", density: null });
+    expect(document.documentElement.dataset.theme).toBe("hc");
+    expect(document.documentElement.dataset.density).toBe("compact");
+    expect(localStorage.getItem(themeKey)).toBe("hc");
+    expect(localStorage.getItem(densityKey)).toBeNull();
+    applyUserLook({});
+    expect(document.documentElement.dataset.theme).toBe("dark");
+    expect(localStorage.getItem(themeKey)).toBeNull();
+    applyUserLook({ theme: "neon", density: "huge" });
+    expect(document.documentElement.dataset.theme).toBe("dark");
+    expect(document.documentElement.dataset.density).toBe("compact");
   });
 });

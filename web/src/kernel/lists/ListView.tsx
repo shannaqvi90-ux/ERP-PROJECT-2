@@ -1,5 +1,4 @@
 import { useOverflowTitles } from "../overflowTitles";
-import { commitNow } from "../commitNow";
 import { flushSync } from "react-dom";
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { api, ApiError } from "../api";
@@ -205,28 +204,26 @@ export function ListView(props: ListViewProps) {
       .then(([loaded, saved]) => {
         if (cancelled) return;
         // The workspace's custom fields are columns too: their labels are the tenant's own words.
-        commitNow(() => {
-          registerDynamicStrings(loaded.strings);
-          setDefinition(loaded);
-          setViews(saved.items);
-          const address = stateFromAddress(window.location.search, loaded);
-          let start: ListState;
-          if (address.present) {
-            start = address.state;
-          } else {
-            const preferred = saved.items.find((v) => v.isMine && v.isDefault) ?? saved.items.find((v) => v.isShared && v.isDefault);
-            start = preferred ? stateFromView(loaded, preferred, `view:${preferred.id}`) : initialState(loaded);
-          }
-          const typed = searchRef.current?.value ?? "";
-          if (typed && !address.present) start = { ...start, search: typed };
-          setState(start);
-          setSearchText(start.search);
-          setAppliedSearch(start.search);
-          setBaseline(fingerprint(start));
-          setOpenId(recordInAddress() ?? address.open);
-        });
+        registerDynamicStrings(loaded.strings);
+        setDefinition(loaded);
+        setViews(saved.items);
+        const address = stateFromAddress(window.location.search, loaded);
+        let start: ListState;
+        if (address.present) {
+          start = address.state;
+        } else {
+          const preferred = saved.items.find((v) => v.isMine && v.isDefault) ?? saved.items.find((v) => v.isShared && v.isDefault);
+          start = preferred ? stateFromView(loaded, preferred, `view:${preferred.id}`) : initialState(loaded);
+        }
+        const typed = searchRef.current?.value ?? "";
+        if (typed && !address.present) start = { ...start, search: typed };
+        setState(start);
+        setSearchText(start.search);
+        setAppliedSearch(start.search);
+        setBaseline(fingerprint(start));
+        setOpenId(recordInAddress() ?? address.open);
       })
-      .catch((e: Error) => !cancelled && commitNow(() => setLoadError(e.message)));
+      .catch((e: Error) => !cancelled && setLoadError(e.message));
     return () => {
       cancelled = true;
     };
@@ -345,8 +342,8 @@ export function ListView(props: ListViewProps) {
     } else if (definition && /^[0-9a-f-]{36}$/i.test(openId)) {
       // A record opened from a link: the list's own endpoint serves one row by id.
       api<Row>("GET", `${definition.endpoint}/${openId}`)
-        .then((row) => commitNow(() => setOpenRow(row)))
-        .catch(() => commitNow(() => setOpenRow(null)));
+        .then((row) => setOpenRow(row))
+        .catch(() => setOpenRow(null));
     }
   }, [openId, rows.version, definition, rows.loadedRows, props.renderRecord]);
 
@@ -378,9 +375,6 @@ export function ListView(props: ListViewProps) {
   const [frameChrome, setFrameChrome] = useState(2);
   // Pixels a header needs where its label was cut at the estimated width, per column and label.
   const [headNeeds, setHeadNeeds] = useState<Record<string, number>>({});
-  // The measurements the layout effects below take after every render (set while their observers run).
-  const measureWidths = useRef<(() => void) | null>(null);
-  const fitForm = useRef<(() => void) | null>(null);
   const formOpen = Boolean(props.renderRecord && openId);
   const chooseShare = useCallback(
     (share: number) => {
@@ -418,10 +412,6 @@ export function ListView(props: ListViewProps) {
       const share = needed();
       if (share !== null) flushSync(() => grow(share));
     };
-    fitForm.current = () => {
-      const share = needed();
-      if (share !== null) grow(share);
-    };
     const resized = new ResizeObserver(fit);
     resized.observe(form);
     const changed = new MutationObserver(fit);
@@ -431,7 +421,6 @@ export function ListView(props: ListViewProps) {
     grow(contentShares.get(listKey) ?? null);
     grow(needed());
     return () => {
-      fitForm.current = null;
       resized.disconnect();
       changed.disconnect();
     };
@@ -455,20 +444,8 @@ export function ListView(props: ListViewProps) {
     resized.observe(body);
     resized.observe(frame);
     measure();
-    measureWidths.current = measure;
-    return () => {
-      measureWidths.current = null;
-      resized.disconnect();
-    };
+    return () => resized.disconnect();
   }, [definition]);
-  // After every render, in its own commit: what the render changed (rows that bring a scroll bar, a
-  // record that opens beside the list) is measured before the observers see it, so their callbacks
-  // find the same widths and write nothing to the screen in a task of their own. State that holds
-  // the value it was given is not updated, so a render that changed no width costs no second one.
-  useLayoutEffect(() => {
-    measureWidths.current?.();
-    fitForm.current?.();
-  });
 
   // A header whose label is cut at its column's minimum asks for the room it lacks, once per label
   // (critic p03 rounds 9 to 13: "Langu…" at 1366px with a record open, where the estimate of a
@@ -562,20 +539,13 @@ export function ListView(props: ListViewProps) {
     if (!props.viewCounts || !definition || definition.presets.length === 0 || countedFor.current === definition.key) return;
     countedFor.current = definition.key;
     const asks: [string, string | null][] = [["", null], ...definition.presets.map((p) => [`preset:${p.key}`, p.filter] as [string, string | null])];
-    // One screen change for all the counts, when the last answer is in (a change per answer would be
-    // a task of its own each, drawn at a moment no step of the person fixes).
-    void Promise.all(
-      asks.map(([id, filter]) => {
-        const params = new URLSearchParams({ take: "1" });
-        if (filter) params.set("filter", filter);
-        return api<{ total: number }>("GET", `${definition.endpoint}?${params}`).then(
-          (page): [string, number | null] => [id, page.total],
-          (): [string, number | null] => [id, null],
-        );
-      }),
-    ).then((counts) => {
-      commitNow(() => setViewCounts((c) => ({ ...c, ...Object.fromEntries(counts) })));
-    });
+    for (const [id, filter] of asks) {
+      const params = new URLSearchParams({ take: "1" });
+      if (filter) params.set("filter", filter);
+      api<{ total: number }>("GET", `${definition.endpoint}?${params}`)
+        .then((page) => setViewCounts((c) => ({ ...c, [id]: page.total })))
+        .catch(() => setViewCounts((c) => ({ ...c, [id]: null })));
+    }
   }, [props.viewCounts, definition]);
 
   // Widths the person dragged (or set with the arrow keys on a column's edge), in pixels, for this screen's visit.

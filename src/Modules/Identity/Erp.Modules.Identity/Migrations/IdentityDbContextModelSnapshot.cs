@@ -388,6 +388,11 @@ namespace Erp.Modules.Identity.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
+                    b.Property<string>("Density")
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)")
+                        .HasColumnName("density");
+
                     b.Property<byte[]>("DeviceApprovalHash")
                         .HasColumnType("bytea")
                         .HasColumnName("device_approval_hash");
@@ -449,6 +454,11 @@ namespace Erp.Modules.Identity.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("tenant_id");
 
+                    b.Property<string>("Theme")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("theme");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -503,6 +513,8 @@ namespace Erp.Modules.Identity.Migrations
                         {
                             t.HasCheckConstraint("ck_users_company_role_count", "company_role_count >= 0");
 
+                            t.HasCheckConstraint("ck_users_density", "density IS NULL OR density IN ('compact', 'comfortable')");
+
                             t.HasCheckConstraint("ck_users_device_approval", "(device_approval_hash IS NULL AND device_approval_until IS NULL) OR (length(device_approval_hash) = 32 AND device_approval_until IS NOT NULL)");
 
                             t.HasCheckConstraint("ck_users_email_normalized", "email_normalized = lower(btrim(email))");
@@ -510,6 +522,8 @@ namespace Erp.Modules.Identity.Migrations
                             t.HasCheckConstraint("ck_users_language", "language IN ('en', 'ar')");
 
                             t.HasCheckConstraint("ck_users_numerals", "numerals IN ('latn', 'arab')");
+
+                            t.HasCheckConstraint("ck_users_theme", "theme IS NULL OR theme IN ('system', 'light', 'dark', 'hc')");
                         });
                 });
 

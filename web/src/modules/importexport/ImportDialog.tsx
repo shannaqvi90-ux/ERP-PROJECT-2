@@ -1,4 +1,3 @@
-import { commitNow } from "../../kernel/commitNow";
 import { useCallback, useEffect, useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { api, ApiError, sessionEndedEvent } from "../../kernel/api";
 import { Dialog } from "../../kernel/dialog";
@@ -58,8 +57,8 @@ export function ImportDialog({ table, titleKey, onClose, onDone }: { table: stri
   useEffect(() => {
     let cancelled = false;
     api<ImportFields>("GET", `${importBase(table)}/fields`)
-      .then((f) => !cancelled && commitNow(() => setFields(f)))
-      .catch((e: unknown) => !cancelled && commitNow(() => setProblem(e instanceof ApiError ? e.message : generalProblem.current)));
+      .then((f) => !cancelled && setFields(f))
+      .catch((e: unknown) => !cancelled && setProblem(e instanceof ApiError ? e.message : generalProblem.current));
     return () => {
       cancelled = true;
     };
@@ -78,8 +77,8 @@ export function ImportDialog({ table, titleKey, onClose, onDone }: { table: stri
     const timer = window.setInterval(() => {
       api<ImportSession>("GET", `${importBase(table)}/imports/${sessionId}`)
         .then((s) => {
+          setSession(s);
           if (s.status === "completed") imported.current = true;
-          commitNow(() => setSession(s));
         })
         .catch(() => undefined);
     }, pollMilliseconds);
@@ -91,12 +90,11 @@ export function ImportDialog({ table, titleKey, onClose, onDone }: { table: stri
     setProblem(null);
     setBusy(true);
     try {
-      const uploaded = await upload(table, file);
-      commitNow(() => setSession(uploaded));
+      setSession(await upload(table, file));
     } catch (e) {
-      commitNow(() => setProblem(e instanceof ApiError ? e.message : t("importexport.problem")));
+      setProblem(e instanceof ApiError ? e.message : t("importexport.problem"));
     } finally {
-      commitNow(() => setBusy(false));
+      setBusy(false);
     }
   }
 
@@ -104,10 +102,9 @@ export function ImportDialog({ table, titleKey, onClose, onDone }: { table: stri
     if (!session) return;
     setProblem(null);
     try {
-      const mapped = await api<ImportSession>("PUT", `${importBase(table)}/imports/${session.id}/mapping`, { columns: [{ index, field: field || null }] });
-      commitNow(() => setSession(mapped));
+      setSession(await api<ImportSession>("PUT", `${importBase(table)}/imports/${session.id}/mapping`, { columns: [{ index, field: field || null }] }));
     } catch (e) {
-      commitNow(() => setProblem(e instanceof ApiError ? e.message : t("importexport.problem")));
+      setProblem(e instanceof ApiError ? e.message : t("importexport.problem"));
     }
   }
 
@@ -117,12 +114,12 @@ export function ImportDialog({ table, titleKey, onClose, onDone }: { table: stri
     setBusy(true);
     try {
       const next = await api<ImportSession>("POST", `${importBase(table)}/imports/${session.id}/run`, { dryRun, onError: skip ? "skip" : "reject", onDuplicate });
+      setSession(next);
       if (next.status === "completed") imported.current = true;
-      commitNow(() => setSession(next));
     } catch (e) {
-      commitNow(() => setProblem(e instanceof ApiError ? e.message : t("importexport.problem")));
+      setProblem(e instanceof ApiError ? e.message : t("importexport.problem"));
     } finally {
-      commitNow(() => setBusy(false));
+      setBusy(false);
     }
   }
 

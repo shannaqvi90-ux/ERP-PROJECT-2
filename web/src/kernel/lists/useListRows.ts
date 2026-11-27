@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError } from "../api";
-import { commitNow } from "../commitNow";
 import type { ListGroup, ListPage, Row } from "./model";
 
 export const chunkSize = 100;
@@ -72,26 +71,22 @@ export function useListRows(endpoint: string | null, query: URLSearchParams | nu
           state.rows.set(index, page.items);
           state.next.set(index, page.next);
           state.pending.delete(index);
-          commitNow(() => {
-            if (index === 0) {
-              shown.current = state;
-              setTotal(page.total);
-              setRanked(page.ranked === true);
-              setGroups(page.groups ?? null);
-              setLoading(false);
-              setLoadedKey(state.key);
-              setError(null);
-            }
-            setVersion((v) => v + 1);
-          });
+          if (index === 0) {
+            shown.current = state;
+            setTotal(page.total);
+            setRanked(page.ranked === true);
+            setGroups(page.groups ?? null);
+            setLoading(false);
+            setLoadedKey(state.key);
+            setError(null);
+          }
+          setVersion((v) => v + 1);
         })
         .catch((e: Error) => {
           if (state.controller.signal.aborted || chunks.current !== state) return;
           state.pending.delete(index);
-          commitNow(() => {
-            setError(e);
-            setLoading(false);
-          });
+          setError(e);
+          setLoading(false);
         });
     },
     [endpoint, query, groupBy],
@@ -100,11 +95,8 @@ export function useListRows(endpoint: string | null, query: URLSearchParams | nu
   useEffect(() => {
     if (!key) return;
     const state: Chunks = { key, rows: new Map(), next: new Map(), pending: new Set(), controller: new AbortController() };
-    // A reload of the query already on screen (a job ended, a record saved) keeps the rows and draws
-    // nothing busy: the answer replaces them in place. Only a new query marks the list busy.
-    const reloadOfShown = shown.current !== null && shown.current.key === key;
     chunks.current = state;
-    if (!reloadOfShown) setLoading(true);
+    setLoading(true);
     fetchChunk(state, 0);
     return () => state.controller.abort();
   }, [key, fetchChunk, reloads]);
