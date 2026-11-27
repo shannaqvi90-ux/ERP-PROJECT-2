@@ -13,10 +13,11 @@ const theme = (page: Page) => page.locator("html").getAttribute("data-theme");
  * Shows a look on this visit without saving it to the user (the choice is the user's own and the demo's
  * users are shared by every spec): the switches are used, and the save they send is answered here.
  */
-async function showLook(page: Page, look: { theme?: "light" | "dark" | "hc"; density?: "compact" | "comfortable" }) {
+async function showLook(page: Page, language: "en" | "ar", look: { theme?: "light" | "dark" | "hc"; density?: "compact" | "comfortable" }) {
+  const names = language === "ar" ? { light: "فاتح", hc: "تباين عالٍ", comfortable: "مريح" } : { light: "Light", hc: "High contrast", comfortable: "Comfortable" };
   await page.route("**/api/identity/me/look", (route) => route.fulfill({ status: 200, contentType: "application/json", body: "{}" }));
-  if (look.theme && look.theme !== "dark") await page.getByRole("button", { name: look.theme === "hc" ? "High contrast" : "Light", exact: true }).click();
-  if (look.density === "comfortable") await page.getByRole("button", { name: "Comfortable" }).click();
+  if (look.theme && look.theme !== "dark") await page.getByRole("button", { name: look.theme === "hc" ? names.hc : names.light, exact: true }).click();
+  if (look.density === "comfortable") await page.getByRole("button", { name: names.comfortable }).click();
 }
 
 /** What may be cut: the cell or control itself, and an element inside it (a cell's text span carries the ellipsis, not the cell). */
@@ -76,7 +77,7 @@ test.describe("design system", () => {
 
   test("the look belongs to the user: the next person on the same browser gets their own, or the default", async ({ page }) => {
     await freshStart(page, "en");
-    await signIn(page, users.adminArabic);
+    await signIn(page, users.admin);
     const row = async () => Number.parseFloat(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--row-h")));
     try {
       await page.getByRole("button", { name: "Light", exact: true }).click();
@@ -86,7 +87,7 @@ test.describe("design system", () => {
       await page.getByRole("button", { name: "Sign out" }).click();
       await expect(page.locator('input[name="email"]')).toBeFocused();
       // Somebody else signs in on this browser: the default, not the previous person's choice.
-      await signIn(page, users.admin);
+      await signIn(page, users.viewer);
       await expect(page.locator("nav").first()).toBeVisible();
       expect(await theme(page)).toBe("dark");
       expect(await row()).toBe(30);
@@ -95,7 +96,7 @@ test.describe("design system", () => {
       // The first person comes back, on a browser with nothing kept: their choice is on the server.
       await page.evaluate(() => localStorage.clear());
       await page.reload();
-      await signIn(page, users.adminArabic);
+      await signIn(page, users.admin);
       await expect(page.locator("nav").first()).toBeVisible();
       expect(await theme(page)).toBe("light");
       expect(await row()).toBe(40);
@@ -124,7 +125,7 @@ test.describe("design system", () => {
         await freshStart(page, language);
         await signIn(page, language === "ar" ? users.adminArabic : users.admin);
         await expect(page.locator("nav").first()).toBeVisible();
-        await showLook(page, { theme: mode });
+        await showLook(page, language, { theme: mode });
         expect(await theme(page)).toBe(mode);
         expect(await clippedControls(page), "home").toEqual([]);
         for (const path of ["/contacts/contacts", "/identity/users"]) {
@@ -145,7 +146,7 @@ test.describe("design system", () => {
         await freshStart(page, language);
         await signIn(page, language === "ar" ? users.adminArabic : users.admin);
         await expect(page.locator("nav").first()).toBeVisible();
-        await showLook(page, { density });
+        await showLook(page, language, { density });
         // A cut cell is titled when the person points at it (nothing writes to the page by itself): point at
         // every cut element in turn and require the title.
         const cutWithoutTitle = async () => {
