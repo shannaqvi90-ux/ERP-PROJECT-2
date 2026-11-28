@@ -153,7 +153,7 @@ public static partial class ListVolume
             {
                 tally.Wrong.Enqueue($"list '{list.Key}': row {id} was walked by both tenants");
             }
-            await AnchorAsync(tally, admin, models, binding, env, truths);
+            await AnchorAsync(tally, admin, models, binding, env, truths, catalog);
             var atVolume = walkA.Rows.Count >= volume && walkB.Rows.Count >= volume;
             if (atVolume)
             {
@@ -226,7 +226,7 @@ public static partial class ListVolume
     /// gate reviews why) and its walk stands alone.
     /// </summary>
     private static async Task AnchorAsync(Tally tally, Npgsql.NpgsqlConnection admin, IReadOnlyList<Microsoft.EntityFrameworkCore.Metadata.IModel> models,
-        IListBinding binding, ErpTestEnvironment env, IReadOnlyDictionary<string, Truth> truths)
+        IListBinding binding, ErpTestEnvironment env, IReadOnlyDictionary<string, Truth> truths, ModuleCatalog catalog)
     {
         var list = binding.Definition;
         var entity = models.Select(m => m.FindEntityType(binding.RowType)).FirstOrDefault(e => e is not null);
@@ -239,13 +239,22 @@ public static partial class ListVolume
             return;
         }
         var table = $"{TenantSql.Identifier(entity.GetSchema() ?? entity.Model.GetDefaultSchema() ?? "public")}.{TenantSql.Identifier(entity.GetTableName()!)}";
+        // The audit trail's rows of a kind folded into its record (AuditRecordType.FoldedIntoRecord: a custom field's
+        // value, shown as the owning record's change) are left out of the global log by design, so the tenant's rows the
+        // log must walk are every other row of audit.entries. Every walked id must still be the tenant's own row (below).
+        var folded = entity.ClrType == typeof(AuditEntry)
+            ? catalog.AuditRecordTypes.Where(t => t.FoldedIntoRecord).Select(t => t.Table).ToArray()
+            : [];
+        var listed = folded.Length > 0 ? $" AND {TenantSql.Identifier(entity.FindProperty(nameof(AuditEntry.RecordType))!.GetColumnName())} <> ALL(@folded)" : "";
         foreach (var (who, tenant) in new[] { ("A", env.TenantA), ("B", env.TenantB) })
         {
             var truth = truths[who];
-            var rows = await DbCatalog.ScalarAsync<long>(admin, $"SELECT count(*) FROM {table} WHERE tenant_id = @t", ("t", tenant.Id));
+            var rows = folded.Length > 0
+                ? await DbCatalog.ScalarAsync<long>(admin, $"SELECT count(*) FROM {table} WHERE tenant_id = @t{listed}", ("t", tenant.Id), ("folded", folded))
+                : await DbCatalog.ScalarAsync<long>(admin, $"SELECT count(*) FROM {table} WHERE tenant_id = @t", ("t", tenant.Id));
             if (rows != truth.Rows.Count)
             {
-                tally.Wrong.Enqueue($"tenant {who}: the keyset walk of GET {list.Endpoint} returned {truth.Rows.Count} rows, but the tenant holds {rows} rows in {table}");
+                tally.Wrong.Enqueue($"tenant {who}: the keyset walk of GET {list.Endpoint} returned {truth.Rows.Count} rows, but the tenant holds {rows} rows in {table}{(folded.Length > 0 ? $" (leaving out the kinds folded into their records: {string.Join(", ", folded)})" : "")}");
             }
             // The rows' ids are the column the binding's id reads (the audit trail's uid: its own id
             // is a number).
