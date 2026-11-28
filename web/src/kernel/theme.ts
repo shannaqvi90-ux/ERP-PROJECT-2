@@ -2,8 +2,12 @@ import { useCallback, useEffect, useState } from "react";
 
 /**
  * The look of the screens: theme (light, dark, high contrast) and density (compact, comfortable).
- * Both are the person's own choice, remembered on this device (the same two device keys serve the
- * next sign-in of the same browser: kernel/deviceState.ts deviceKeys, tests/Gates/device-keys.txt).
+ * Both are the person's own choice and belong to the person: they are kept with the user on the
+ * server (PUT /api/identity/me/look, sent by modules/identity/LookSync.tsx when a choice is made) and
+ * applied from the session at sign-in (applyUserLook), so the next person on the device gets their
+ * own look, or the default when they never chose. The two device keys only hold the look last shown
+ * here, for the sign-in screen before anyone is known (kernel/deviceState.ts deviceKeys,
+ * tests/Gates/device-keys.txt).
  * Until a theme is chosen the screen is dark (the product's own look), or high contrast when the
  * system asks for more contrast, and it changes when the system's contrast setting does.
  * The colours themselves live in design/tokens.css only; this file sets two attributes on <html>.
@@ -36,6 +40,14 @@ function write(key: string, value: string): void {
   }
 }
 
+function forget(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Storage unavailable: nothing was kept.
+  }
+}
+
 const matches = (query: string): boolean => (typeof window.matchMedia === "function" ? window.matchMedia(query).matches : false);
 
 export function storedThemeChoice(): ThemeChoice {
@@ -65,15 +77,38 @@ export function applyLook(choice: ThemeChoice = storedThemeChoice(), density: De
   return theme;
 }
 
+/** Sent on window when the person chooses a theme or a density: what the shell saves to their user. */
+export const lookChosenEvent = "erp:look-chosen";
+export type LookChange = { theme?: ThemeChoice; density?: Density };
+
 export function chooseTheme(choice: ThemeChoice): void {
   write(themeKey, choice);
   applyLook(choice, storedDensity());
   window.dispatchEvent(new Event("erp:look"));
+  window.dispatchEvent(new CustomEvent<LookChange>(lookChosenEvent, { detail: { theme: choice } }));
 }
 
 export function chooseDensity(density: Density): void {
   write(densityKey, density);
   applyLook(storedThemeChoice(), density);
+  window.dispatchEvent(new Event("erp:look"));
+  window.dispatchEvent(new CustomEvent<LookChange>(lookChosenEvent, { detail: { density } }));
+}
+
+/**
+ * The look a user signed in with: their own saved choices, or the defaults where they never chose
+ * (never the previous person's on this device). It is kept as the device's look for the sign-in
+ * screen, and applied at once.
+ */
+export function applyUserLook(user: { theme?: string | null; density?: string | null }): void {
+  const choice: ThemeChoice = isThemeChoice(user.theme) ? user.theme : "system";
+  const density: Density = isDensity(user.density) ? user.density : "compact";
+  // The device remembers this person's look for the sign-in screen; nothing of the previous person's is left.
+  if (isThemeChoice(user.theme)) write(themeKey, choice);
+  else forget(themeKey);
+  if (isDensity(user.density)) write(densityKey, density);
+  else forget(densityKey);
+  applyLook(choice, density);
   window.dispatchEvent(new Event("erp:look"));
 }
 

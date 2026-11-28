@@ -28,6 +28,7 @@ GET /api/identity/users/{id:guid}/default-company identity.users.read # which co
 PUT /api/identity/users/{id:guid}/default-company identity.users.update # choosing another user's starting company changes the account (access checked in the handler)
 GET /api/identity/companies identity.users.read # the caller's own companies, offered where roles are assigned per company
 PUT /api/identity/me/preferences identity.profile.update # the caller's own language, theme and density
+PUT /api/identity/me/look identity.profile.update # the caller's own theme and density (the look of their screens), kept with the user
 GET /api/identity/me/passkeys identity.profile.update # the caller's own passkeys (names and dates, never keys): part of the caller's own account
 GET /api/identity/me/passkeys/{id:guid} identity.profile.update # one of the caller's own passkeys; another user's answers 404
 POST /api/identity/me/passkeys/options identity.profile.update # creation options for the caller's own new passkey, only within minutes of signing in

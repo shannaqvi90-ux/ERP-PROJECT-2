@@ -1,7 +1,8 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { I18nProvider, useI18n, type Language, type Numerals } from "../../kernel/i18n";
 import { effectivePreferences, preferencesPermission, savePreferences } from "../../kernel/preferences";
-import { SessionProvider, useSession, type Session } from "../../kernel/session";
+import { SessionProvider, identityOf, useSession, type Session } from "../../kernel/session";
+import { applyUserLook } from "../../kernel/theme";
 import { ShortcutProvider, useShortcut } from "../../kernel/shortcuts";
 import { Announcer } from "./announcer";
 import { AppShell } from "./AppShell";
@@ -52,8 +53,14 @@ function WithSession() {
   // After sign-in the user's saved preferences win over the device's, except changes this device
   // made that the server may not have received yet (a reload right after switching language):
   // those win and are sent again.
+  const lookFor = useRef<string | null>(null);
   const onSignedIn = useCallback(
     (session: Session) => {
+      // The look is the user's own: applied once per identity (a later refresh of the session must not undo a choice just made).
+      if (lookFor.current !== identityOf(session)) {
+        lookFor.current = identityOf(session);
+        applyUserLook(session.user);
+      }
       const { preferences, pending } = effectivePreferences(session.user.id, session.user);
       setLanguage(preferences.language);
       setNumerals(preferences.numerals);

@@ -3,7 +3,7 @@ import { api, ApiError, sessionEndedEvent, type FieldError } from "./api";
 import { forgetIdentity, startOver } from "./deviceState";
 import { markSignedOut, type PasskeyAssertion, type PasskeySignIn } from "./passkeys";
 
-export type SessionUser = { id: string; email: string; displayName: string; language: "en" | "ar"; numerals?: "latn" | "arab"; displayNameAr?: string | null };
+export type SessionUser = { id: string; email: string; displayName: string; language: "en" | "ar"; numerals?: "latn" | "arab"; displayNameAr?: string | null; theme?: string | null; density?: string | null };
 
 /** The signed-in user's name in the screen's language: the Arabic name on Arabic screens when they have one. */
 export const sessionUserName = (user: Pick<SessionUser, "displayName" | "displayNameAr">, language: string) =>

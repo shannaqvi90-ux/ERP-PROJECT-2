@@ -32,8 +32,10 @@ public sealed record PasskeySignIn(string Challenge, string RpId, int Timeout);
 
 /// <summary>The signed-in user as the shell shows them. <c>Numerals</c> is latn or arab: the digits
 /// Arabic screens use. <c>DisplayNameAr</c>: the name in Arabic script, shown on Arabic screens
-/// (null when the user has none; the shell then shows <c>DisplayName</c>).</summary>
-public sealed record SessionUser(Guid Id, string Email, string DisplayName, string Language, string Numerals, string? DisplayNameAr = null);
+/// (null when the user has none; the shell then shows <c>DisplayName</c>). <c>Theme</c> (system, light,
+/// dark or hc) and <c>Density</c> (compact or comfortable) are the look the user chose, null until they
+/// have chosen one.</summary>
+public sealed record SessionUser(Guid Id, string Email, string DisplayName, string Language, string Numerals, string? DisplayNameAr = null, string? Theme = null, string? Density = null);
 
 public sealed record SessionTenant(Guid Id, string Code, string NameEn, string NameAr);
 
@@ -256,7 +258,7 @@ internal sealed class SessionPayload(IdentityDbContext db, ITenantDirectory tena
     {
         var user = await db.Users.AsNoTracking()
             .Where(u => u.Id == userId)
-            .Select(u => new SessionUser(u.Id, u.Email, u.DisplayName, u.Language, u.Numerals, u.DisplayNameAr))
+            .Select(u => new SessionUser(u.Id, u.Email, u.DisplayName, u.Language, u.Numerals, u.DisplayNameAr, u.Theme, u.Density))
             .SingleAsync(cancellationToken);
         var tenant = await tenants.GetCurrentAsync(cancellationToken)
                      ?? throw new InvalidOperationException("The session's tenant is not active.");
