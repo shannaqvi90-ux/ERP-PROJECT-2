@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { BRANDING, assignLetters, blindName, brandingFor, neutralMoments, revealsProduct } from '../lib/blind.mjs';
+import { BRANDING, assignLetters, blindName, brandingFor, neutralMoments, revealsIdentity, revealsProduct } from '../lib/blind.mjs';
 import os from 'node:os';
 import { writeReview } from '../lib/review.mjs';
 import { BASELINE_DIR } from '../lib/config.mjs';
@@ -217,4 +217,112 @@ test('a demo name or code inside a form field is painted over too (round 9, crit
     for (const id of ['en', 'ar', 'code', 'co', 'typed']) assert.ok(masked.has(id), `${id} not masked (${[...masked].join(', ')})`);
     for (const id of ['addr', 'phone', 'hidden']) assert.ok(!masked.has(id), `${id} masked`);
   } finally { await browser.close(); }
+});
+
+// Round 17 (critic p01 r16, biggest gap): ours rendered dark and Odoo light, so greyscale shots of the two
+// products sat in two separate brightness bands and the blind letters gave nothing away: a reviewer told
+// them apart at a glance. A blind shot now shows a screen that states a theme in its light theme.
+async function meanBrightness(browser, png) {
+  const { newContext } = await import('../lib/browser.mjs');
+  const page = await (await newContext(browser)).newPage();
+  try {
+    await page.setContent(`<img id="i" src="data:image/png;base64,${png.toString('base64')}">`);
+    return await page.evaluate(async () => {
+      const img = document.getElementById('i');
+      await img.decode();
+      const c = document.createElement('canvas');
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      const g = c.getContext('2d');
+      g.drawImage(img, 0, 0);
+      const d = g.getImageData(0, 0, c.width, c.height).data;
+      let sum = 0;
+      for (let i = 0; i < d.length; i += 4) sum += (d[i] + d[i + 1] + d[i + 2]) / 3;
+      return sum / (d.length / 4);
+    });
+  } finally { await page.close(); }
+}
+
+const OURS_TOKENS = fs.readFileSync(new URL('../../../web/src/design/tokens.css', import.meta.url), 'utf8');
+// A screen as ours draws one (the product's own tokens, a theme on <html>) and one as the reference does (no theme).
+const oursScreen = theme => `<!doctype html><html${theme ? ` data-theme="${theme}"` : ''}><head><style>${OURS_TOKENS}
+  body{margin:0;background:var(--bg);color:var(--fg);font:14px sans-serif}
+  header{background:var(--header-bg);height:44px;border-bottom:1px solid var(--line)} main{background:var(--surface);margin:12px;padding:16px;height:500px}</style></head>
+  <body><header>Top bar</header><main>Contacts<br>Rows</main></body></html>`;
+const referenceScreen = `<!doctype html><html><head><style>body{margin:0;background:#f9fafb;color:#212529;font:14px sans-serif}
+  header{background:#714b67;height:44px} main{background:#fff;margin:12px;padding:16px;height:500px}</style></head><body><header></header><main>Contacts<br>Rows</main></body></html>`;
+
+test('blind shots of the two products cannot be told apart by their mean brightness, and a dark screen is shown light without the page being changed (round 17)', async () => {
+  const { launch, newContext } = await import('../lib/browser.mjs');
+  const { blindScreenshot, NEUTRAL_STYLE } = await import('../lib/blind.mjs');
+  const browser = await launch();
+  try {
+    const page = await (await newContext(browser)).newPage();
+    const shotOf = async (html, product = 'ours') => {
+      await page.setContent(html);
+      return blindScreenshot(page, brandingFor(product), { type: 'png' });
+    };
+    const ours = {};
+    for (const theme of ['dark', 'hc', 'light']) ours[theme] = await meanBrightness(browser, await shotOf(oursScreen(theme)));
+    // The control: without the light theme the same dark screen sits far from the reference's band, so this
+    // test would fail on the round-16 harness (a mean of 13 to 28 against 121 to 242).
+    await page.setContent(oursScreen('dark'));
+    const raw = await meanBrightness(browser, await page.screenshot({ type: 'png', style: NEUTRAL_STYLE }));
+    assert.ok(raw < 60, `control: the dark screen alone is dark (${raw})`);
+    const theirs = await meanBrightness(browser, await shotOf(referenceScreen, 'odoo'));
+    assert.ok(theirs > 150, `the reference's shot is light (${theirs})`);
+    for (const [theme, mean] of Object.entries(ours)) {
+      assert.ok(mean > 150, `ours (${theme}) is light in a blind shot (${mean})`);
+      assert.ok(Math.abs(mean - theirs) < 40, `ours (${theme}) ${mean} and the reference ${theirs} are told apart by brightness`);
+    }
+    // Nothing of the page is changed for the shot: no attribute of <html> is written (round 17 pre-check: a
+    // theme switched and back made the product's own observers run script outside any step), and the theme is as it was.
+    await page.setContent(oursScreen('dark'));
+    await page.evaluate(() => {
+      window.__htmlChanges = [];
+      new MutationObserver(list => { for (const m of list) window.__htmlChanges.push(`${m.attributeName}`); }).observe(document.documentElement, { attributes: true });
+    });
+    await blindScreenshot(page, brandingFor('ours'), { type: 'png' });
+    assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 'dark');
+    assert.deepEqual(await page.evaluate(() => window.__htmlChanges), [], 'the blind shot wrote to <html>');
+    assert.equal(await page.evaluate(() => document.documentElement.hasAttribute('data-blind-theme')), false);
+  } finally { await browser.close(); }
+});
+
+test('the operator takes every blind shot through blindScreenshot, never a bare page.screenshot (round 17)', () => {
+  const src = fs.readFileSync(new URL('../lib/operator.mjs', import.meta.url), 'utf8');
+  assert.match(src, /blindScreenshot\(this\.#page/);
+  assert.ok(!/\.screenshot\(/.test(src.replace(/\/\/.*$/gm, '')), 'operator.mjs calls page.screenshot itself');
+});
+
+test("every task fixture's person is masked in a blind shot of either product (round 17: 'Layla Linguist' showed in ours' top bar)", () => {
+  const root = new URL('..', import.meta.url).pathname;
+  const names = new Set();
+  const walk = dir => fs.readdirSync(dir, { withFileTypes: true }).forEach(e => {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) return e.name === 'node_modules' ? null : walk(p);
+    if (!/\.(mjs|json)$/.test(e.name)) return;
+    const text = fs.readFileSync(p, 'utf8');
+    for (const m of text.matchAll(/(?:TESTER\s*=|input\s*:|create\('res\.users',)\s*\{[^}]*?\bname:\s*['"]([^'"]+)['"]/g)) names.add(m[1]);
+  });
+  for (const d of ['drivers', 'tasks']) walk(path.join(root, d));
+  assert.ok(names.has('Layla Linguist') && names.has('Sara Signin') && names.has('Hessa Clerk'), `fixture names found: ${[...names].join(', ')}`);
+  for (const product of ['ours', 'odoo']) {
+    const b = brandingFor(product);
+    for (const n of names) assert.ok(revealsIdentity(n, b), `${product}: the fixture person "${n}" is not masked`);
+  }
+});
+
+test('tasks run one at a time into the same folder all stay on the blind review page (round 17, critic p01 r16)', () => {
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'review-'));
+  try {
+    const run = task => ({ cmp: { task }, runs: { ours: { status: 'verified', screenshots: [{ file: `${task}-a.jpg`, moment: 'done' }] }, odoo: { status: 'verified', screenshots: [{ file: `${task}-b.jpg`, moment: 'done' }] } } });
+    writeReview(out, [run('find-record')]);
+    writeReview(out, [run('add-rate')]);
+    const html = fs.readFileSync(path.join(out, 'blind', 'review.html'), 'utf8');
+    for (const t of ['find-record', 'add-rate']) assert.ok(html.includes(`<h2>${t}</h2>`), `${t} is missing from the page`);
+    assert.deepEqual(Object.keys(JSON.parse(fs.readFileSync(path.join(out, 'key.json'), 'utf8')).letters).sort(), ['add-rate', 'find-record']);
+    // A task run again replaces its own section, never doubling it.
+    writeReview(out, [run('add-rate')]);
+    assert.equal((fs.readFileSync(path.join(out, 'blind', 'review.html'), 'utf8').match(/<h2>add-rate<\/h2>/g) || []).length, 1);
+  } finally { fs.rmSync(out, { recursive: true, force: true }); }
 });

@@ -506,7 +506,8 @@ const isEntry = (task, e) => e.ph === 'X' && ENTRY_SPAN.test(e.name) && !(task.p
  */
 function inputDefaultActionCause(ctx, task, point) {
   if (!point || point.name !== 'StyleRecalcInvalidationTracking' || point.args?.data?.reason !== 'PseudoClass' || !FOCUS_STATES.test(String(point.args?.data?.extraData || ''))) return null;
-  if (task.protocol || !task.inputs.length) return null;
+  // (A DevTools command's task never gets here: pointCause judges it before.)
+  if (!task.inputs.length) return null;
   if (task.events.some(e => isEntry(task, e) && !task.inputs.includes(e) && e.ts < point.ts && e.ts + (e.dur || 0) > point.ts)) return null;
   // The state is set before the event's dispatch (a press sets :active) or after it (the focus a press moves),
   // by the browser, with none of the page's code in between.

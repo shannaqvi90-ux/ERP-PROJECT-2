@@ -7,17 +7,23 @@ import { assignLetters, neutralMoments } from './blind.mjs';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+const keep = (dir, task, html) => fs.writeFileSync(path.join(dir, `${task.replace(/[^A-Za-z0-9._-]/g, '_')}.html`), html);
+
 export function writeReview(outDir, comparisons, random = Math.random) {
   const keyFile = path.join(outDir, 'key.json');
   let key = { shots: {} };
   try { key = JSON.parse(fs.readFileSync(keyFile, 'utf8')); } catch { /* new key */ }
   key.letters = key.letters || {};
+  // Round 17 (critic p01 r16): tasks run one at a time into one --out each rewrote the page with the last task
+  // only. Each task's section is kept (outside blind/, beside the key) and the page is built from every one.
+  const kept = path.join(outDir, 'review-sections');
+  fs.mkdirSync(kept, { recursive: true });
   const sections = [];
   for (const { cmp, runs } of comparisons) {
     // Round 9 (critic p01 r8): a column that says "not built yet" names its product (only our
     // drivers are ever stubs), so a task one product cannot run yet shows no columns at all.
     if (Object.values(runs).some(r => r?.status === 'not_built')) {
-      sections.push(`<section><h2>${esc(cmp.task)}</h2><p class="empty">Not compared yet: one product cannot run this task yet.</p></section>`);
+      keep(kept, cmp.task, `<section><h2>${esc(cmp.task)}</h2><p class="empty">Not compared yet: one product cannot run this task yet.</p></section>`);
       continue;
     }
     const letters = assignLetters(['ours', 'odoo'], random);
@@ -29,8 +35,9 @@ export function writeReview(outDir, comparisons, random = Math.random) {
       const body = shots || '<p class="empty">No screenshots.</p>';
       return `<div class="col"><h3>${letter}</h3>${body}</div>`;
     }).join('');
-    sections.push(`<section><h2>${esc(cmp.task)}</h2><div class="cols">${cols}</div></section>`);
+    keep(kept, cmp.task, `<section><h2>${esc(cmp.task)}</h2><div class="cols">${cols}</div></section>`);
   }
+  for (const f of fs.readdirSync(kept).sort()) sections.push(fs.readFileSync(path.join(kept, f), 'utf8'));
   fs.writeFileSync(keyFile, JSON.stringify(key, null, 2) + '\n');
   const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">

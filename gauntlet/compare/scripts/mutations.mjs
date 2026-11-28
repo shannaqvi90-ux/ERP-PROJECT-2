@@ -201,6 +201,18 @@ export const MUTATIONS = [
   ['M153', 'any reason of a style invalidation taken as the pointer\'s', 'lib/causation.mjs', "point.args?.data?.reason !== 'PseudoClass' || !POINTER_STATES", '!POINTER_STATES', 'test/causation.test.mjs', 'round 16\\): the :hover rule at its edges'],
   ['M154', 'any task between frames taken as the pointer input', 'lib/causation.mjs', "    if (/main_thread_event_queue/.test(t.src || '')) queued = t;", '    queued = t;', 'test/causation.test.mjs', 'round 16\\): the :hover rule at its edges'],
   ['M155', 'a step after the pointer input taken (the step running when the frame ends)', 'lib/causation.mjs', '  const s = stepBefore(ctx, queued.ts);', '  const s = stepBefore(ctx, task.end);', 'test/causation.test.mjs', 'round 16\\): the :hover rule at its edges'],
+  ['M156', 'focus and press states widened to :hover and :checked', 'lib/causation.mjs', "const FOCUS_STATES = /^:(focus|focus-visible|focus-within|active)$/;", "const FOCUS_STATES = /^:(focus|focus-visible|focus-within|active|hover|checked)$/;", 'test/causation.test.mjs', 'round 17\\): only the browser'],
+  ['M157', 'a browser state credited to the step running when the task ended', 'lib/causation.mjs', "  const s = stepBefore(ctx, task.ts);\n  return s ? yes(s.n, [`the browser's own state", "  const s = stepBefore(ctx, task.end);\n  return s ? yes(s.n, [`the browser's own state", 'test/causation.test.mjs', 'round 17\\): a browser state'],
+  ['M158', 'forced work judged only by the earliest maker of stale style', 'lib/causation.mjs', "    if (!groups.has(k)) groups.set(k, m.event);", "    if (!groups.size) groups.set(k, m.event);", 'test/causation.test.mjs', 'round 17\\): style made stale'],
+  ['M159', 'page script inside a DevTools command is no entry', 'lib/causation.mjs', "!(task.protocol && /^(FunctionCall|EvaluateScript)$/.test(e.name) && !PAGE_SCRIPT(e));", "!(task.protocol && /^(FunctionCall|EvaluateScript)$/.test(e.name));", 'test/causation.test.mjs', 'round 17\\): an update a page script forced'],
+  ['M160', 'a task a harness command posted is credited to the step before it', 'lib/causation.mjs', "  const c = pointCause(ctx, { ...from.event, pid: Number(from.task.thread.split(':')[0])", "  if (from.task.protocol) { const s0 = stepBefore(ctx, from.task.ts); if (s0) return yes(s0.n, ['planted'], from.task.ts); }\n  const c = pointCause(ctx, { ...from.event, pid: Number(from.task.thread.split(':')[0])", 'test/causation.test.mjs', 'round 17\\): a task a harness command posted|round 15\\): a task the page'],
+  ['M161', 'a style update after the point taken as forcing it', 'lib/causation.mjs', "LIFECYCLE_SPAN.test(e.name) && e.ts <= point.ts);", "LIFECYCLE_SPAN.test(e.name));", 'test/causation.test.mjs', 'round 17\\): the update is the last one'],
+  ['M162', 'page code between the update and the point ignored', 'lib/causation.mjs', "if (scriptHolds(last.ts) || entries.some(e => e.ts >= last.ts && e.ts <= point.ts)) return null;", "if (scriptHolds(last.ts)) return null;", 'test/causation.test.mjs', 'round 17\\): the update is the last one'],
+  ['M163', 'the update extended back over page code that ran between its steps', 'lib/causation.mjs', "    if (scriptHolds(s.ts) || entries.some(e => e.ts >= s.ts && e.ts < start)) break;", "    if (scriptHolds(s.ts)) break;", 'test/causation.test.mjs', 'round 17\\): the update is the last one'],
+  ['M164', 'the browser-state rule taken for any mark kind with a pseudo-class reason', 'lib/causation.mjs', "if (!point || point.name !== 'StyleRecalcInvalidationTracking' || point.args?.data?.reason !== 'PseudoClass' || !FOCUS_STATES", "if (!point || point.args?.data?.reason !== 'PseudoClass' || !FOCUS_STATES", 'test/causation.test.mjs', 'round 17\\): the rule is for the state change'],
+  ['M165', 'no light theme in the blind shots (ours stays dark)', 'lib/blind.mjs', "      if (decls.length) light =", "      if (false) light =", 'test/blind.test.mjs', 'mean brightness'],
+  ['M166', 'a high-contrast screen left out of the light look', 'lib/blind.mjs', "if (theme && theme !== 'light') {", "if (theme === 'dark') {", 'test/blind.test.mjs', 'mean brightness'],
+  ['M167', 'a fixture person left out of the identity list', 'lib/blind.mjs', "'Layla Linguist', 'Sara Signin', 'Hessa Clerk'],", "'Sara Signin', 'Hessa Clerk'],", 'test/blind.test.mjs', 'every task fixture'],
 ];
 
 function copyHarness() {
@@ -210,6 +222,9 @@ function copyHarness() {
   fs.cpSync(HARNESS, dest, { recursive: true, filter: src => !src.includes(`${path.sep}data${path.sep}out`) });
   fs.cpSync(path.join(REPO, 'gauntlet', 'ratchet.json'), path.join(root, 'gauntlet', 'ratchet.json'));
   fs.cpSync(path.join(REPO, 'gauntlet', 'reference'), path.join(root, 'gauntlet', 'reference'), { recursive: true });
+  // Round 17: the blind brightness self-test draws a screen with the product's own tokens.
+  fs.mkdirSync(path.join(root, 'web', 'src', 'design'), { recursive: true });
+  fs.cpSync(path.join(REPO, 'web', 'src', 'design', 'tokens.css'), path.join(root, 'web', 'src', 'design', 'tokens.css'));
   // The generated dataset is shared read-only (it is large and the same everywhere).
   const data = path.join(HARNESS, 'data', 'out');
   if (fs.existsSync(data)) fs.symlinkSync(data, path.join(dest, 'data', 'out'));

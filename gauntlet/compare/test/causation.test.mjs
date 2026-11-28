@@ -1138,3 +1138,89 @@ test('causation (round 16): the :hover rule at its edges (round 15 mutations K2-
   assert.equal(hover.caused, true, hover.why);
   assert.equal(hover.step, 1);
 });
+
+// -- round 17: the round-16 rules held to their edges (the r16 critic's mutations N2, N3, N9, N10, N11, N16, N18, N19, N24; N1 was a dead condition, removed) -----
+
+const pseudo = (at, extraData, name = 'StyleRecalcInvalidationTracking') => I(name, at, { nodeName: 'INPUT', reason: 'PseudoClass', extraData });
+const PRESS = [X('EventDispatch', 1, 1, { type: 'mousedown' })];
+
+test('causation (round 17): only the browser\'s focus and press states are an input\'s; every one of them is (N2)', () => {
+  // :focus, :focus-visible, :focus-within and :active, in the task that delivered a click, are the click's.
+  for (const state of [':focus', ':focus-visible', ':focus-within', ':active']) {
+    const v = screens([READ(100.2), task(103, FRAME, [...PRESS, pseudo(2.2, state)], { dur: 5 })]);
+    assert.equal(v[0].caused, true, `${state}: ${v[0].why}`);
+    assert.equal(v[0].step, 1);
+  }
+  // :hover (a layout moved content under the pointer), :checked and :target are not: the harness's read before is all there is.
+  for (const state of [':hover', ':checked', ':target', ':disabled', ':focus2', 'focus']) {
+    const v = screens([READ(100.2), task(103, FRAME, [...PRESS, pseudo(2.2, state)], { dur: 5 })]);
+    assert.equal(v[0].caused, false, `${state} was credited to the step`);
+  }
+});
+
+test('causation (round 17): a browser state is credited to the step before the task began, never to the step running when it ended (N3)', () => {
+  const v = screens([READ(100.2), task(103, FRAME, [...PRESS, pseudo(2.2, ':focus')], { dur: 12 })], [[100, 3], [108, 3]]);
+  assert.equal(v[0].caused, true, v[0].why);
+  assert.equal(v[0].step, 1);
+});
+
+test('causation (round 17): the rule is for the state change itself, not for any mark that carries a pseudo-class reason (N24)', () => {
+  // A mark of stale style (not the recalculation) with a :focus reason, made after the press by no step's code, then the
+  // frame's update and the task it posted: the mark is judged on its own (a harness read before it) and is not the step's.
+  for (const name of ['ScheduleStyleInvalidationTracking', 'ScheduleStyleRecalculation']) {
+    const v = screens([READ(100.2), task(103, FRAME, [...PRESS, pseudo(2.2, ':focus', name), ...UPDATE(5)], { dur: 8 }), task(112, FOCUS_TASK, focusCleared())]);
+    assert.equal(v.find(c => c.at > 0.111).caused, false, `${name}: ${v.find(c => c.at > 0.111).why}`);
+  }
+});
+
+test('causation (round 17): style made stale is judged for every maker, the earliest or the latest (N9)', () => {
+  // The step's own handler made style stale first; a timer armed before the clock made it stale after: not the step's.
+  const v = screens([task(100, INPUT, [...click(), staleMark(1.5)], { dur: 2 }), task(102.5, TIMER, [fire(0.1, 2), X('FunctionCall', 0.2, 1.5, { url: 'http://p/' }), staleMark(0.5)], { dur: 2 }),
+    READ(105, UPDATE(0.5), 4), task(112, FOCUS_TASK, focusCleared())]);
+  assert.equal(v.find(c => c.at > 0.111).caused, false, JSON.stringify(v.map(c => [c.at, c.caused, c.why])));
+  assert.match(v.find(c => c.at > 0.111).why, /armed before the clock/);
+  // And the other way round (the timer's mark first).
+  const w = screens([task(90, TIMER, [fire(1, 2), X('FunctionCall', 1.2, 2, { url: 'http://p/' }), staleMark(2)]), task(101, INPUT, [...click(), staleMark(3)], { dur: 3 }),
+    READ(105, UPDATE(0.5), 4), task(112, FOCUS_TASK, focusCleared())]);
+  assert.equal(w.find(c => c.at > 0.111).caused, false);
+});
+
+test('causation (round 17): an update a page script forced inside a harness command is not carried out by the command (N10)', () => {
+  // The command's evaluation ran page code (an observer's callback) that read the layout: the update was forced by the page.
+  // The click's handler had made style stale. The older rules judge it: a command of the harness during a click.
+  const v = screens([task(101, INPUT, [...click(), staleMark(3)], { dur: 3 }),
+    task(105, IPC, [X('DevToolsSession::DispatchProtocolCommand', 0.2, 3.5), X('FunctionCall', 0.5, 3, { url: 'http://p/' }), X('UpdateLayoutTree', 1, 1), X('Layout', 2.1, 0.4), flowFrom(3, 7)], { dur: 4 }),
+    task(112, FOCUS_TASK, focusCleared())]);
+  assert.equal(v.find(c => c.at > 0.111).caused, false, JSON.stringify(v.map(c => [c.at, c.caused, c.why])));
+  // The same update forced by the harness's own evaluation (no page code in it) carries out the click's pending work: the step's.
+  const w = screens([task(101, INPUT, [...click(), staleMark(3)], { dur: 3 }),
+    task(105, IPC, [X('DevToolsSession::DispatchProtocolCommand', 0.2, 3.5), X('EvaluateScript', 0.5, 3), X('UpdateLayoutTree', 1, 1), X('Layout', 2.1, 0.4), flowFrom(3, 7)], { dur: 4 }),
+    task(112, FOCUS_TASK, focusCleared())]);
+  assert.equal(w.find(c => c.at > 0.111).caused, true, w.find(c => c.at > 0.111).why);
+});
+
+test('causation (round 17): a task a harness command posted with no stale style behind it is not the step\'s (N11, the reverse of the round-15 fault)', () => {
+  // The command's read updated layout (nothing stale, no mark anywhere) and posted a task: the harness's read caused nothing.
+  const v = screens([task(101, INPUT, click(), { dur: 3 }), READ(105, UPDATE(0.5), 4), task(112, FOCUS_TASK, focusCleared())]);
+  assert.equal(v.find(c => c.at > 0.111).caused, false, v.find(c => c.at > 0.111).why);
+  // The same with no update in the command at all.
+  const w = screens([task(101, INPUT, click(), { dur: 3 }), READ(105, [flowFrom(2, 7)], 4), task(112, FOCUS_TASK, focusCleared())]);
+  assert.equal(w.find(c => c.at > 0.111).caused, false, w.find(c => c.at > 0.111).why);
+});
+
+test('causation (round 17): the update is the last one before the point, and only the page code at its edges decides (N16, N18, N19)', () => {
+  const keydown = [X('EventDispatch', 0.5, 0.5, { type: 'keydown' }), staleMark(0.7)];
+  // Control: the step's handler made style stale; the frame's update, then the post: the step's.
+  const base = screens([READ(100.2), task(103, FRAME, [...keydown, ...UPDATE(5)], { dur: 8 }), task(112, FOCUS_TASK, focusCleared())]);
+  assert.equal(base.find(c => c.at > 0.111).caused, true, base.find(c => c.at > 0.111).why);
+  // N16: a second update AFTER the post, with a page script's mark between the two, is not what the post carried out.
+  const later = screens([READ(100.2), task(103, FRAME, [...keydown, ...UPDATE(5), X('FunctionCall', 8, 1, { url: 'http://p/' }), staleMark(8.2), X('UpdateLayoutTree', 9, 1)], { dur: 12 }), task(117, FOCUS_TASK, focusCleared())]);
+  assert.equal(later.find(c => c.at > 0.116).caused, true, later.find(c => c.at > 0.116).why);
+  // N18: page code ran between the update and the post: the post is that code's, not the update's.
+  const between = screens([READ(100.2), task(103, FRAME, [...keydown, X('UpdateLayoutTree', 5, 1), X('Layout', 6.1, 0.4), X('FunctionCall', 7, 0.5, { url: 'http://p/' }), flowFrom(8, 7)], { dur: 9 }), task(113, FOCUS_TASK, focusCleared())]);
+  assert.equal(between.find(c => c.at > 0.112).caused, false, between.find(c => c.at > 0.112).why);
+  // N19: page code ran between two steps of the update (UpdateLayoutTree, then script, then the next frame step): what the
+  // script made stale is pending too; it is a script no step caused here, so the work is not the step's.
+  const split = screens([READ(100.2), task(103, FRAME, [...keydown, X('UpdateLayoutTree', 2, 1), X('FunctionCall', 3.5, 1, { url: 'http://p/' }), staleMark(3.8), ...UPDATE(5)], { dur: 8 }), task(112, FOCUS_TASK, focusCleared())]);
+  assert.equal(split.find(c => c.at > 0.111).caused, false, split.find(c => c.at > 0.111).why);
+});

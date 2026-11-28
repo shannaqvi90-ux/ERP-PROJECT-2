@@ -56,7 +56,12 @@ export const BRANDING = Object.freeze({
       // and the Arabic names of the task fixtures' companies.
       'Mariam Al Mansoori', 'Fatima Al Zaabi', 'Omar Haddad', 'Layla Nasser', 'Hessa Al Suwaidi',
       'مريم المنصوري', 'فاطمة الزعابي', 'عمر حداد', 'ليلى ناصر', 'حصة السويدي',
-      'ديمو للتجارة ذ.م.م', 'ديمو للتصنيع م.م.ح'],
+      'ديمو للتجارة ذ.م.م', 'ديمو للتصنيع م.م.ح',
+      // Round 17 (critic p01 r16): the other task fixtures' people. 'Layla Linguist' (switch-to-arabic)
+      // showed in the top bar of ours' shot while the reference's was painted over. Every fixture
+      // person's name is listed (test/blind.test.mjs reads the drivers and tasks and fails on one
+      // that is not).
+      'Layla Linguist', 'Sara Signin', 'Hessa Clerk'],
     identityExact: ['alnoor'],
     // Round 7: the demo companies' and branches' codes, shown in the top bar ("ALN-DXB · DEIRA-HQ").
     identityWords: ['alnoor', 'gulfsteel', 'ALN-DXB', 'ALN-FZE', 'ALN-SHJ', 'ALN-AUH', 'GSF-SHJ', 'GSF-RAK', 'DEIRA-HQ', 'AQZ-WH', 'DIP-SR', 'JAFZA-WH',
@@ -177,19 +182,74 @@ export async function maskTargets(page, branding, { perLocator = 300 } = {}) {
  * look like any other field.
  */
 export async function neutraliseDocument(page, words = []) {
+  return inNeutralWorld(page, null, words);
+}
+
+/**
+ * The blind screenshot of a page: neutral document, light look, painted-over branding, greyscale.
+ * One function for the operator and the self-tests. Round 17 (fix of the integrator's pre-check): the light
+ * look is a style sheet of the shot (Playwright adds it for the screenshot and removes it), never a change
+ * of the page's own theme attribute. Switching data-theme and back made the product page redraw in
+ * the measured part (native controls change size with color-scheme; its resize and mutation observers
+ * then ran script after the shot, outside any step: find-record came out INVALID on 1 of 3 health runs).
+ */
+export async function blindScreenshot(page, branding, options) {
+  const light = await neutraliseDocument(page, branding.words);
+  try {
+    return await page.screenshot({ animations: 'disabled', caret: 'hide', style: NEUTRAL_STYLE + (light || ''),
+      mask: await maskTargets(page, branding), maskColor: MASK_COLOR, ...options });
+  } finally { await settle(page); }
+}
+
+/**
+ * Round 17 (integrator's pre-check, find-record INVALID on 1 of 3 runs, and again in the fixer's run): what the
+ * screenshot sets off in the page (the style sheet and masks it adds and removes, frames the browser draws for
+ * it, the page's own observers and frame callbacks answering those) must run inside the shot's window, never
+ * after it: a page task of the page's own that no step caused, right before the next step's input, is taken
+ * as the sender of the untraceable task that input leads to (lib/causation.mjs otherCause). Two frames are
+ * waited for in the harness's own world; the time stays on the clock like the rest of the shot.
+ */
+export async function settle(page) {
+  await inNeutralWorld(page, '(() => new Promise(done => { const stop = setTimeout(done, 250); requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(stop); done(); })); }))()');
+}
+
+async function inNeutralWorld(page, given, words = []) {
   // Round 14 (critic p01 r13): in a script world of the harness's own, never the page's: the page's own
   // script (a title setter it replaced, a prototype it patched) cannot run inside the harness's change,
   // where the browser's record would take what it did for the harness's doing (lib/causation.mjs).
   const neutral = brandWords => {
     document.title = 'Product';
+    // Round 17 (critic p01 r16): our screens are dark until a person chooses a theme and the reference's
+    // are light, so greyscale alone left the two sets apart by lightness. A screen that states a theme
+    // on <html> that is not light is shown with the values its own light theme gives (read from its style
+    // sheets, nothing written to the page); the reference states none and is left as it is. The text is
+    // returned for the shot's style sheet. color-scheme is left out: it changes how native controls draw.
+    let light = '';
+    const theme = document.documentElement.dataset.theme;
+    if (theme && theme !== 'light') {
+      const decls = [];
+      for (const sheet of document.styleSheets) {
+        let rules;
+        try { rules = sheet.cssRules; } catch { continue; }
+        for (const r of rules) {
+          if (r.type !== 1 || !/(^|,)\s*(:root)?\[data-theme=["']?light["']?\]\s*(,|$)/.test(r.selectorText)) continue;
+          for (let i = 0; i < r.style.length; i++) {
+            const name = r.style[i];
+            if (name !== 'color-scheme') decls.push(`${name}:${r.style.getPropertyValue(name)} !important`);
+          }
+        }
+      }
+      if (decls.length) light = `\n:root[data-theme]{${decls.join(';')}}`;
+    }
     for (const l of document.querySelectorAll('link[rel~="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]')) l.remove();
-    if (!brandWords.length) return;
+    if (!brandWords.length) return light;
     const re = new RegExp(brandWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'i');
     for (const attr of ['placeholder', 'aria-label', 'alt']) {
       for (const el of document.querySelectorAll(`[${attr}]`)) if (re.test(el.getAttribute(attr))) el.setAttribute(attr, '');
     }
+    return light;
   };
-  const expression = `(${neutral})(${JSON.stringify(words)})`;
+  const expression = given ?? `(${neutral})(${JSON.stringify(words)})`;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       let w = neutralWorlds.get(page);
@@ -198,8 +258,8 @@ export async function neutraliseDocument(page, words = []) {
         const { frameTree } = await w.cdp.send('Page.getFrameTree');
         w.contextId = (await w.cdp.send('Page.createIsolatedWorld', { frameId: frameTree.frame.id, worldName: 'compare-neutral', grantUniveralAccess: false })).executionContextId;
       }
-      const r = await w.cdp.send('Runtime.evaluate', { expression, contextId: w.contextId, returnByValue: true, silent: true });
-      if (!r.exceptionDetails) return;
+      const r = await w.cdp.send('Runtime.evaluate', { expression, contextId: w.contextId, returnByValue: true, awaitPromise: true, silent: true });
+      if (!r.exceptionDetails) return r.result?.value;
       w.contextId = null; // a new document: a new world
     } catch {
       const w = neutralWorlds.get(page);
