@@ -61,3 +61,15 @@ removes it, as for the greyscale) sets them on `:root[data-theme]` with `!import
 gets nothing. self-test (test/blind.test.mjs) now also records every attribute write on `<html>` during a shot and requires none.
 Mutations M165 and M166 were reworded to the new code (still 167 in all, all caught). Not run live: the clean-stack
 health check (see the fixer's notes in the commit); the compare tests were run here.
+
+The theme switch was not the whole cause. With the style-sheet look in place find-record's `menu` variant was still INVALID
+once in the fixer's first toolbox run (change 0.704 s, 10 ms after the Enter, in the same words). Reading the trace
+rules: lib/causation.mjs otherCause takes the last page task before an untraceable (observer) task as its possible sender,
+and a page task right after a blind shot (frames and observers answering the shot's style sheet and masks) was rooted
+in the harness's own command, so no step caused it, and the Enter's observer task inherited that verdict. Fix:
+`blindScreenshot` ends with `settle` (blind.mjs), two animation frames awaited in the harness's world (250 ms cap), so the
+page's answers to the shot run inside the shot's window, on the clock. The causation rules are untouched. Runs of
+`run.mjs --task built --product ours --health` in erp-toolbox:pw1.63.0-net10 on the 2,000-user clean stack: before the fix 1 of 2
+INVALID (find-record); after it 4 of 4 on one used stack (one find-user timeout in run 1 of that stack, a name an earlier
+run had renamed) and 3 of 3 all 24 verified on a fresh stack. Load about 1 to 2. Compare tests: 512 passed, 27 skipped (as before), no failures
+(before settle; blind.test.mjs 19 of 19 after it). Processor time added: two frames a shot, under a second a run.
