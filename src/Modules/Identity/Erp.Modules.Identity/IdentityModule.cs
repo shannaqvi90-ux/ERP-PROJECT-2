@@ -96,6 +96,13 @@ public sealed class User : TenantEntity
 
     /// <summary>Digits on Arabic screens: latn (0123) or arab (٠١٢٣). See <see cref="Erp.Kernel.Localization.NumeralSystems"/>.</summary>
     public string Numerals { get; set; } = "latn";
+
+    /// <summary>The look this user chose for their screens: system, light, dark or hc (high contrast). Null until
+    /// the user has chosen one (the screen then follows the system).</summary>
+    public string? Theme { get; set; }
+
+    /// <summary>How dense lists and forms are for this user: compact or comfortable. Null until chosen.</summary>
+    public string? Density { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTimeOffset? LastSignInAt { get; set; }
 
@@ -298,6 +305,8 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             {
                 t.HasCheckConstraint("ck_users_language", "language IN ('en', 'ar')");
                 t.HasCheckConstraint("ck_users_numerals", "numerals IN ('latn', 'arab')");
+                t.HasCheckConstraint("ck_users_theme", "theme IS NULL OR theme IN ('system', 'light', 'dark', 'hc')");
+                t.HasCheckConstraint("ck_users_density", "density IS NULL OR density IN ('compact', 'comfortable')");
                 t.HasCheckConstraint("ck_users_email_normalized", "email_normalized = lower(btrim(email))");
                 t.HasCheckConstraint("ck_users_company_role_count", "company_role_count >= 0");
                 t.HasCheckConstraint("ck_users_device_approval",
@@ -310,6 +319,8 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             e.Property(x => x.Language).HasMaxLength(2);
             // Bulk seeding copies rows without this column; the database fills the default.
             e.Property(x => x.Numerals).HasMaxLength(4).HasDefaultValue("latn");
+            e.Property(x => x.Theme).HasMaxLength(8);
+            e.Property(x => x.Density).HasMaxLength(12);
             e.HasIndex(x => new { x.TenantId, x.EmailNormalized }).IsUnique();
             // Sign-in looks a user up by e-mail before the tenant is known.
             e.HasIndex(x => x.EmailNormalized);

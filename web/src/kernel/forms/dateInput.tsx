@@ -24,6 +24,21 @@ export function parseDate(text: string): string | null {
   return null;
 }
 
+/**
+ * What the box holds after a keystroke. Typing forward, the slash after the day and the month comes by
+ * itself, so a slash the person types as well (the way the placeholder shows the date) is not added
+ * twice, and a year typed first (2027-06-15) is not broken by a slash that came after its first two
+ * digits: 20/27/- becomes 2027-. (A year whose last two digits could be a month, 2006, stays day and month: the
+ * slash cannot tell them apart; the calendar takes that year.)
+ */
+export function typedDate(draft: string | null, raw: string): string {
+  let text = latinDigits(raw).replace(/[^0-9/.-]/g, "");
+  text = text.replace(/^(1[89]|2[0-2])\/(00|1[3-9]|[2-9]\d)\/-$/, "$1$2-");
+  text = text.replace(/([/.-])[/.-]+/g, "$1");
+  if (draft !== null && text.length > draft.length && /^(\d{2}|\d{2}\/\d{2})$/.test(text)) text += "/";
+  return text;
+}
+
 /** yyyy-mm-dd as dd/mm/yyyy; anything else as it is. */
 export function displayDate(iso: string): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
@@ -80,9 +95,7 @@ export function DateInput({ value, onChange, min, max, noPicker, rangeFrom, rang
           rest.onBlur?.(e);
         }}
         onChange={(e) => {
-          let text = latinDigits(e.target.value).replace(/[^0-9/.-]/g, "");
-          // Typing forward, the slash after the day and the month comes by itself.
-          if (draft !== null && text.length > draft.length && /^(\d{2}|\d{2}\/\d{2})$/.test(text)) text += "/";
+          const text = typedDate(draft, e.target.value);
           setDraft(text);
           onChange(text === "" ? "" : (parseDate(text) ?? text));
         }}

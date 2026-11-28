@@ -25,6 +25,18 @@ describe("overflow titles", () => {
     expect(document.getElementById("c")!.title).toBe("");
   });
 
+  it("titles the span inside a cell that carries the ellipsis, not the cell that fits", () => {
+    document.body.innerHTML = `<table><tr><td id="td"><span id="s" dir="auto">Abdullah Abdullah Al Dhaheri</span></td><td id="td2"><span id="s2">Short</span></td></tr></table>`;
+    cut(document.getElementById("td")!, 182, 182);
+    cut(document.getElementById("s")!, 172, 166);
+    cut(document.getElementById("td2")!, 60, 182);
+    cut(document.getElementById("s2")!, 40, 60);
+    expect(sweepOverflowTitles()).toBe(1);
+    expect(document.getElementById("s")!.title).toBe("Abdullah Abdullah Al Dhaheri");
+    expect(document.getElementById("td")!.hasAttribute("title")).toBe(false);
+    expect(document.getElementById("s2")!.hasAttribute("title")).toBe(false);
+  });
+
   it("keeps a title a component set itself, and removes its own when the text fits again", () => {
     document.body.innerHTML = `<table><tr><td id="a" title="Own">Long long long</td><td id="b">Long long</td></tr></table>`;
     cut(document.getElementById("a")!, 300, 100);

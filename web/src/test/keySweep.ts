@@ -86,6 +86,8 @@ export function everyChord(): Chord[] {
 export function readerMayWrite({ method, url }: Call): boolean {
   const path = new URL(url, "http://localhost").pathname;
   if (method === "PUT" && path === "/api/identity/me/preferences") return true;
+  // The theme and density the user chose for their own screens (needs the same permission as preferences).
+  if (method === "PUT" && path === "/api/identity/me/look") return true;
   if (method === "POST" && path === "/api/auth/sign-out") return true;
   if (/^\/api\/lists\/[\w.-]+\/views(\/[\w-]+)?$/.test(path)) return true;
   return false;
