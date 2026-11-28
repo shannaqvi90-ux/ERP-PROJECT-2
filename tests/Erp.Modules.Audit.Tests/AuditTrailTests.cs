@@ -240,6 +240,18 @@ public sealed class AuditTrailTests(AuditFixture fixture) : IClassFixture<AuditF
     }
 
     [Fact]
+    public async Task A_search_with_an_emoji_is_answered_not_an_error_by_the_people_search_and_the_log()
+    {
+        using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));
+        foreach (var text in new[] { "Ali \U0001F600", "\U0001F600", "\U0001F600\U0001F600 x", "مريم \U0001F600" })
+        {
+            Assert.Equal(HttpStatusCode.OK, (await admin.GetAsync($"/api/audit/actors?search={Uri.EscapeDataString(text)}")).StatusCode);
+            Assert.Equal(HttpStatusCode.OK, (await admin.GetAsync($"/api/audit/log?search={Uri.EscapeDataString(text)}")).StatusCode);
+            Assert.Equal(HttpStatusCode.OK, (await admin.GetAsync($"/api/identity/users?search={Uri.EscapeDataString(text)}")).StatusCode);
+        }
+    }
+
+    [Fact]
     public async Task The_changed_by_picker_ranks_the_exact_name_first_then_names_that_start_with_it_in_either_language()
     {
         using var admin = await Env.SignInAsync(Env.Email(Env.TenantA, "admin"));

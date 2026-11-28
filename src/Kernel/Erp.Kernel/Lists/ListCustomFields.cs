@@ -35,6 +35,23 @@ internal static class ListCustomFields
         return record is null ? [] : await customFields.FieldsAsync(record.Table, cancellationToken);
     }
 
+    /// <summary>Every active field of the workspace, of every kind of record, once by key (a key two kinds share names the first).</summary>
+    public static async Task<IReadOnlyList<CustomFieldInfo>> AllAsync(IServiceProvider services, CancellationToken cancellationToken)
+    {
+        var catalog = services.GetService<ModuleCatalog>();
+        var customFields = services.GetService<ICustomFields>();
+        if (catalog is null || customFields is null)
+        {
+            return [];
+        }
+        var all = new List<CustomFieldInfo>();
+        foreach (var record in catalog.CustomFieldRecordTypes)
+        {
+            all.AddRange(await customFields.FieldsAsync(record.Table, cancellationToken));
+        }
+        return [.. all.GroupBy(f => f.Key, StringComparer.Ordinal).Select(g => g.First()).OrderBy(f => f.LabelEn, StringComparer.CurrentCultureIgnoreCase)];
+    }
+
     public static IReadOnlyList<ListColumn> Columns(IReadOnlyList<CustomFieldInfo> fields) => fields.Select(Column).ToList();
 
     public static ListColumn Column(CustomFieldInfo field) => new(
@@ -195,8 +212,27 @@ public static class ListCustomFieldDefinitions
         ListDefinition list, IServiceProvider services, CancellationToken cancellationToken)
     {
         var fields = await ListCustomFields.FieldsAsync(services, list.Key, cancellationToken);
-        return fields.Count == 0
-            ? (list, new Dictionary<string, DynamicString>())
-            : (list with { Columns = [.. list.Columns, .. ListCustomFields.Columns(fields)] }, ListCustomFields.Strings(fields));
+        var strings = new Dictionary<string, DynamicString>(StringComparer.Ordinal);
+        if (fields.Count > 0)
+        {
+            list = list with { Columns = [.. list.Columns, .. ListCustomFields.Columns(fields)] };
+            foreach (var s in ListCustomFields.Strings(fields)) strings[s.Key] = s.Value;
+        }
+        // A choice column that also takes the workspace's own fields as values (the audit log's Fields filter).
+        if (list.Columns.Any(c => c.OpenChoicePrefix is not null))
+        {
+            var all = await ListCustomFields.AllAsync(services, cancellationToken);
+            if (all.Count > 0)
+            {
+                list = list with
+                {
+                    Columns = [.. list.Columns.Select(c => c.OpenChoicePrefix is { } prefix
+                        ? c with { Choices = [.. c.Choices ?? [], .. all.Select(f => new ListChoice(prefix + f.Key, f.LabelKey))] }
+                        : c)],
+                };
+                foreach (var s in ListCustomFields.Strings(all)) strings[s.Key] = s.Value;
+            }
+        }
+        return (list, strings);
     }
 }

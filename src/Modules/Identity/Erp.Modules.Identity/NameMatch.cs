@@ -39,6 +39,12 @@ internal static class NameMatch
                 continue;
             }
             lastWasSpace = false;
+            if (char.IsSurrogate(c))
+            {
+                // A character outside the Basic Multilingual Plane (an emoji) is two halves that must stay one pair: never escaped or split.
+                sb.Append(c);
+                continue;
+            }
             sb.Append(Class(c) ?? (char.IsLetterOrDigit(c) ? c.ToString() : "\\" + c)).Append(Marks);
         }
         if (position == Position.Whole)

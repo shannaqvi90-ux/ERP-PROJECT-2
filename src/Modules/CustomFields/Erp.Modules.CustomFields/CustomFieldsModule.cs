@@ -40,7 +40,7 @@ public sealed class CustomFieldsModule : ErpModule
         // The audit trail shows these records' history to whoever may read them (p07).
         module.AuditedRecord(new AuditRecordType("customfields.definitions", "customfields.record.field", CustomFieldsPermissions.FieldsRead, "/customfields/fields/{id}"));
         module.ExportRecord(Erp.Kernel.ImportExport.ExportEntities.For<CustomFieldsDbContext, FieldDefinition>("customfields.definitions", "customfields.export.definitions"));
-        module.AuditedRecord(new AuditRecordType("customfields.field_values", "customfields.record.value", CustomFieldsPermissions.FieldsRead, null));
+        module.AuditedRecord(new AuditRecordType("customfields.field_values", "customfields.record.value", CustomFieldsPermissions.FieldsRead, null, FoldedIntoRecord: true));
         module.Seeder<CustomFieldsSeeder>();
     }
 }

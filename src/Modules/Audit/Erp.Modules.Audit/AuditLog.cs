@@ -91,14 +91,14 @@ internal static class AuditLog
                         Choices: [new ListChoice("insert", "audit.action.insert"), new ListChoice("update", "audit.action.update"), new ListChoice("delete", "audit.action.delete")],
                         Width: ListColumnWidth.Narrow),
                     new ListColumn("recordType", "audit.log.recordType", ListColumnType.Choice, Filterable: true, Groupable: true,
-                        Choices: [.. types.Select(t => new ListChoice(t.Table, t.LabelKey))]),
+                        Choices: [.. types.Where(t => !t.FoldedIntoRecord).Select(t => new ListChoice(t.Table, t.LabelKey))]),
                     new ListColumn("record", "audit.log.record", ListColumnType.Text, Filterable: true, ArabicField: "recordAr"),
                     // Searched (an Arabic word, an e-mail or a code), not filtered on their own.
                     new ListColumn("recordAr", "audit.log.recordAr", ListColumnType.Text, Hidden: true),
                     new ListColumn("recordCode", "audit.log.recordCode", ListColumnType.Text, Hidden: true),
                     new ListColumn("recordId", "audit.log.recordId", ListColumnType.Reference, Filterable: true, Hidden: true, LabelField: "record"),
                     new ListColumn("fields", "audit.log.fields", ListColumnType.Choice, Filterable: true, LabelField: "fieldNames",
-                        Choices: [.. texts.Fields.Select(f => new ListChoice(f, AuditTexts.FieldPrefix + f))]),
+                        Choices: [.. texts.Fields.Select(f => new ListChoice(f, AuditTexts.FieldPrefix + f))], OpenChoicePrefix: CustomFieldPrefix),
                     new ListColumn("changes", "audit.log.changes", ListColumnType.Text, Width: ListColumnWidth.Wide),
                 ],
                 // The record's name, or its e-mail or code (a user's sign-in, a company's code).
@@ -130,6 +130,12 @@ internal static class AuditLog
         HttpContext http, CancellationToken cancellationToken)
     {
         var source = await reader.VisibleAsync(reader.Db.AuditEntries.AsNoTracking(), cancellationToken);
+        // A change a record's own row already carries (a custom field's value) shows once, as that record's change.
+        var folded = catalog.AuditRecordTypes.Where(t => t.FoldedIntoRecord).Select(t => t.Table).ToArray();
+        if (folded.Length > 0)
+        {
+            source = source.Where(e => !folded.Contains(e.RecordType));
+        }
         var result = await catalog.ListBinding<AuditEntry>(Key).QueryAsync(source, request, http, cancellationToken);
         if (result.Problem is not null)
         {
