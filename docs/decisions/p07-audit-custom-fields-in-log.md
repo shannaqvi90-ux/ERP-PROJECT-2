@@ -16,3 +16,8 @@ Decision: a tenant's custom fields are first-class in the audit log.
   `ListSearch.Pattern`) escaped each UTF-16 half. A surrogate half is now kept as it is.
 Cost: one extra `record_type <> $1` condition on the log; no new processor time of note.
 Not done this round: export of the whole log past 200,000 rows, Arabic export names of people, History panel placement.
+
+## Round 9 integration fix (serial-27b)
+
+The integrator's alone verify failed G1ListVolumeTests.Every_list_answers_each_tenant_from_its_own_rows_at_demo_volume: the gate's anchor counted every row of audit.entries (419,706 for tenant A) while the log, by this round's design, leaves out the kinds folded into their record (419,694). AnchorAsync (tests/Erp.Gates.Tests/G1/ListVolume.cs, p00's file, minimal change) now leaves out the kinds the catalog marks FoldedIntoRecord, for the audit entity only. The check that every walked id is the tenant's own row is unchanged. The integrator's second alone verify passed every test; its only ratchet failure was verify.cpuSeconds (29,519 s against 29,500 s), a processor-time noise matter on a busy machine (other work 56 % of the machine). This round adds no processor time beyond the folded rows no longer being walked.
+Fixer run: Erp.Gates.Tests filtered to G1ListVolumeTests, G1ClientStateTests, AuditGateTests, G1TenantSourceTests, through verify-slot.sh: 22 of 22 passed, 23 m 50 s wall.
