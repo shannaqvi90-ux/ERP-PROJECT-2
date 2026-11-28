@@ -190,8 +190,8 @@ const plants = [
       },
       {
         file: "src/modules/shell/App.tsx",
-        find: "    (session: Session) => {\n      const { preferences, pending } = effectivePreferences(session.user.id, session.user);",
-        replace: "    (session: Session) => {\n      const place = rememberedPlace();\n      if (place && window.location.pathname === \"/\") navigate(place);\n      const { preferences, pending } = effectivePreferences(session.user.id, session.user);",
+        find: "      const { preferences, pending } = effectivePreferences(session.user.id, session.user);",
+        replace: "      const place = rememberedPlace();\n      if (place && window.location.pathname === \"/\") navigate(place);\n      const { preferences, pending } = effectivePreferences(session.user.id, session.user);",
       },
     ],
   },
